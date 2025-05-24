@@ -23,7 +23,7 @@ label{
 input{
     display: block;
     width: calc(100% - 20px);
-    font-size: 20px;
+    font-size: 16px;
     border: 2px solid #3D3D3D;
     border-radius: 8px;
     padding: 8px;
