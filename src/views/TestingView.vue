@@ -34,7 +34,7 @@ export default {
       questions: [{ question: "", variants: ["", ""] }],
       allQuestions: [],
       result: "",
-      linker: { "akf/mtf": 0, "sf/idst": 1, "fpmm/etf/gumf": 2, "htf/gnf": 3 },
+      linker: { "akf/mtf": 0, "sf/idst": 1, "htf/gnf": 2, "fpmm/etf/gumf": 3 },
     };
   },
   methods: {
@@ -116,8 +116,8 @@ export default {
     },
   },
   beforeCreate() {
-    // fetch("https://winfrid.p-host.in/api/questions.json") //ну так на сайте
-    fetch("http://127.0.0.1:5500/public/questions.json") //здесь надо указать пусть к файлу с вопросами public/questions.json
+    fetch("https://winfrid.p-host.in/api/questions.json") //ну так на сайте
+    // fetch("http://127.0.0.1:5500/public/questions.json") //здесь надо указать пусть к файлу с вопросами public/questions.json
       .then((doc) => {
         return doc.json();
       })

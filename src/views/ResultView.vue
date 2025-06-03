@@ -13,7 +13,7 @@ export default{
             facultates: {
                 "etf": "Электротехнический факультет",
                 "fpmm": "Факультет прикладной математики и механики",
-                "gum": "Гуманитарный факультет",
+                "gumf": "Гуманитарный факультет",
                 "akf": "Аэрокосмический факультет",
                 "mtf": "Механико-технологический факультет",
                 "sf": "Строительный факультет",
@@ -25,7 +25,6 @@ export default{
     },
     mounted(){
         this.result = localStorage.getItem('result')
-        localStorage.removeItem('result')
     }
 }
 </script>
