@@ -55,7 +55,6 @@ export default {
         }
       }
     }
-    console.log(request);
   },
   mounted() {
     localStorage.clear();

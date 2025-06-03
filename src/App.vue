@@ -11,6 +11,7 @@
 *{
   margin: 0;
   padding: 0;
+  color: black;
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
