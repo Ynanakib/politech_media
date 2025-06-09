@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import TestingView from '../views/TestingView.vue'
+import VkCallbackView from '@/views/VkCallbackView.vue'
 
 const routes = [
   {
@@ -22,6 +23,11 @@ const routes = [
     path: '/testing',
     name: 'testing',
     component: TestingView
+  },
+  {
+    path: '/vk-callback',
+    name: 'vkCallback',
+    component: VkCallbackView
   }
 ]
 

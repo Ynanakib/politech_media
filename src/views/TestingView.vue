@@ -116,8 +116,7 @@ export default {
     },
   },
   beforeCreate() {
-    fetch("https://winfrid.p-host.in/api/questions.json") //ну так на сайте
-    // fetch("http://127.0.0.1:5500/public/questions.json") //здесь надо указать пусть к файлу с вопросами public/questions.json
+    fetch(window.BASE_URL + "/api/v1/media/tests.php")
       .then((doc) => {
         return doc.json();
       })
