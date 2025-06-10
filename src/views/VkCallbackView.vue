@@ -30,10 +30,10 @@ onMounted(async () => {
         headers: { 'Content-Type': 'application/json' },
         body: arr
     }))
-    .then( result => result.json() )
-    .then( result => localStorage.setItem("token", result.token))
+    .then( result => result.text() )
+    .then( result => localStorage.setItem("token", result))
     .finally(()=> {
-        window.location.href = window.BASE_URL+'/testing'
+        window.location.href = window.BASE_URL+'/auth'
     })
 })
 function generateRandomString(length = 64) {

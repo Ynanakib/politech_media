@@ -5,12 +5,12 @@
 <script>
 export default {
   name: "HomeView",
-  mounted() {
-    // if (localStorage.getItem("key") != null) {
+  beforeCreate() {
+    if (localStorage.getItem("token") === null) {
+      this.$router.push("auth");
+    } else {
       this.$router.push("testing");
-    // } else {
-      // this.$router.push("auth");
-    // }
+    }
   },
 };
 </script>

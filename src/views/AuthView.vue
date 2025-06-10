@@ -43,21 +43,10 @@ export default {
       fill2: false,
     };
   },
-  created(){
-    let request = {}
-    {
-      if(window.location.search != ""){
-        let res = window.location.search.split("&")
-        res[0] = res[0].substring(1)
-        for(let i = 0; i < res.length; i++){
-          let pair = res[i].split("=")
-          request[pair[0]] = pair[1]
-        }
-      }
+  mounted(){
+    if(localStorage.getItem("token") != null){
+      this.swap();
     }
-  },
-  mounted() {
-    localStorage.clear();
   },
   methods: {
     swap() {
@@ -76,7 +65,6 @@ export default {
       }
     },
     goToTesting() {
-      localStorage.setItem("key", 1234124);
       this.$router.push("testing");
     },
   },
