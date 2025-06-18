@@ -116,7 +116,7 @@ export default {
     },
   },
   beforeCreate() {
-    fetch(window.BASE_URL + "/api/v1/media/tests.php")
+    fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/questions")
       .then((doc) => {
         return doc.json();
       })

@@ -9,17 +9,25 @@
         <VkAuth></VkAuth>
       </div>
       <div class="fill1" v-if="fill1">
-        <TextBox label="Фамилия" />
-        <TextBox label="Имя" />
-        <TextBox label="Отчество" />
-        <TextBox label="Номер телефона" />
-        <TextBox label="Электронная почта" />
+        <label for="firstname">Фамилия</label>
+        <input type="text" id="secondname" v-model="this.registraton.secondName">
+        <label for="name">Имя</label>
+        <input type="text" id="name" v-model="this.registraton.name">
+        <label for="secondname">Отчество</label>
+        <input type="text" id="secondname" v-model="this.registraton.surname">
+        <label for="phone">Номер телефона</label>
+        <input type="text" id="phone" v-model="this.registraton.phone">
+        <label for="email">Электронная почта</label>
+        <input type="text" id="email" v-model="this.registraton.email">
         <button @click="this.swap">Продолжить →</button>
       </div>
       <div class="fill2" v-if="fill2">
-        <TextBox label="Город" />
-        <TextBox label="Школа" />
-        <TextBox label="Класс" />
+        <label for="city">Город</label>
+        <input type="text" id="city" v-model="this.registraton.city">
+        <label for="school">Школа</label>
+        <input type="text" id="school" v-model="this.registraton.school">
+        <label for="grade">Класс</label>
+        <input type="text" id="grade" v-model="this.registraton.grade">
         <button @click="this.goToTesting">Продолжить →</button>
       </div>
     </div>
@@ -27,29 +35,49 @@
 </template>
 
 <script>
-import TextBox from "@/components/TextBox.vue";
 import VkAuth from "@/components/VkAuth.vue";
-
+import { ref } from "vue"
 export default {
   name: "AuthView",
   components: {
-    TextBox,
     VkAuth,
   },
   data() {
     return {
+      registraton: {
+        surname: '',
+        name: '',
+        secondName: '',
+        phone: '',
+        email: '',
+        city: '',
+        school: '',
+        grade: ''
+      },
       auth: true,
       fill1: false,
       fill2: false,
     };
   },
   mounted(){
+      this.registraton = JSON.parse(localStorage.getItem('user_data')) || {
+        surname: '',
+        name: '',
+        secondName: '',
+        phone: '',
+        email: '',
+        city: '',
+        school: '',
+        grade: ''
+      };
+      console.log(this.registraton)
     if(localStorage.getItem("token") != null){
       this.swap();
     }
   },
   methods: {
     swap() {
+      console.log(this.registraton)
       if (this.fill1) {
         this.auth = false;
         this.fill1 = false;
@@ -65,7 +93,19 @@ export default {
       }
     },
     goToTesting() {
-      this.$router.push("testing");
+      localStorage.setItem("user_data", JSON.stringify(this.registraton));
+      fetch(process.env.VUE_APP_BASE_URL+"/api/v1/register", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          token: localStorage.getItem("token"),
+          payload: this.registraton
+        })
+      })
+      .then(() => this.$router.push("testing"))
+      .catch(console.error)
     },
   },
 };
@@ -100,5 +140,19 @@ main {
   border-radius: 8px;
   color: white;
   width: 100%;
+}
+label{
+    display: block;
+    margin-bottom: 5px;
+    font-size: 20px;
+    margin-top: 18px;
+}
+input{
+    display: block;
+    width: calc(100% - 20px);
+    font-size: 16px;
+    border: 2px solid #3D3D3D;
+    border-radius: 8px;
+    padding: 8px;
 }
 </style>

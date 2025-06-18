@@ -9,8 +9,8 @@ export default {
   props: {},
   mounted() {
     VKID.Config.init({
-      app: 53548686,
-      redirectUrl: window.BASE_URL+'/vk-callback',
+      app: process.env.VUE_APP_VKAPP_ID,
+      redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
       scope: 'email phone'
     });
     const oneTap = new VKID.OneTap();

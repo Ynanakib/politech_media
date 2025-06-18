@@ -6,10 +6,10 @@
 export default {
   name: "HomeView",
   beforeCreate() {
-    if (localStorage.getItem("token") === null) {
-      this.$router.push("auth");
-    } else {
+    if (localStorage.getItem("token")) {
       this.$router.push("testing");
+    } else {
+      this.$router.push("auth");
     }
   },
 };

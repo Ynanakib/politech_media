@@ -11,29 +11,25 @@ onMounted(async () => {
     const codeVerifier = generateRandomString(randomLength);
 
     VKID.Config.init({
-        app: 53548686,
+        app: process.env.VUE_APP_VKAPP_ID,
         state: state,
         codeVerifier: codeVerifier,
-        redirectUrl: window.BASE_URL+'/vk-callback'
+        redirectUrl: process.env.VUE_APP_BASE_URL + '/vk-callback'
     })
     VKID.Auth.exchangeCode(code, device_id)
-    .then( obj => {
-        let arr = JSON.stringify({
+    .then( obj => fetch(process.env.VUE_APP_BASE_URL + '/api/v1/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
             access_token: obj.access_token,
             refresh_token: obj.refresh_token,
             user_id: obj.user_id
         })
-        return arr
-    })
-    .then( arr => fetch('/api/v1/auth.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: arr
     }))
     .then( result => result.text() )
     .then( result => localStorage.setItem("token", result))
     .finally(()=> {
-        window.location.href = window.BASE_URL+'/auth'
+        window.location.href = process.env.VUE_APP_BASE_URL+'/auth'
     })
 })
 function generateRandomString(length = 64) {

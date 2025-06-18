@@ -7,12 +7,7 @@
   <router-view/>
 </template>
 <script>
-export default{
-  beforeCreate(){
-    // window.BASE_URL = "http://localhost"
-    window.BASE_URL = "https://winfrid.p-host.in"
-  }
-}
+export default{}
 </script>
 
 <style>
