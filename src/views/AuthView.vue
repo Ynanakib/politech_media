@@ -81,7 +81,7 @@ export default {
       if(Script.getCookie('user_data')){
         this.registraton = JSON.parse(Script.getCookie('user_data'));
       }      
-    if(Script.getCookie("token") !== null){
+    if(Script.getCookie("reg") !== null){
       this.swap();
     }
   },
