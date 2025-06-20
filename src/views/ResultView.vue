@@ -6,6 +6,8 @@
 </template>
 
 <script>
+import "regenerator-runtime/runtime"
+import * as Script from "@/assets/scripts.js"
 export default{
     data(){
         return {
@@ -23,8 +25,18 @@ export default{
             }
         }
     },
+    beforeCreate(){
+        
+    },
     mounted(){
-        this.result = localStorage.getItem('result')
+        this.result = Script.getCookie('result')
     }
 }
 </script>
+
+<style scoped>
+main{
+    width: 600px;
+    height: 600px;
+}
+</style>

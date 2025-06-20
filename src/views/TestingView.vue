@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import "regenerator-runtime/runtime"
+import * as Script from "@/assets/scripts.js"
 export default {
   name: "TestingView",
   components: {},
@@ -109,8 +111,16 @@ export default {
         if (this.currentQuestion < 2) {
           this.currentQuestion++;
         } else if (this.currentQuestion == 2) {
-          localStorage.setItem("result", this.maxOf(this.extended));
-          this.$router.push("result");
+          Script.setCookie("result", this.maxOf(this.extended));
+          fetch(process.env.VUE_APP_BASE_URL + "/api/v1/result", {
+            method : "POST",
+            body: JSON.stringify({
+              token: Script.getCookie("token"),
+              result: Script.getCookie("result")
+            })
+          }).finally(()=>{
+            this.$router.push("result")
+          })
         }
       }
     },

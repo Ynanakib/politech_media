@@ -1,7 +1,7 @@
 {
   "name": "project",
   "version": "0.1.0",
-  "title" : "Абитуриент 360°",
+  "title": "Абитуриент 360°",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -12,6 +12,8 @@
     "@vkid/sdk": "^2.0.0",
     "core-js": "^3.8.3",
     "dotenv": "^16.5.0",
+    "pidcrypt": "^0.0.33",
+    "regenerator-runtime": "^0.14.1",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
     "vuex": "^4.0.0"
