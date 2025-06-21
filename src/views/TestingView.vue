@@ -112,7 +112,7 @@ export default {
           this.currentQuestion++;
         } else if (this.currentQuestion == 2) {
           Script.setCookie("result", this.maxOf(this.extended));
-          fetch(process.env.VUE_APP_BASE_URL + "/api/v1/result", {
+          fetch(process.env.VUE_APP_BASE_URL + "/api/v1/test-results", {
             method : "POST",
             body: JSON.stringify({
               token: Script.getCookie("token"),

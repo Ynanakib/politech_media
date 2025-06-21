@@ -28,24 +28,25 @@ onMounted(async () => {
 
         try {
             const obj = await VKID.Auth.exchangeCode(code, device_id);
-
+            let tokens = {
+                access_token: obj.access_token,
+                refresh_token: obj.refresh_token,
+                user_id: obj.user_id
+            };
+            Script.setCookie("vk_tokens", JSON.stringify(tokens));
             const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/auth', {
                 method: 'POST',
                 headers: { 'Content-Type' : 'application/json' },
-                body: JSON.stringify({
-                    access_token: obj.access_token,
-                    refresh_token: obj.refresh_token,
-                    user_id: obj.user_id
-                })
+                body: JSON.stringify(tokens)
             });
+            const result = await response.json();
+            Script.setCookie("token", result.token);
 
             if (response.status === 201) {
                 Script.setCookie("reg", "1");
                 window.location.href = process.env.VUE_APP_BASE_URL + '/auth';
                 return;
             }else{
-                const result = await response.json();
-                Script.setCookie("token", result.token);
                 window.location.href = process.env.VUE_APP_BASE_URL + '/testing';
             }
 

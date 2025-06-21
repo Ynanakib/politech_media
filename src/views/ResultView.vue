@@ -1,7 +1,10 @@
 <template>
     <main>
-        <p>{{ facultates[result] }}</p>
-        <router-link to="/testing">Пройти тест еще раз</router-link>
+        <div class="result-display">
+            <p>{{ facultates[result] }}</p>
+            <router-link to="/testing">Пройти тест еще раз</router-link>
+            <iframe src="" frameborder="0"></iframe>
+        </div>
     </main>
 </template>
 
@@ -35,8 +38,13 @@ export default{
 </script>
 
 <style scoped>
-main{
+.result-display{
     width: 600px;
     height: 600px;
+    margin: auto;
+}
+main {
+  display: grid;
+  height: calc(100vh);
 }
 </style>

@@ -28,6 +28,20 @@ export function clearCookie() {
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     }
 }
+export function jsonToFormData(jsonObject) {
+  const formData = new FormData();
+  for (const key in jsonObject) {
+    if (Object.prototype.hasOwnProperty.call(jsonObject, key)) {
+      const value = jsonObject[key];
+      if (typeof value === 'object' && value !== null && !(value instanceof File)) {
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, value);
+      }
+    }
+  }
+  return formData;
+}
 
 function initCrypt() {
     require("pidcrypt/seedrandom")

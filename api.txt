@@ -1,9 +1,9 @@
 [POST]
 
 +	/api/v1/auth 
-		request  => { acceess_token : string, refresh_token : string, user_id : int }
+		request  => { access_token : string, refresh_token : string, user_id : int }
 		response => { token : string }
-		response => { err 401 } -> not registred
+		response => { token : string } +  err 201 -> not registred
 +	/api/v1/register
 		request  => { user_id : string, payload : { surname : string,
 							  name : string,

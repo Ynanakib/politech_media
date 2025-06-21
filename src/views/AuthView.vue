@@ -109,8 +109,8 @@ export default {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          token: Script.getCookie("token"),
-          payload: this.registraton
+          user_id: Script.getCookie("token"),
+          payload: JSON.stringify(this.registraton)
         })
       })
       .then(() => this.$router.push("testing"))

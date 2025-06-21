@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import TestingView from '../views/TestingView.vue'
 import VkCallbackView from '@/views/VkCallbackView.vue'
 import LogoutView from '@/views/LogoutView.vue'
+import DebugView from '@/views/DebugView.vue'
 
 const routes = [
   {
@@ -51,6 +52,14 @@ const routes = [
     component: LogoutView,
     meta: {
       title : "Абитуриент 360°"
+    }
+  },
+  {
+    path: "/debug",
+    name: "debug",
+    component: DebugView,
+    meta:{
+      title: "DEBUG"
     }
   }
 ]
