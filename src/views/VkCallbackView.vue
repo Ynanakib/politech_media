@@ -40,13 +40,13 @@ onMounted(async () => {
                 body: JSON.stringify(tokens)
             });
             const result = await response.json();
-            Script.setCookie("token", result.token);
 
             if (response.status === 201) {
                 Script.setCookie("reg", "1");
                 window.location.href = process.env.VUE_APP_BASE_URL + '/auth';
                 return;
             }else{
+                Script.setCookie("token", result.token);
                 window.location.href = process.env.VUE_APP_BASE_URL + '/testing';
             }
 

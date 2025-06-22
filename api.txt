@@ -24,7 +24,7 @@
 +	/api/v1/media/questions
 		request  => { null }
 		response => { file }
-~	/api/v1/media/videos
++	/api/v1/media/videos
 		request  => { null }
 		response => { file }
 
