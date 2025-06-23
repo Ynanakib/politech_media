@@ -1,7 +1,7 @@
 <template>
     <main>
         <div class="result-display">
-            <p>{{ facultates[result] }}</p>
+            <p>{{ this.facultates[this.result] }}</p>
             <router-link to="/testing">Пройти тест еще раз</router-link>
             <div id="video"></div>
         </div>
@@ -32,17 +32,19 @@ export default{
             }
         }
     },
-    beforeCreate(){
-        fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/videos")
+    mounted(){
+        this.result = Script.getCookie("result")
+	    console.log(this.result)
+	fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/videos")
         .then( result => result.json())
-        .then( json => json.videos)
-        .then( ( array = [] ) => {
-            for (let i = 0; i < array.length; i++) {
+        .then( ( array ) => {
+		console.log(array)
+	    for (let i = 0; i < array.length; i++) {
                 const el = array[i];
                 if(el.title == this.result) return el
             }
         })
-        .then(el => {
+        .then( ( el ) => {
             let data = el.url.split("/")[3].split("_")
             let oid = data[0].substr(5)
             let id = data[1]
@@ -66,9 +68,6 @@ export default{
 
             container.appendChild(inFrame);
         })
-    },
-    mounted(){
-        this.result = Script.getCookie('result')
     }
 }
 </script>
