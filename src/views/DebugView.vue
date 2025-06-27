@@ -1,7 +1,3 @@
-<template>
-
-</template>
-
 <script>
 import "regenerator-runtime/runtime"
 import * as Script from "@/assets/scripts.js"

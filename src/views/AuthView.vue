@@ -123,7 +123,7 @@ export default {
 <style scoped>
 main {
   display: grid;
-  height: calc(100vh);
+  height: 100vh;
 }
 .block {
   border-radius: 24px;

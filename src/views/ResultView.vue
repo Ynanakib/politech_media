@@ -81,6 +81,6 @@ export default{
 }
 main {
   display: grid;
-  height: calc(100vh);
+  height: 100vh;
 }
 </style>
