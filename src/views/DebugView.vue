@@ -1,7 +1,10 @@
+<<<<<<< HEAD
 <template>
   <button onclick="this.delete">delete :)</button>
 </template>
 
+=======
+>>>>>>> 90d8fcb0ede714b4fa75bafa6eb0f9f9c0289cda
 <script>
 import "regenerator-runtime/runtime"
 import * as Script from "@/assets/scripts.js"
