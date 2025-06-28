@@ -78,9 +78,5 @@ export default{
 }
 main {
   display: grid;
-<<<<<<< HEAD
-=======
-  height: 100vh;
->>>>>>> 90d8fcb0ede714b4fa75bafa6eb0f9f9c0289cda
 }
 </style>
