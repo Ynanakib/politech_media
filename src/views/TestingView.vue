@@ -114,19 +114,25 @@ export default {
           Script.setCookie("result", this.maxOf(this.extended));
           fetch(process.env.VUE_APP_BASE_URL + "/api/v1/test-results", {
             method : "POST",
+            headers: {
+              'Content-Type' : 'application/json',
+              'Connection' : 'keep-alive'
+            },
             body: JSON.stringify({
               token: Script.getCookie("token"),
               result: Script.getCookie("result")
             })
           }).finally(()=>{
-            // this.$router.push(
-              console.log("push to: ", "result")
+            this.$router.push("result")
           })
         }
       }
     },
   },
   beforeCreate() {
+    if (!Script.getCookie("token")) {
+        this.$router.push("/");
+    }
     fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/questions")
       .then((doc) => {
         return doc.json();

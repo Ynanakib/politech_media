@@ -5,11 +5,9 @@ export default {
   name: "HomeView",
   beforeCreate() {
     if (Script.getCookie("token")) {
-      // this.$router.push(
-              console.log("push to: ", "testing");
+      this.$router.push("testing");
     } else {
-      // this.$router.push(
-              console.log("push to: ", "auth");
+      this.$router.push("auth");
     }
   },
 };

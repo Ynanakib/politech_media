@@ -10,13 +10,12 @@ export default {
         'Content-Type' : 'application/json',
         'Connection' : 'keep-alive'
       },
-      data: JSON.stringify({
+      body: JSON.stringify({
         token : Script.getCookie("token")
       })
     }).finally(()=>{
       Script.clearCookie();
-      // this.$router.push(
-              console.log("push to: ", "/");
+      this.$router.push("/");
     })
   },
 };

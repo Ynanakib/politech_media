@@ -10,19 +10,19 @@
       </div>
       <div class="fill1" v-if="fill1">
         <label for="firstname">Фамилия</label>
-        <input type="text" id="secondname" v-model="this.registraton.secondName">
+        <input type="text" id="secondname" v-model="this.registraton.last_name">
 
         <label for="name">Имя</label>
-        <input type="text" id="name" v-model="this.registraton.name">
+        <input type="text" id="name" v-model="this.registraton.first_name">
 
         <label for="secondname">Отчество</label>
-        <input type="text" id="secondname" v-model="this.registraton.surname">
+        <input type="text" id="secondname" v-model="this.registraton.middle_name">
 
         <label for="phone">Номер телефона</label>
-        <input type="text" id="phone" v-model="this.registraton.phone">
+        <input type="phone" id="phone" v-model="this.registraton.phone">
 
         <label for="email">Электронная почта</label>
-        <input type="text" id="email" v-model="this.registraton.email">
+        <input type="email" id="email" v-model="this.registraton.email">
 
         <button @click="this.swap">Продолжить →</button>
       </div>
@@ -56,14 +56,14 @@ export default {
   data() {
     return {
       registraton: {
-        surname: '',
-        name: '',
-        secondName: '',
-        phone: '',
-        email: '',
-        city: '',
-        school: '',
-        grade: ''
+        last_name : "",
+        first_name : "",
+        middle_name : "",
+        phone : "",
+        email : "",
+        city : "",
+        school : "",
+        grade : "11"
       },
       auth: true,
       fill1: false,
@@ -71,20 +71,20 @@ export default {
     };
   },
   mounted(){
-      VKID.Config.init({
-        app: process.env.VUE_APP_VKAPP_ID,
-        redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
-        scope: 'email phone groups vkid.personal_info',
-        mode: VKID.ConfigAuthMode.Redirect
-      });
-      const oneTap = new VKID.OneTap();
-      oneTap.render({
-        container: document.getElementById('VkIdSdkOneTap'),
-        showAlternativeLogin: false
-      });
-      if(Script.getCookie('user_data')){
-        this.registraton = JSON.parse(Script.getCookie('user_data'));
-      }      
+    VKID.Config.init({
+      app: process.env.VUE_APP_VKAPP_ID,
+      redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
+      scope: 'email phone groups vkid.personal_info',
+      mode: VKID.ConfigAuthMode.Redirect
+    });
+    const oneTap = new VKID.OneTap();
+    oneTap.render({
+      container: document.getElementById('VkIdSdkOneTap'),
+      showAlternativeLogin: false
+    });
+    if(Script.getCookie('user_data')){
+      this.registraton = JSON.parse(Script.getCookie('user_data'));
+    }      
     if(Script.getCookie("reg") !== null){
       this.swap();
     }
@@ -96,10 +96,8 @@ export default {
         this.fill1 = false;
         this.fill2 = true;
       } else if (this.fill2) {
-        this.auth = true;
-        this.fill1 = false;
-        this.fill2 = false;
-      } else {
+        this.goToTesting();
+      }else{
         this.auth = false;
         this.fill1 = true;
         this.fill2 = false;
@@ -114,10 +112,12 @@ export default {
           'Connection' : 'keep-alive'
         },
         body: JSON.stringify({
-          user_id: Script.getCookie("token"),
-          payload: JSON.stringify(this.registraton)
+          vk_id: JSON.parse(Script.getCookie("vk_tokens")).vk_id,
+          payload: this.registraton
         })
       })
+      .then( data => data.json() )
+      .then( data => Script.setCookie("token", data.token) )
       .then(() => this.$router.push("testing"))
       .catch(console.warn)
     },
@@ -133,13 +133,14 @@ main {
   border-radius: 24px;
   background-color: #d9d9d9;
   padding: 40px 60px;
-  width: 470px;
+  max-width: 470px;
+  width: 90%;
   margin: auto;
   text-align: left;
 }
 .auth p.text {
   margin: 30px 0;
-  font-size: 24px;
+  font-size: var(--font-large-size);
   text-align: center;
   padding: 0 60px;
 }
@@ -147,7 +148,7 @@ main {
   display: block;
   margin-top: 18px;
   background-color: #3d3d3d;
-  font-size: 18px;
+  font-size: var(--font-middle-size);
   padding: 10px;
   border: none;
   border-radius: 8px;
@@ -157,19 +158,18 @@ main {
 label{
     display: block;
     margin-bottom: 5px;
-    font-size: 20px;
+    font-size: var(--font-big-size);
     margin-top: 18px;
 }
-input[type=radio]{
-  display: inline;
-  width: 30px;
-}
-input{
+input, select{
     display: block;
     width: calc(100% - 20px);
-    font-size: 16px;
+    font-size: var(--font-small-size);
     border: 2px solid #3D3D3D;
     border-radius: 8px;
     padding: 8px;
+}
+select{
+  width: 100%;
 }
 </style>

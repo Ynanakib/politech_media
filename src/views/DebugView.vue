@@ -1,5 +1,5 @@
 <template>
-  <button onclick="this.delete">delete :)</button>
+  <button @click="this.delete()">delete :)</button>
 </template>
 <script>
 import "regenerator-runtime/runtime"
@@ -12,18 +12,14 @@ export default {
     console.log("result", Script.getCookie("result"));
     console.log("user_data", Script.getCookie("user_data"));
     console.log("vk_tokens", Script.getCookie("vk_tokens"));
+    console.log("user_info", Script.getCookie("user_info"));
     console.log("token", Script.getCookie("token"));
   },
   methods:{
     delete(){
-      fetch(process.env.VUE_APP_BASE_URL + '/api/v1/debug', {
-        method: 'POST',
-        headers: {
-          'Content-Type' : 'application/json',
-          'Connection' : 'keep-alive'
-        }
-      })
-      .then(e => e.json()).then(console.log)
+      fetch(process.env.VUE_APP_BASE_URL + '/api/v1/debug', { method: 'POST' })
+      .then(e => e.json())
+      .then(console.log)
     }
   }
 }

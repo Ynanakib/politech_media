@@ -26,25 +26,27 @@ export default{
                 "htf": "Факультет химических технологий, промышленной экологии и биотехнологий",
                 "gnf": "Горно-нефтяной факультет",
             },
-            video: null
+            video: fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/videos")
+                .then( result => result.json())
+                .then( ( array = [] ) => {
+                    let res = Script.getCookie('result')
+                    for (let i = 0; i < array.length; i++) {
+                        const el = array[i];
+                        if(el.title == res) return el
+                    }
+                })
+                .then(el => {
+                    let data = el.url.split("/")[3].split("_")
+                    let oid = data[0].substr(5)
+                    let id = data[1]
+                    return [oid, id]
+                })
         }
     },
-    beforeCreate(){
-        this.video = fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/videos")
-        .then( result => result.json())
-        .then( ( array = [] ) => {
-            let res = Script.getCookie('result')
-            for (let i = 0; i < array.length; i++) {
-                const el = array[i];
-                if(el.title == res) return el
-            }
-        })
-        .then(el => {
-            let data = el.url.split("/")[3].split("_")
-            let oid = data[0].substr(5)
-            let id = data[1]
-            return [oid, id]
-        })
+    beforeCreate() {
+        if (!Script.getCookie("token")) {
+            this.$router.push("/");
+        }
     },
     mounted(){
         this.result = Script.getCookie('result')

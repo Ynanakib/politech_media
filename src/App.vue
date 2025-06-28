@@ -47,4 +47,11 @@ nav a.router-link-exact-active {
   width: 100vw;
   height: 100vh;
 }
+
+body{
+  --font-small-size: 16px;
+  --font-middle-size: 18px;
+  --font-big-size: 20px;
+  --font-large-size: 24px;
+}
 </style>
