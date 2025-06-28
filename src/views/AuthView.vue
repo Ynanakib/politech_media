@@ -32,10 +32,14 @@
 
         <label for="school">Школа</label>
         <input type="text" id="school" v-model="this.registraton.school">
-
-        <label for="nine"><input type="radio" name="grade" id="nine" v-model="this.registraton.grade" value="9">9 класс</label>
-        <label for="eleven"><input type="radio" name="grade" id="eleven" v-model="this.registraton.grade" value="11">11 класс</label>
-
+        <label for="grade">Класс обучения</label>        
+        <select name="grade" id="grade" v-bind:value="this.registraton.grade">
+          <option value="7" >7</option>
+          <option value="8" >8</option>
+          <option value="9" >9</option>
+          <option value="10" >10</option>
+          <option value="11" selected>11</option>
+        </select>
         <button @click="this.goToTesting">Продолжить →</button>
       </div>
     </div>
@@ -70,7 +74,7 @@ export default {
       VKID.Config.init({
         app: process.env.VUE_APP_VKAPP_ID,
         redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
-        scope: 'email phone',
+        scope: 'email phone groups vkid.personal_info',
         mode: VKID.ConfigAuthMode.Redirect
       });
       const oneTap = new VKID.OneTap();
@@ -106,7 +110,8 @@ export default {
       fetch(process.env.VUE_APP_BASE_URL+"/api/v1/register", {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type' : 'application/json',
+          'Connection' : 'keep-alive'
         },
         body: JSON.stringify({
           user_id: Script.getCookie("token"),
@@ -123,7 +128,6 @@ export default {
 <style scoped>
 main {
   display: grid;
-  height: calc(100vh);
 }
 .block {
   border-radius: 24px;

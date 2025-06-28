@@ -119,7 +119,8 @@ export default {
               result: Script.getCookie("result")
             })
           }).finally(()=>{
-            this.$router.push("result")
+            // this.$router.push(
+              console.log("push to: ", "result")
           })
         }
       }
@@ -143,7 +144,6 @@ export default {
 main {
   display: flex;
   flex-direction: column-reverse;
-  height: 100vh;
 }
 .bottom {
   display: inline;
@@ -161,6 +161,5 @@ button {
   border: 1px solid #5d5d5d;
   background-color: #cecece;
   border-radius: 8px;
-  
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
     <main>
         <div class="result-display">
-            <p>{{ this.facultates[this.result] }}</p>
+            <p>{{ facultates[result] }}</p>
             <router-link to="/testing">Пройти тест еще раз</router-link>
             <div id="video"></div>
         </div>
@@ -26,40 +26,38 @@ export default{
                 "htf": "Факультет химических технологий, промышленной экологии и биотехнологий",
                 "gnf": "Горно-нефтяной факультет",
             },
-            video: {
-                oid : "",
-                id : ""
-            }
+            video: null
         }
     },
-    mounted(){
-        this.result = Script.getCookie("result")
-	    console.log(this.result)
-	fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/videos")
+    beforeCreate(){
+        this.video = fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/videos")
         .then( result => result.json())
-        .then( ( array ) => {
-		console.log(array)
-	    for (let i = 0; i < array.length; i++) {
+        .then( ( array = [] ) => {
+            let res = Script.getCookie('result')
+            for (let i = 0; i < array.length; i++) {
                 const el = array[i];
-                if(el.title == this.result) return el
+                if(el.title == res) return el
             }
         })
-        .then( ( el ) => {
+        .then(el => {
             let data = el.url.split("/")[3].split("_")
             let oid = data[0].substr(5)
             let id = data[1]
-            this.video.oid = oid;
-            this.video.id = id;
-            return 1
+            return [oid, id]
         })
-        .then(()=>{
+    },
+    mounted(){
+        this.result = Script.getCookie('result')
+        this.video.then((arr)=>{
+            let oid = arr[0]
+            let id = arr[1]
             let container = document.getElementById("video");
             let inFrame = document.createElement("iframe")
             
             let width = 600;
             let height = width*0.5693950178;
 
-            inFrame.setAttribute("src", "https://vkvideo.ru/video_ext.php?oid=" + this.video.oid + "&id=" + this.video.id + "&hd=2&autoplay=1")
+            inFrame.setAttribute("src", "https://vkvideo.ru/video_ext.php?oid=" + oid + "&id=" + id + "&hd=2&autoplay=1")
             inFrame.setAttribute("width", width)
             inFrame.setAttribute("height", height)
             inFrame.setAttribute("allow", "autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;")
@@ -80,6 +78,5 @@ export default{
 }
 main {
   display: grid;
-  height: calc(100vh);
 }
 </style>

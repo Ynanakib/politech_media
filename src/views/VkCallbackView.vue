@@ -31,25 +31,32 @@ onMounted(async () => {
             let tokens = {
                 access_token: obj.access_token,
                 refresh_token: obj.refresh_token,
-                user_id: obj.user_id
+                vk_id: obj.user_id
             };
+            
+            let userInfo = await VKID.Auth.userInfo(tokens.access_token);
+            console.log(userInfo.user)
+
             Script.setCookie("vk_tokens", JSON.stringify(tokens));
             const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/auth', {
                 method: 'POST',
-                headers: { 'Content-Type' : 'application/json' },
+                headers: {
+                    'Content-Type' : 'application/json',
+                    'Connection' : 'keep-alive'
+                },
                 body: JSON.stringify(tokens)
             });
             const result = await response.json();
 
-            if (response.status === 201) {
-                Script.setCookie("reg", "1");
-                window.location.href = process.env.VUE_APP_BASE_URL + '/auth';
-                return;
-            }else{
+            if (response.status === 202) {
                 Script.setCookie("token", result.token);
-                window.location.href = process.env.VUE_APP_BASE_URL + '/testing';
+                // window.location.href = 
+                console.log(process.env.VUE_APP_BASE_URL + '/testing');
+            }else{
+                Script.setCookie("reg", "1");
+                // window.location.href = 
+                console.log(process.env.VUE_APP_BASE_URL + '/auth');
             }
-
         } catch (error) {
             console.error("Ошибка при аутентификации:", error);
         }

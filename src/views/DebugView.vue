@@ -1,5 +1,5 @@
 <template>
-
+  <button onclick="this.delete">delete :)</button>
 </template>
 
 <script>
@@ -14,6 +14,18 @@ export default {
     console.log("user_data", Script.getCookie("user_data"));
     console.log("vk_tokens", Script.getCookie("vk_tokens"));
     console.log("token", Script.getCookie("token"));
+  },
+  methods:{
+    delete(){
+      fetch(process.env.VUE_APP_BASE_URL + '/api/v1/debug', {
+        method: 'POST',
+        headers: {
+          'Content-Type' : 'application/json',
+          'Connection' : 'keep-alive'
+        }
+      })
+      .then(e => e.json()).then(console.log)
+    }
   }
 }
 </script>

@@ -33,4 +33,18 @@ nav a {
 nav a.router-link-exact-active {
   color: #42b983;
 }
+#app.is-safari{
+  height: -webkit-fill-available;
+}
+#app.is-safari main{
+  height: -webkit-fill-available;
+}
+#app.not-safari{
+  width: 100vw;
+  height: 100vh;
+}
+#app.not-safari main{
+  width: 100vw;
+  height: 100vh;
+}
 </style>
