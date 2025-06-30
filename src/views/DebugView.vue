@@ -14,6 +14,8 @@ export default {
     console.log("vk_tokens", Script.getCookie("vk_tokens"));
     console.log("user_info", Script.getCookie("user_info"));
     console.log("token", Script.getCookie("token"));
+    console.log("selectedCharacter", Script.getCookie("selectedCharacter"));
+    console.log("gameResult", Script.getCookie("gameResult"));
   },
   methods:{
     delete(){

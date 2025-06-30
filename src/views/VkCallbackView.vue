@@ -23,6 +23,7 @@ onMounted(async () => {
             state: state,
             codeVerifier: codeVerifier,
             redirectUrl: process.env.VUE_APP_BASE_URL + '/vk-callback',
+            scope: 'email messages phone groups vkid.personal_info',
             mode: VKID.ConfigAuthMode.Redirect
         })
 

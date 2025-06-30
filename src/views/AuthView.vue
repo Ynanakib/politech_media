@@ -2,7 +2,7 @@
   <main>
     <div class="block">
       <div class="logo">
-        <img src="@/assets/pnipu_logo.png" />
+        <img src="@/assets/img/pnipu_logo.png" />
       </div>
       <div class="auth" v-if="auth">
         <p class="text">Для продолжения авторизируйтесь на сайте</p>
@@ -33,12 +33,12 @@
         <label for="school">Школа</label>
         <input type="text" id="school" v-model="this.registraton.school">
         <label for="grade">Класс обучения</label>        
-        <select name="grade" id="grade" v-bind:value="this.registraton.grade">
-          <option value="7" >7</option>
-          <option value="8" >8</option>
-          <option value="9" >9</option>
-          <option value="10" >10</option>
-          <option value="11" selected>11</option>
+        <select name="grade" id="grade" v-model="this.registraton.grade">
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
         </select>
         <button @click="this.goToTesting">Продолжить →</button>
       </div>
@@ -74,7 +74,7 @@ export default {
     VKID.Config.init({
       app: process.env.VUE_APP_VKAPP_ID,
       redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
-      scope: 'email phone groups vkid.personal_info',
+      scope: 'email messages phone groups vkid.personal_info',
       mode: VKID.ConfigAuthMode.Redirect
     });
     const oneTap = new VKID.OneTap();
@@ -171,5 +171,13 @@ input, select{
 }
 select{
   width: 100%;
+}
+@media (max-width: 768px) {
+  .block{
+    padding: 10px 5px;
+    width: 100vw;
+    height: 75vh;
+    overflow: auto;
+  }
 }
 </style>

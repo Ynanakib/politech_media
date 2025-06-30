@@ -23,14 +23,6 @@ const routes = [
     }
   },
   {
-    path: '/result',
-    name: 'result',
-    component: () => import('../views/ResultView.vue'),
-    meta: {
-      title : "Абитуриент 360°"
-    }
-  },
-  {
     path: '/testing',
     name: 'testing',
     component: TestingView,

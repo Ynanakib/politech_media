@@ -43,6 +43,11 @@ export function jsonToFormData(jsonObject) {
   return formData;
 }
 
+export function removeCookie(key) {
+    key = "pnipu_" + key;
+    document.cookie = encodeURIComponent(key) + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+}
+
 function initCrypt() {
     require("pidcrypt/seedrandom")
     require("pidcrypt/aes_cbc")

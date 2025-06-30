@@ -8,17 +8,26 @@
 </template>
 
 <style>
-*{
+#app {
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
-  color: black;
-}
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #000;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  color: black;
 }
 
 nav {
@@ -49,6 +58,10 @@ nav a.router-link-exact-active {
 }
 
 body{
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+  font-family: 'Roboto', sans-serif;
   --font-small-size: 16px;
   --font-middle-size: 18px;
   --font-big-size: 20px;
