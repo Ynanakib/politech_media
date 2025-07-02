@@ -8,6 +8,12 @@
         <p class="text">Для продолжения авторизируйтесь на сайте</p>
         <div id="VkIdSdkOneTap"></div>
       </div>
+      <div class="confirmation" v-if="confirm">
+        <p class="text">Подтвердите отправку сообщений Вам</p>
+        <p>После подтверждения вам придут результаты теста и общая информация о поступлении!</p>
+        <a class="btn" href="https://vk.com/im?sel=-230312236">Разрешить!</a>
+        <button class="btn" @click="showRegistrationForm">Продолжить</button>
+      </div>
       <div class="fill1" v-if="fill1">
         <label for="firstname">Фамилия</label>
         <input type="text" id="secondname" v-model="this.registraton.last_name">
@@ -65,7 +71,8 @@ export default {
         school : "",
         grade : "11"
       },
-      auth: true,
+      auth: false,
+      confirm: false,
       fill1: false,
       fill2: false,
     };
@@ -77,39 +84,94 @@ export default {
       scope: 'email messages phone groups vkid.personal_info',
       mode: VKID.ConfigAuthMode.Redirect
     });
-    const oneTap = new VKID.OneTap();
-    oneTap.render({
-      container: document.getElementById('VkIdSdkOneTap'),
-      showAlternativeLogin: false
-    });
+
     if(Script.getCookie('user_data')){
       this.registraton = JSON.parse(Script.getCookie('user_data'));
-    }      
+    }
     if(Script.getCookie("reg") !== null){
-      this.swap();
+      this.confirm = true;
+    }else{
+      this.auth = true;
+      this.$nextTick(() => {
+        const container = document.getElementById('VkIdSdkOneTap');
+        if (container) {
+          const oneTap = new VKID.OneTap();
+          oneTap.render({
+            container: container,
+            showAlternativeLogin: false
+          });
+        }
+      });
     }
   },
   methods: {
     swap() {
       if (this.fill1) {
         this.auth = false;
+        this.confirm = false;
         this.fill1 = false;
         this.fill2 = true;
-      } else if (this.fill2) {
+      } else {
         this.goToTesting();
-      }else{
+      }
+    },
+    showRegistrationForm() {
+      this.confirm = false;
+      this.fill1 = true;
+    },
+    created(){
+      if(Script.getCookie("vk_tokens")){
+        let user = JSON.parse(Script.getCookie("vk_tokens"));
         this.auth = false;
-        this.fill1 = true;
+        this.confirm = false;
+        this.fill1 = false;
         this.fill2 = false;
+        fetch("https://api.vk.com/method/group.isMember?group_id=230312236&user_id="+user.vk_id+"&access_token="+user.access_token)
+        .then(data => data.json())
+        .then(data => {
+          if(data.response == 1 && this.confirm){
+            this.confirm = false;
+            this.fill1 = true;
+          }else{
+            this.confirm = true;
+            this.fill1 = false;
+          }
+        })
+        .catch(()=>{
+            this.confirm = false;
+            this.fill1 = true;
+        })
+      }else{
+        this.auth = true;
       }
     },
     goToTesting() {
-      Script.setCookie("user_data", JSON.stringify(this.registraton));
-      fetch(process.env.VUE_APP_BASE_URL+"/api/v1/register", {
+      // Проверка vk_id
+      const vkTokens = Script.getCookie("vk_tokens");
+      if (!vkTokens) {
+        alert("Ошибка: не найден VK ID");
+        return;
+      }
+      const vk_id = Number(JSON.parse(vkTokens).vk_id);
+
+      // Копируем и приводим grade к числу
+      const payload = { ...this.registraton, grade: Number(this.registraton.grade) };
+
+      // Проверка обязательных полей
+      const required = ['last_name', 'first_name', 'phone', 'city', 'school', 'grade'];
+      for (const key of required) {
+        if (!payload[key]) {
+          alert('Заполните все обязательные поля!');
+          return;
+        }
+      }
+
+      Script.setCookie("user_data", JSON.stringify(payload));
+      fetch(process.env.VUE_APP_BASE_URL + "/api/v1/register", {
         method: 'POST',
         headers: {
-          'Content-Type' : 'application/json',
-          'Connection' : 'keep-alive'
+          'Content-Type': 'application/json',
+          'Connection': 'keep-alive'
         },
         body: JSON.stringify({
           vk_id: JSON.parse(Script.getCookie("vk_tokens")).vk_id,
@@ -128,6 +190,12 @@ export default {
 <style scoped>
 main {
   display: grid;
+}
+.btn{
+  background-color: rgb(0, 119, 255);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 8px;
 }
 .block {
   border-radius: 24px;
