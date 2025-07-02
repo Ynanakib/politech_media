@@ -14,9 +14,8 @@
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
-  height: 100vh;
+  height: var(--full-height);
   overflow: hidden;
-  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -43,18 +42,17 @@ nav a.router-link-exact-active {
   color: #42b983;
 }
 #app.is-safari{
-  height: -webkit-fill-available;
+  --full-height: -webkit-fill-available;
+}
+#app.not-safari{
+  --full-height: 100vh;
 }
 #app.is-safari main{
   height: -webkit-fill-available;
 }
-#app.not-safari{
-  width: 100vw;
-  height: 100vh;
-}
 #app.not-safari main{
   width: 100vw;
-  height: 100vh;
+  height: var(--full-height);
 }
 
 body{

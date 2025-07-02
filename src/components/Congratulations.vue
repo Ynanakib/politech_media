@@ -125,8 +125,8 @@ export default {
 }
 
 .congratulations {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   position: relative;
   background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
@@ -194,7 +194,7 @@ export default {
   position: relative;
   z-index: 10;
   padding: 40px 20px;
-  height: 100vh;
+  height: var(--full-height);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -418,7 +418,7 @@ export default {
       0 0 10px #f0f,
       0 0 15px #f0f,
       0 0 30px #f0f;
-    height: calc(100vh - 40px);
+    height: calc(var(--full-height) - 40px);
   }
   @keyframes card-glow {
     from { box-shadow: 0 0 10px #f0f, 0 0 15px #f0f, 0 0 30px #f0f; }

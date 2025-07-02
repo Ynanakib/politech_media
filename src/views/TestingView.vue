@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <main>
     <CharacterSelection 
       v-if="currentView === 'character-selection'"
       @character-selected="onCharacterSelected"
@@ -14,7 +14,7 @@
       @play-again="onPlayAgain"
       @change-character="onChangeCharacter"
     />
-  </div>
+  </main>
 </template>
 
 <script>
@@ -88,6 +88,10 @@ export default {
 </script>
 
 <style>
+main{
+  height: 100%;
+  width: 100%;
+}
 
 /* Global neon text styles */
 .neon-text {

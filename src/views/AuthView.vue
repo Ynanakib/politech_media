@@ -1,5 +1,9 @@
 <template>
   <main>
+    <div class="pdf" v-if="pdf">
+      <div class="close" @click="this.switchPdf()"><img src="@/assets/img/close.svg"></div>
+      <iframe src="https://abiturient360.pstu.ru/media/useragreement.pdf" width="100%" height="100%"></iframe>
+    </div>
     <div class="block">
       <div class="logo">
         <img src="@/assets/img/pnipu_logo.png" />
@@ -7,6 +11,7 @@
       <div class="auth" v-if="auth">
         <p class="text">Для продолжения авторизируйтесь на сайте</p>
         <div id="VkIdSdkOneTap"></div>
+        <p class="user-agreement">Авторизируясь через VK ID, Вы принимаете наше <a href="#" @click="this.switchPdf()"> пользовательское соглашение</a></p> 
       </div>
       <div class="confirmation" v-if="confirm">
         <p class="text">Подтвердите отправку сообщений Вам</p>
@@ -75,6 +80,7 @@ export default {
       confirm: false,
       fill1: false,
       fill2: false,
+      pdf: false
     };
   },
   mounted(){
@@ -92,19 +98,23 @@ export default {
       this.confirm = true;
     }else{
       this.auth = true;
-      this.$nextTick(() => {
-        const container = document.getElementById('VkIdSdkOneTap');
-        if (container) {
-          const oneTap = new VKID.OneTap();
-          oneTap.render({
-            container: container,
-            showAlternativeLogin: false
-          });
-        }
-      });
+      this.$nextTick(() => { this.renderVkButton() });
     }
   },
   methods: {
+    switchPdf(){
+      this.pdf = !this.pdf;
+    },
+    renderVkButton(){
+      const container = document.getElementById('VkIdSdkOneTap');
+      if (container) {
+        const oneTap = new VKID.OneTap();
+        oneTap.render({
+          container: container,
+          showAlternativeLogin: false
+        });
+      }
+    },
     swap() {
       if (this.fill1) {
         this.auth = false;
@@ -162,6 +172,8 @@ export default {
       for (const key of required) {
         if (!payload[key]) {
           alert('Заполните все обязательные поля!');
+          this.fill1 = true;
+          this.fill2 = false;
           return;
         }
       }
@@ -191,7 +203,33 @@ export default {
 main {
   display: grid;
 }
+.user-agreement{
+  text-align: center;
+  width: 100%;
+  padding-top: 20px;
+}
+.pdf{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: var(--full-height);
+  z-index: 99999;
+}
+.pdf .close{
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+.pdf .close img{
+  width: 100%;
+  height: 100%;
+}
+
 .btn{
+  display: block;
+  width: 100%;
+  padding: 8px;
   background-color: rgb(0, 119, 255);
   color: #fff;
   cursor: pointer;
@@ -208,7 +246,7 @@ main {
 }
 .auth p.text {
   margin: 30px 0;
-  font-size: var(--font-large-size);
+  font-size: var(--font-middle-size);
   text-align: center;
   padding: 0 60px;
 }
@@ -242,7 +280,7 @@ select{
 }
 @media (max-width: 768px) {
   .block{
-    padding: 10px 5px;
+    padding: 20px 10px;
     width: 100vw;
     height: 75vh;
     overflow: auto;

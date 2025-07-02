@@ -1,7 +1,7 @@
-export function setCookie(key = "", value = "", days = 7){
+export function setCookie(key = "", value = "", hours = 1){
     let aes = initCrypt();
     key = "pnipu_"+key
-    const expires = new Date(Date.now() + days * 864e5).toUTCString(); // срок действия в днях
+    const expires = new Date(Date.now() + hours * 36e5 ).toUTCString(); // срок действия в днях
     document.cookie = `${encodeURIComponent(key)}=${encodeURIComponent(aes.encryptText(value, process.env.VUE_APP_SECRET_CODE)   )}; expires=${expires}; path=/`;
 }
 

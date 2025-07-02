@@ -126,8 +126,8 @@ export default {
 
 <style scoped>
 .character-selection {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   position: relative;
   background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
 }
@@ -191,7 +191,7 @@ export default {
   padding: 40px 20px;
   max-width: 1400px;
   margin: 0 auto;
-  height: 100vh;
+  height: var(--full-height);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -384,9 +384,6 @@ export default {
 }
 
 @media (max-width: 600px) {
-  #app.is-safari .character-selection{
-    height: -webkit-fill-available;
-  }
   .neon-title{
     font-size: 1.6rem;
   }
@@ -396,7 +393,7 @@ export default {
     gap: 16px;
     padding: 20px;
     min-height: unset;
-    height: 100vh;
+    height: var(--full-height);
     overflow-y: auto;
     height: fit-content;
   }

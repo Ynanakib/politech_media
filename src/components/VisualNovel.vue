@@ -300,7 +300,7 @@ export default {
 <style scoped>
 .visual-novel {
   width: 100vw;
-  height: 100vh;
+  height: var(--full-height);
   overflow: hidden;
   position: relative;
   display: flex;
