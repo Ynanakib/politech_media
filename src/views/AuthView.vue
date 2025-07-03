@@ -1,57 +1,77 @@
 <template>
   <main>
-    <div class="pdf" v-if="pdf">
-      <div class="close" @click="this.switchPdf()"><img src="@/assets/img/close.svg"></div>
+    <div v-if="currentStep === 'intro'" class="intro-full">
+      <div class="intro-content">
+        <h1>Добро пожаловать!</h1>
+        <p>Пройдите короткую регистрацию, чтобы начать.</p>
+        <button class="btn btn-start" @click="currentStep = 'user_agreement'">Старт</button>
+      </div>
+    </div>
+    <div class="pdf" v-if="currentStep === 'user_agreement_pdf'">
+      <div class="close" @click="switchPdf()"><img src="@/assets/img/close.svg"></div>
       <iframe src="https://abiturient360.pstu.ru/media/useragreement.pdf" width="100%" height="100%"></iframe>
     </div>
-    <div class="block">
+    <div v-if="currentStep === 'user_agreement'" class="agreement-full">
+      <div class="agreement-scroll agreement-full-scroll" ref="agreementScroll" @scroll="onAgreementScroll">
+        <div class="agreement-content" v-html="agreementHtml"></div>
+      </div>
+      <div class="agreement-check agreement-full-check">
+        <input type="checkbox" id="agreementCheck" v-model="agreementChecked" :disabled="!agreementScrolled" />
+        <label for="agreementCheck">Я ознакомлен и принимаю пользовательское соглашение</label>
+      </div>
+      <button class="btn btn-agreement" :disabled="!agreementChecked" @click="goToDialogAccess">Продолжить</button>
+    </div>
+    <div class="block" v-if="['auth','dialog_access','fill1','fill2'].includes(currentStep)">
       <div class="logo">
         <img src="@/assets/img/pnipu_logo.png" />
       </div>
-      <div class="auth" v-if="auth">
-        <p class="text">Для продолжения авторизируйтесь на сайте</p>
+      <div class="auth" v-if="currentStep === 'auth'">
+        <p class="text">Войдите через VK ID</p>
         <div id="VkIdSdkOneTap"></div>
-        <p class="user-agreement">Авторизируясь через VK ID, Вы принимаете наше <a href="#" @click="this.switchPdf()"> пользовательское соглашение</a></p> 
+        <button @click="debug">Пропустить</button>
       </div>
-      <div class="confirmation" v-if="confirm">
+      <div class="confirmation" v-if="currentStep === 'dialog_access'">
         <p class="text">Подтвердите отправку сообщений Вам</p>
         <p>После подтверждения вам придут результаты теста и общая информация о поступлении!</p>
         <a class="btn" href="https://vk.com/im?sel=-230312236">Разрешить!</a>
         <button class="btn" @click="showRegistrationForm">Продолжить</button>
       </div>
-      <div class="fill1" v-if="fill1">
-        <label for="firstname">Фамилия</label>
-        <input type="text" id="secondname" v-model="this.registraton.last_name">
-
+      <div class="fill1" v-if="currentStep === 'fill1'">
+        <div v-if="formError" class="form-error">{{ formError }}</div>
+        <label for="lastname">Фамилия</label>
+        <input type="text" id="lastname" v-model="registraton.last_name" required>
         <label for="name">Имя</label>
-        <input type="text" id="name" v-model="this.registraton.first_name">
-
+        <input type="text" id="name" v-model="registraton.first_name" required>
         <label for="secondname">Отчество</label>
-        <input type="text" id="secondname" v-model="this.registraton.middle_name">
-
+        <input type="text" id="secondname" v-model="registraton.middle_name" required>
         <label for="phone">Номер телефона</label>
-        <input type="phone" id="phone" v-model="this.registraton.phone">
-
+        <input type="text" id="phone" v-model="phoneInput" @input="onPhoneInput" maxlength="18" placeholder="+7 (___) ___-__-__" required>
         <label for="email">Электронная почта</label>
-        <input type="email" id="email" v-model="this.registraton.email">
-
-        <button @click="this.swap">Продолжить →</button>
+        <input type="email" id="email" v-model="registraton.email" @blur="validateEmail" :class="{'invalid': emailError}">
+        <span v-if="emailError" class="error">Некорректный email</span>
+        <button @click="validateFill1">Продолжить →</button>
       </div>
-      <div class="fill2" v-if="fill2">
+      <div class="fill2" v-if="currentStep === 'fill2'">
+        <div v-if="formError" class="form-error">{{ formError }}</div>
         <label for="city">Город</label>
-        <input type="text" id="city" v-model="this.registraton.city">
-
+        <input type="text" id="city" v-model="cityInput" @input="onCityInput" @focus="showCityDropdown = true" @blur="hideDropdown('city')" autocomplete="off" required>
+        <ul v-if="showCityDropdown && filteredCities.length" class="dropdown">
+          <li v-for="city in filteredCities" :key="city" @mousedown.prevent="selectCity(city)">{{ city }}</li>
+        </ul>
         <label for="school">Школа</label>
-        <input type="text" id="school" v-model="this.registraton.school">
-        <label for="grade">Класс обучения</label>        
-        <select name="grade" id="grade" v-model="this.registraton.grade">
+        <input type="text" id="school" v-model="schoolInput" @input="onSchoolInput" @focus="showSchoolDropdown = true" @blur="hideDropdown('school')" autocomplete="off" required>
+        <ul v-if="showSchoolDropdown && filteredSchools.length" class="dropdown">
+          <li v-for="school in filteredSchools" :key="school" @mousedown.prevent="selectSchool(school)">{{ school }}</li>
+        </ul>
+        <label for="grade">Класс обучения</label>
+        <select name="grade" id="grade" v-model="registraton.grade">
           <option value="7">7</option>
           <option value="8">8</option>
           <option value="9">9</option>
           <option value="10">10</option>
           <option value="11">11</option>
         </select>
-        <button @click="this.goToTesting">Продолжить →</button>
+        <button @click="goToTesting">Продолжить →</button>
       </div>
     </div>
   </main>
@@ -66,6 +86,7 @@ export default {
   name: "AuthView",
   data() {
     return {
+      currentStep: 'dialog_access',
       registraton: {
         last_name : "",
         first_name : "",
@@ -76,34 +97,66 @@ export default {
         school : "",
         grade : "11"
       },
-      auth: false,
-      confirm: false,
-      fill1: false,
-      fill2: false,
-      pdf: false
+      phoneInput: '',
+      emailError: false,
+      cityInput: '',
+      schoolInput: '',
+      showCityDropdown: false,
+      showSchoolDropdown: false,
+      cities: ["Пермь", "Москва", "Екатеринбург", "Казань", "Сочи"],
+      schools: ["Школа №1", "Гимназия №2", "Лицей №3", "Школа №4", "Школа №5"],
+      agreementChecked: true,
+      agreementScrolled: true,
+      agreementHtml: '',
+      formError: '',
     };
+  },
+  computed: {
+    filteredCities() {
+      const q = this.cityInput.toLowerCase();
+      return this.cities.filter(city => city.toLowerCase().includes(q));
+    },
+    filteredSchools() {
+      const q = this.schoolInput.toLowerCase();
+      return this.schools.filter(school => school.toLowerCase().includes(q));
+    }
   },
   mounted(){
     VKID.Config.init({
       app: process.env.VUE_APP_VKAPP_ID,
       redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
-      scope: 'email messages phone groups vkid.personal_info',
+      scope: 'email messages phone groups',
       mode: VKID.ConfigAuthMode.Redirect
     });
 
+    if (Script.getCookie("reg") !== null) {
+      this.currentStep = 'dialog_access';
+    }
     if(Script.getCookie('user_data')){
       this.registraton = JSON.parse(Script.getCookie('user_data'));
+      this.phoneInput = this.formatPhone(this.registraton.phone);
+      this.cityInput = this.registraton.city;
+      this.schoolInput = this.registraton.school;
     }
     if(Script.getCookie("reg") !== null){
-      this.confirm = true;
+      this.currentStep = 'dialog_access';
     }else{
-      this.auth = true;
+      this.currentStep = 'user_agreement';
       this.$nextTick(() => { this.renderVkButton() });
     }
+
+    // Load agreement HTML
+    fetch('/media/useragreement.htm')
+      .then(res => res.text())
+      .then(html => { this.agreementHtml = '<p style="margin-bottom: 0;">(Прокрутите до конца, чтобы активировать чекбокс)</p><div style="height: 200px;"></div>' + html; });
   },
   methods: {
+    debug(){
+      Script.setCookie("reg", 1)
+      this.currentStep = 'dialog_access'
+    },
     switchPdf(){
-      this.pdf = !this.pdf;
+      this.currentStep = this.currentStep === 'user_agreement_pdf' ? 'user_agreement' : 'user_agreement_pdf';
     },
     renderVkButton(){
       const container = document.getElementById('VkIdSdkOneTap');
@@ -115,69 +168,93 @@ export default {
         });
       }
     },
-    swap() {
-      if (this.fill1) {
-        this.auth = false;
-        this.confirm = false;
-        this.fill1 = false;
-        this.fill2 = true;
-      } else {
-        this.goToTesting();
-      }
+    goToAuth() {
+      this.currentStep = 'auth';
+      this.$nextTick(() => { this.renderVkButton() });
     },
     showRegistrationForm() {
-      this.confirm = false;
-      this.fill1 = true;
+      this.currentStep = 'fill1';
     },
-    created(){
-      if(Script.getCookie("vk_tokens")){
-        let user = JSON.parse(Script.getCookie("vk_tokens"));
-        this.auth = false;
-        this.confirm = false;
-        this.fill1 = false;
-        this.fill2 = false;
-        fetch("https://api.vk.com/method/group.isMember?group_id=230312236&user_id="+user.vk_id+"&access_token="+user.access_token)
-        .then(data => data.json())
-        .then(data => {
-          if(data.response == 1 && this.confirm){
-            this.confirm = false;
-            this.fill1 = true;
-          }else{
-            this.confirm = true;
-            this.fill1 = false;
-          }
-        })
-        .catch(()=>{
-            this.confirm = false;
-            this.fill1 = true;
-        })
-      }else{
-        this.auth = true;
+    validateFill1() {
+      this.formError = '';
+      if (!this.registraton.last_name || !this.registraton.first_name || !this.phoneInput || !this.registraton.middle_name) {
+        this.formError = 'Заполните все обязательные поля!';
+        return;
       }
+      if (this.emailError) {
+        this.formError = 'Проверьте корректность email!';
+        return;
+      }
+      this.registraton.phone = this.unmaskPhone(this.phoneInput);
+      this.currentStep = 'fill2';
+    },
+    validateEmail() {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      this.emailError = !re.test(this.registraton.email);
+    },
+    onPhoneInput(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.startsWith('8')) value = '7' + value.slice(1);
+      if (!value.startsWith('7')) value = '7' + value;
+      let formatted = '+7 (';
+      if (value.length > 1) formatted += value.slice(1, 4);
+      if (value.length >= 4) formatted += ') ' + value.slice(4, 7);
+      if (value.length >= 7) formatted += '-' + value.slice(7, 9);
+      if (value.length >= 9) formatted += '-' + value.slice(9, 11);
+      this.phoneInput = formatted;
+    },
+    formatPhone(raw) {
+      let value = raw.replace(/\D/g, '');
+      if (!value) return '';
+      if (value.startsWith('8')) value = '7' + value.slice(1);
+      if (!value.startsWith('7')) value = '7' + value;
+      let formatted = '+7 (';
+      if (value.length > 1) formatted += value.slice(1, 4);
+      if (value.length >= 4) formatted += ') ' + value.slice(4, 7);
+      if (value.length >= 7) formatted += '-' + value.slice(7, 9);
+      if (value.length >= 9) formatted += '-' + value.slice(9, 11);
+      return formatted;
+    },
+    unmaskPhone(masked) {
+      return masked.replace(/\D/g, '');
+    },
+    onCityInput() {
+      this.showCityDropdown = true;
+    },
+    selectCity(city) {
+      this.cityInput = city;
+      this.registraton.city = city;
+      this.showCityDropdown = false;
+    },
+    onSchoolInput() {
+      this.showSchoolDropdown = true;
+    },
+    selectSchool(school) {
+      this.schoolInput = school;
+      this.registraton.school = school;
+      this.showSchoolDropdown = false;
+    },
+    hideDropdown(type) {
+      setTimeout(() => {
+        if (type === 'city') this.showCityDropdown = false;
+        if (type === 'school') this.showSchoolDropdown = false;
+      }, 200);
     },
     goToTesting() {
-      // Проверка vk_id
+      this.formError = '';
+      if (!this.cityInput || !this.schoolInput || !this.registraton.grade) {
+        this.formError = 'Заполните все обязательные поля!';
+        return;
+      }
+      this.registraton.city = this.cityInput;
+      this.registraton.school = this.schoolInput;
       const vkTokens = Script.getCookie("vk_tokens");
       if (!vkTokens) {
-        alert("Ошибка: не найден VK ID");
+        this.formError = 'Ошибка: не найден VK ID';
         return;
       }
       const vk_id = Number(JSON.parse(vkTokens).vk_id);
-
-      // Копируем и приводим grade к числу
       const payload = { ...this.registraton, grade: Number(this.registraton.grade) };
-
-      // Проверка обязательных полей
-      const required = ['last_name', 'first_name', 'phone', 'city', 'school', 'grade'];
-      for (const key of required) {
-        if (!payload[key]) {
-          alert('Заполните все обязательные поля!');
-          this.fill1 = true;
-          this.fill2 = false;
-          return;
-        }
-      }
-
       Script.setCookie("user_data", JSON.stringify(payload));
       fetch(process.env.VUE_APP_BASE_URL + "/api/v1/register", {
         method: 'POST',
@@ -195,95 +272,267 @@ export default {
       .then(() => this.$router.push("testing"))
       .catch(console.warn)
     },
+    onAgreementScroll() {
+      const el = this.$refs.agreementScroll;
+      if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
+        this.agreementScrolled = true;
+      }
+    },
+    goToDialogAccess() {
+      this.currentStep = 'dialog_access';
+    },
   },
+  watch: {
+    async currentStep(val) {
+      if (val === 'auth') {
+        this.$nextTick(() => { this.renderVkButton(); });
+      }
+      if (val === 'dialog_access' && Script.getCookie('reg') === null) {
+        this.currentStep = 'auth';
+      }
+    }
+  }
 };
 </script>
 
 <style scoped>
 main {
-  display: grid;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #23234b 100%);
+  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.user-agreement{
-  text-align: center;
-  width: 100%;
-  padding-top: 20px;
-}
-.pdf{
-  position: absolute;
-  top: 0;
-  left: 0;
+.intro-full {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw;
-  height: var(--full-height);
-  z-index: 99999;
+  height: 100vh;
+  background: linear-gradient(120deg, #23234b 0%, #1a1a2e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
 }
-.pdf .close{
-  position: absolute;
-  top: 20px;
-  right: 20px;
+.intro-content {
+  background: rgba(30, 30, 60, 0.98);
+  border-radius: 32px;
+  box-shadow: 0 0 32px 4px #667eea, 0 0 0 4px #23234b;
+  padding: 48px 36px 36px 36px;
+  text-align: center;
+  max-width: 400px;
+  border: 2px solid #764ba2;
 }
-.pdf .close img{
-  width: 100%;
-  height: 100%;
+.intro-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 18px;
+  color: #f093fb;
+  text-shadow: 0 0 10px #764ba2, 0 0 20px #667eea;
+}
+.intro-content p {
+  font-size: 1.2rem;
+  color: #fff;
+  margin-bottom: 32px;
+}
+.btn-start {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 1.2rem;
+  padding: 14px 36px;
+  border: none;
+  border-radius: 18px;
+  box-shadow: 0 0 16px #667eea, 0 0 32px #764ba2;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  text-shadow: 0 0 8px #fff;
+}
+.btn-start:hover {
+  background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 0 32px #f093fb, 0 0 48px #f5576c;
 }
 
-.btn{
-  display: block;
-  width: 100%;
-  padding: 8px;
-  background-color: rgb(0, 119, 255);
-  color: #fff;
-  cursor: pointer;
-  border-radius: 8px;
+.agreement-full {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
-.block {
+.agreement-full-scroll {
+  width: 90vw;
+  max-width: 700px;
+  height: 60vh;
+  max-height: 500px;
   border-radius: 24px;
-  background-color: #d9d9d9;
+  box-shadow: 0 0 32px 4px #667eea, 0 0 0 4px #23234b;
+  padding: 32px 32px 24px 32px;
+  margin-bottom: 24px;
+  overflow-y: auto;
+  border: 2px solid #764ba2;
+  color: #fff;
+  background-color: white;
+}
+.agreement-full-check {
+  margin-bottom: 18px;
+  font-size: 1.1rem;
+  color: #f093fb;
+  display: flex;
+  align-items: center;
+}
+.btn-agreement {
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 12px 32px;
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 0 16px #667eea, 0 0 32px #764ba2;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  text-shadow: 0 0 8px #fff;
+}
+.btn-agreement:disabled {
+  background: #3a3a5e;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.block {
+  border-radius: 20px;
+  background: #fff;
   padding: 40px 60px;
   max-width: 470px;
   width: 90%;
   margin: auto;
   text-align: left;
+  box-shadow: 0 0 24px 2px #667eea22, 0 0 0 2px #764ba2;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  border: 2px solid #667eea;
+}
+.logo {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+.logo img {
+  max-width: 170px;
 }
 .auth p.text {
   margin: 30px 0;
-  font-size: var(--font-middle-size);
+  font-size: 1.2rem;
   text-align: center;
   padding: 0 60px;
+  color: #23234b;
+  font-weight: 600;
 }
-.block button {
+.block button, .btn {
   display: block;
   margin-top: 18px;
-  background-color: #3d3d3d;
-  font-size: var(--font-middle-size);
-  padding: 10px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  font-size: 1.1rem;
+  padding: 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 14px;
   color: white;
   width: 100%;
+  box-shadow: 0 0 12px #667eea99, 0 0 24px #764ba288;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  text-shadow: 0 0 8px #fff8;
+  font-weight: 600;
+}
+.block button:hover, .btn:hover {
+  background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
+  box-shadow: 0 0 24px #f093fb99, 0 0 32px #f5576c88;
 }
 label{
     display: block;
     margin-bottom: 5px;
-    font-size: var(--font-big-size);
+    font-size: 1.1rem;
     margin-top: 18px;
+    color: #23234b;
+    font-weight: 600;
 }
 input, select{
     display: block;
     width: calc(100% - 20px);
-    font-size: var(--font-small-size);
-    border: 2px solid #3D3D3D;
-    border-radius: 8px;
+    font-size: 1rem;
+    border: 2px solid #667eea;
+    border-radius: 10px;
     padding: 8px;
+    margin-bottom: 8px;
+    background: #fff;
+    color: #23234b;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: 0 0 6px #667eea22;
+    font-weight: 500;
+}
+input:focus, select:focus {
+  border: 2px solid #f093fb;
+  outline: none;
+  box-shadow: 0 0 12px #f093fb99;
 }
 select{
   width: 100%;
+}
+.dropdown {
+  position: absolute;
+  background: #fff;
+  border: 2px solid #764ba2;
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 10;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  box-shadow: 0 0 12px #667eea99;
+}
+.dropdown li {
+  padding: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: #23234b;
+  font-weight: 500;
+}
+.dropdown li:hover {
+  background: #f093fb22;
+}
+.error {
+  color: #f5576c;
+  font-size: 12px;
+  text-shadow: 0 0 6px #f093fb;
+}
+.invalid {
+  border-color: #f5576c;
+  box-shadow: 0 0 8px #f5576c;
+}
+.form-error {
+  color: #f5576c;
+  background: #fff0f6;
+  border: 1px solid #f093fb;
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  font-size: 1rem;
+  text-align: center;
+  text-shadow: 0 0 6px #f093fb;
 }
 @media (max-width: 768px) {
   .block{
     padding: 20px 10px;
     width: 100vw;
-    height: 75vh;
+    height: auto;
     overflow: auto;
+  }
+  .agreement-full-scroll {
+    width: 98vw;
+    padding: 12px 4vw 12px 4vw;
   }
 }
 </style>

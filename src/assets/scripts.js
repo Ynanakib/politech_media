@@ -1,19 +1,27 @@
-export function setCookie(key = "", value = "", hours = 1){
-    let aes = initCrypt();
+import CryptoJS from "crypto-js";
+
+export function setCookie(key = "", value = "", hours = 1) {
     key = "pnipu_"+key
     const expires = new Date(Date.now() + hours * 36e5 ).toUTCString(); // срок действия в днях
-    document.cookie = `${encodeURIComponent(key)}=${encodeURIComponent(aes.encryptText(value, process.env.VUE_APP_SECRET_CODE)   )}; expires=${expires}; path=/`;
+    const secret = process.env.VUE_APP_SECRET_CODE || "default_secret";
+    const encrypted = CryptoJS.AES.encrypt(String(value), secret).toString();
+    document.cookie = `${encodeURIComponent(key)}=${encodeURIComponent(encrypted)}; expires=${expires}; path=/`;
 }
 
 export function getCookie(key) {
-    let aes = initCrypt();
     key = "pnipu_"+key
+    const secret = process.env.VUE_APP_SECRET_CODE || "default_secret";
     const cookies = document.cookie.split("; ");
     for (const cookie of cookies) {
         const [k, v] = cookie.split("=");
         if (decodeURIComponent(k) === key) {
-            let returner = aes.decryptText(decodeURIComponent(v), process.env.VUE_APP_SECRET_CODE);
-            return returner
+            try {
+                const bytes = CryptoJS.AES.decrypt(decodeURIComponent(v), secret);
+                const decrypted = bytes.toString(CryptoJS.enc.Utf8);
+                return decrypted;
+            } catch (e) {
+                return null;
+            }
         }
     }
     return null;
@@ -28,6 +36,7 @@ export function clearCookie() {
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     }
 }
+
 export function jsonToFormData(jsonObject) {
   const formData = new FormData();
   for (const key in jsonObject) {
@@ -46,12 +55,4 @@ export function jsonToFormData(jsonObject) {
 export function removeCookie(key) {
     key = "pnipu_" + key;
     document.cookie = encodeURIComponent(key) + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-}
-
-function initCrypt() {
-    require("pidcrypt/seedrandom")
-    require("pidcrypt/aes_cbc")
-    let pidCrypt = require("pidcrypt")
-    let aes = new pidCrypt.AES.CBC()
-    return aes;
 }
