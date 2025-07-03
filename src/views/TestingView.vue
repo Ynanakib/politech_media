@@ -37,6 +37,13 @@ export default {
     }
   },
   mounted() {
+    if(
+      Script.getCookie("token") == undefined || 
+      Script.getCookie("token") == null || 
+      Script.getCookie("vk_tokens") == null || 
+      Script.getCookie("vk_tokens") == undefined
+    )
+      this.$router.push("/");
     window.scrollTo(0, 1);
     this.checkInitialView()
   },

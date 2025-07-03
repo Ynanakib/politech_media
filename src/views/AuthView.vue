@@ -24,7 +24,7 @@
       <div class="auth" v-if="currentStep === 'auth'">
         <p class="text">Войдите через VK ID</p>
         <div id="VkIdSdkOneTap"></div>
-        <button @click="debug">DEBUG</button>
+        <!-- <button @click="debug">DEBUG</button> -->
       </div>
       <div class="confirmation" v-if="currentStep === 'dialog_access'">
         <p class="text">Подтвердите отправку сообщений Вам</p>
@@ -158,10 +158,10 @@ export default {
       .then(html => { this.agreementHtml = '<p style="margin-bottom: 0;">(Прокрутите до конца, чтобы активировать чекбокс)</p><div style="height: 200px;"></div>' + html; });
   },
   methods: {
-    debug(){
-      Script.setCookie("reg", 1)
-      this.currentStep = 'dialog_access'
-    },
+    // debug(){
+    //   Script.setCookie("reg", 1)
+    //   this.currentStep = 'dialog_access'
+    // },
     switchPdf(){
       this.currentStep = this.currentStep === 'user_agreement_pdf' ? 'user_agreement' : 'user_agreement_pdf';
     },

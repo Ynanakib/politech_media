@@ -485,4 +485,19 @@ export default {
     width: 100%;
   }
 }
+@media (max-width: 480px) {
+  .top-section{
+    background-size: cover;
+  }
+  .character {
+    bottom: -20px;
+    height: 60vh;
+    width: 60%;
+  }
+  .question-section {
+    display: block;
+    padding: 6px;
+    width: 100%;
+  }
+}
 </style> 
