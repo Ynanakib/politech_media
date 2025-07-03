@@ -57,7 +57,8 @@ export default {
       totalAnswered: 0,
       totalQuestions: 0,
       tiebreakerGroups: [],
-      tiebreakerQuestion: null
+      tiebreakerQuestion: null,
+      shuffledAnswers: []
     }
   },
   computed: {
@@ -68,15 +69,7 @@ export default {
       return this.currentQuestions[this.currentQuestionIndex] || null;
     },
     currentAnswers() {
-      if (!this.currentQuestionData) return [];
-      if (this.gameState === 'tiebreaker') {
-        const tiedGroupKeys = this.tiebreakerGroups.map(g => g.key);
-        // Filter variants from the appended_question based on the tied groups.
-        return Object.entries(this.currentQuestionData.variants)
-          .filter(([key]) => tiedGroupKeys.includes(key))
-          .map(([key, text]) => ({ key, text }));
-      }
-      return Object.entries(this.currentQuestionData.variants).map(([key, text]) => ({ key, text }));
+      return this.shuffledAnswers;
     },
     currentBackground() {
       // First 6 questions: always main.png
@@ -95,6 +88,27 @@ export default {
         'htf/gnf': './media/img/backgrounds/gnf_htf.png'
       };
       return backgroundMap[this.dominantBranchGroup] || './media/img/backgrounds/sf_idst.png';
+    }
+  },
+  watch: {
+    currentQuestionData: {
+      immediate: true,
+      handler(newVal) {
+        if (!newVal) {
+          this.shuffledAnswers = [];
+          return;
+        }
+        let answersArr;
+        if (this.gameState === 'tiebreaker') {
+          const tiedGroupKeys = this.tiebreakerGroups.map(g => g.key);
+          answersArr = Object.entries(newVal.variants)
+            .filter(([key]) => tiedGroupKeys.includes(key))
+            .map(([key, text]) => ({ key, text }));
+        } else {
+          answersArr = Object.entries(newVal.variants).map(([key, text]) => ({ key, text }));
+        }
+        this.shuffledAnswers = this.shuffleArray(answersArr);
+      }
     }
   },
   async mounted() {
@@ -290,6 +304,15 @@ export default {
         })
       })
       this.$emit('game-completed', this.totalAnswered);
+    },
+    shuffleArray(array) {
+      // return array;
+      let arr = array.slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
     }
   }
 }
