@@ -1,9 +1,8 @@
 <template>
   <div class="visual-novel">
     <!-- Top: Background and Character -->
-    <div class="top-section">
-      <div class="background" :style="{ backgroundImage: `url(${currentBackground})` }">
-        <div 
+    <div class="top-section" :style="{ backgroundImage: `url(${currentBackground})` }">
+      <div 
           class="character" 
           :class="{ 'character-enter': characterVisible }"
           :style="{ 
@@ -11,14 +10,13 @@
             right: characterPosition + '%'
           }"
         ></div>
-      </div>
     </div>
     <!-- Bottom: Question and Answers -->
     <div class="bottom-section">
-      <div class="dialogue-box neon-box" v-if="currentQuestionData && currentQuestionData.dialogue">
+      <div class="dialogue-box" v-if="currentQuestionData && currentQuestionData.dialogue">
         <p class="dialogue-text">{{ currentQuestionData.dialogue }}</p>
       </div>
-      <div class="question-section neon-box" v-if="currentQuestionData && currentQuestionData.question">
+      <div class="question-section" v-if="currentQuestionData && currentQuestionData.question">
         <h3 class="question">{{ currentQuestionData.question }}</h3>
         <div class="answers">
           <button 
@@ -83,20 +81,20 @@ export default {
     currentBackground() {
       // First 6 questions: always main.png
       if (this.gameState === 'root_questions' && this.currentQuestionIndex < 6) {
-        return require('@/assets/img/backgrounds/main.png');
+        return './media/img/backgrounds/main.png';
       }
       // Tiebreaker: keep main.png
       if (this.gameState === 'tiebreaker') {
-        return require('@/assets/img/backgrounds/main.png');
+        return './media/img/backgrounds/main.png';
       }
       // After that, use group backgrounds
       const backgroundMap = {
-        'akf/mtf': require('@/assets/img/backgrounds/mtf_akf.png'),
-        'sf/idst': require('@/assets/img/backgrounds/sf_idst.png'),
-        'fpmm/etf/gumf': require('@/assets/img/backgrounds/gumf_etf_fpmm.png'),
-        'htf/gnf': require('@/assets/img/backgrounds/gnf_htf.png')
+        'akf/mtf': './media/img/backgrounds/mtf_akf.png',
+        'sf/idst': './media/img/backgrounds/sf_idst.png',
+        'fpmm/etf/gumf': './media/img/backgrounds/gumf_etf_fpmm.png',
+        'htf/gnf': './media/img/backgrounds/gnf_htf.png'
       };
-      return backgroundMap[this.dominantBranchGroup] || require('@/assets/img/backgrounds/sf_idst.png');
+      return backgroundMap[this.dominantBranchGroup] || './media/img/backgrounds/sf_idst.png';
     }
   },
   async mounted() {
@@ -107,9 +105,9 @@ export default {
   methods: {
     async loadData() {
       try {
-        const questionsResponse = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/media/questions');
-        this.allQuestions = await questionsResponse.json();
-        // this.allQuestions = JSON.parse(`{ "root": [ { "question": "Какие качества делают тебя сильнее?", "variants": { "akf/mtf" : "находчивость, умение быстро обучаться", "sf/idst" : "ловкость и аккуратность", "fpmm/etf/gumf" : "острый ум и креативность", "htf/gnf" : "смелость и энергичность" } }, { "question": "Какой образ тебе подходит?", "variants": { "akf/mtf" : "генератор идей, изобретатель", "sf/idst" : "на все руки мастер", "fpmm/etf/gumf" : "гений критического мышления", "htf/gnf" : "любитель экстрима" } }, { "question": "Какой мастер-класс привлёк бы твоё внимание на выставке «Образование и карьера»? ", "variants": { "akf/mtf" : "управление беспилотным летательным аппаратом", "sf/idst" : "эксплуатация строительных 3D-принтеров", "fpmm/etf/gumf" : "создание и продвижение видеоигр", "htf/gnf" : "выделение ДНК из пищевых продуктов" } }, { "question": "Человеческой цивилизации угрожает скорое исчезновение. Чтобы её спасти, тебе понадобится: ", "variants": { "akf/mtf" : "суперкомпьютер", "sf/idst" : "супер-автомобиль", "fpmm/etf/gumf" : "супер-скрипт", "htf/gnf" : "супер-энергия" } }, { "question": "Ты хорошо учился в школе. Осталось несколько шагов, чтобы сбылась твоя мечта:", "variants": { "akf/mtf" : "запускать космические корабли", "sf/idst" : "строить современные города", "fpmm/etf/gumf" : "обучать людей и роботов", "htf/gnf" : "заниматься экологией и биотехнологиями" } }, { "question": "Какое рабочее место наиболее приглянулось тебе?", "variants": { "akf/mtf" : "испытательный стенд", "sf/idst" : "конструкторское бюро", "fpmm/etf/gumf" : "место у персонального компьютера, работа с нейросетью", "htf/gnf" : "лаборатория" } }, { "question": "Ты согласился участвовать в эксперименте. И теперь тебе предстоит: ", "variants": { "akf/mtf" : "испытать работу ракетного двигателя на альтернативном топливе", "sf/idst" : "проверить на прочность сооружение из инновационных материалов", "fpmm/etf/gumf" : "протестировать искусственный интеллект на креативность", "htf/gnf" : "создать трёхмерную модель горной породы в виртуальной лаборатории" } } ], "appended_question": "", "groups":[ [ { "question": " Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?", "variants": { "akf" : "буду делать эскизы летательных аппаратов будущего", "mtf" : "начну собирать механическую руку-манипулятор для робота" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "akf" : "создание прототипов деталей ракетных двигателей", "mtf" : "лазерная печать металлических изделий на основе 3D-модели" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "akf" : "предприятия авиастроения и космической отрасли", "mtf" : "предприятия металлургической отрасли и машиностроения" } } ], [ { "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?", "variants": { "sf" : "смастерю макет своего дома мечты", "idst" : "соберу модель легендарной Chevrolet Camaro" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "sf" : "цифровое моделирование зданий под заказ", "idst" : "разработка автомобиля на альтернативной энергии" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "sf" : "предприятия и компании в индустрии строительства", "idst" : "предприятия транспортной отрасли" } } ], [ { "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?", "variants": { "htf" : "проведу химические опыты из подручных средств", "gnf" : "составлю каталог своей коллекции минералов" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "htf" : "лаборант в лаборатории инновационной фармацевтики", "gnf" : "отправлюсь в исследовательскую экспедицию с геологами" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "htf" : "компании, выпускающие химическую продукцию", "gnf" : "компании нефтегазовой отрасли" } } ], [ { "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома? ", "variants": { "etf" : "переустановлю ПО на своём компьютере", "gumf" : "изучу тренды в соцсетях для продвижения своего блога", "fpmm" : "помогу друзьям решить сложные задачки по математике" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "etf" : "разработка мобильного приложения", "gumf" : "работа над проектом по развитию городской среды", "fpmm" : "обучение нейросетей" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "etf" : "IT-компании, предприятия по производству роботов", "gumf" : "консалтинговые фирмы, государственные структуры и бизнесы", "fpmm" : "компании, выпускающие электронику, технологии с оптоволокном и пр." } } ] ] }`);
+        // const questionsResponse = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/media/questions');
+        // this.allQuestions = await questionsResponse.json();
+        this.allQuestions = JSON.parse(`{ "root": [ { "question": "Какие качества делают тебя сильнее?", "variants": { "akf/mtf" : "находчивость, умение быстро обучаться", "sf/idst" : "ловкость и аккуратность", "fpmm/etf/gumf" : "острый ум и креативность", "htf/gnf" : "смелость и энергичность" } }, { "question": "Какой образ тебе подходит?", "variants": { "akf/mtf" : "генератор идей, изобретатель", "sf/idst" : "на все руки мастер", "fpmm/etf/gumf" : "гений критического мышления", "htf/gnf" : "любитель экстрима" } }, { "question": "Какой мастер-класс привлёк бы твоё внимание на выставке «Образование и карьера»? ", "variants": { "akf/mtf" : "управление беспилотным летательным аппаратом", "sf/idst" : "эксплуатация строительных 3D-принтеров", "fpmm/etf/gumf" : "создание и продвижение видеоигр", "htf/gnf" : "выделение ДНК из пищевых продуктов" } }, { "question": "Человеческой цивилизации угрожает скорое исчезновение. Чтобы её спасти, тебе понадобится: ", "variants": { "akf/mtf" : "суперкомпьютер", "sf/idst" : "супер-автомобиль", "fpmm/etf/gumf" : "супер-скрипт", "htf/gnf" : "супер-энергия" } }, { "question": "Ты хорошо учился в школе. Осталось несколько шагов, чтобы сбылась твоя мечта:", "variants": { "akf/mtf" : "запускать космические корабли", "sf/idst" : "строить современные города", "fpmm/etf/gumf" : "обучать людей и роботов", "htf/gnf" : "заниматься экологией и биотехнологиями" } }, { "question": "Какое рабочее место наиболее приглянулось тебе?", "variants": { "akf/mtf" : "испытательный стенд", "sf/idst" : "конструкторское бюро", "fpmm/etf/gumf" : "место у персонального компьютера, работа с нейросетью", "htf/gnf" : "лаборатория" } } ], "appended_question": { "question": "Ты согласился участвовать в эксперименте. И теперь тебе предстоит: ", "variants": { "akf/mtf" : "испытать работу ракетного двигателя на альтернативном топливе", "sf/idst" : "проверить на прочность сооружение из инновационных материалов", "fpmm/etf/gumf" : "протестировать искусственный интеллект на креативность", "htf/gnf" : "создать трёхмерную модель горной породы в виртуальной лаборатории" } }, "groups":[ [ { "question": " Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?", "variants": { "akf" : "буду делать эскизы летательных аппаратов будущего", "mtf" : "начну собирать механическую руку-манипулятор для робота" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "akf" : "создание прототипов деталей ракетных двигателей", "mtf" : "лазерная печать металлических изделий на основе 3D-модели" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "akf" : "предприятия авиастроения и космической отрасли", "mtf" : "предприятия металлургической отрасли и машиностроения" } } ], [ { "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?", "variants": { "sf" : "смастерю макет своего дома мечты", "idst" : "соберу модель легендарной Chevrolet Camaro" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "sf" : "цифровое моделирование зданий под заказ", "idst" : "разработка автомобиля на альтернативной энергии" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "sf" : "предприятия и компании в индустрии строительства", "idst" : "предприятия транспортной отрасли" } } ], [ { "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?", "variants": { "htf" : "проведу химические опыты из подручных средств", "gnf" : "составлю каталог своей коллекции минералов" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "htf" : "лаборант в лаборатории инновационной фармацевтики", "gnf" : "отправлюсь в исследовательскую экспедицию с геологами" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "htf" : "компании, выпускающие химическую продукцию", "gnf" : "компании нефтегазовой отрасли" } } ], [ { "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома? ", "variants": { "etf" : "переустановлю ПО на своём компьютере", "gumf" : "изучу тренды в соцсетях для продвижения своего блога", "fpmm" : "помогу друзьям решить сложные задачки по математике" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "etf" : "разработка мобильного приложения", "gumf" : "работа над проектом по развитию городской среды", "fpmm" : "обучение нейросетей" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "etf" : "IT-компании, предприятия по производству роботов", "gumf" : "консалтинговые фирмы, государственные структуры и бизнесы", "fpmm" : "компании, выпускающие электронику, технологии с оптоволокном и пр." } } ] ] }`);
         this.currentQuestions = this.allQuestions.root;
         this.totalQuestions = this.allQuestions.root.length;
         this.loading = false;
@@ -303,30 +301,19 @@ export default {
   height: var(--full-height);
   overflow: hidden;
   position: relative;
-  display: flex;
-  flex-direction: column;
   background-color: #00023b;
 }
 .top-section {
-  flex: 1 1 80%;
-  height: 100%;
-  position: relative;
   width: 100vw;
+  height: calc(var(--full-height) - 300px);
+  overflow: hidden;
+  background-size: contain;
+  background-position: bottom;
+  background-repeat: no-repeat;
   overflow: hidden;
 }
-.background {
-  width: 100%;
-  height: 100%;
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
 .character {
-  position: absolute;
+  position: relative;
   bottom: -50px;
   height: 100%;
   width: 50vw;
@@ -335,7 +322,6 @@ export default {
   background-position: bottom;
   opacity: 0;
   transition: opacity 0.5s ease-in-out, right 1s ease-out;
-  z-index: 1;
 }
 .character-enter {
   opacity: 1;
@@ -348,39 +334,18 @@ export default {
   100% { transform: translateY(0); }
 }
 .bottom-section {
-  flex: 0 0 20%;
   width: 100vw;
-  background: rgba(0,0,0,0.95);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 0 0 16px 0;
-}
-.dialogue-box {
-  color: white;
-  padding: 20px;
-  margin: 20px 0 0 0;
-  border-radius: 15px;
-  max-width: 80vw;
-  align-self: center;
-  z-index: 10;
-  position: relative;
-  background: rgba(0,0,0,0.7);
-}
-.dialogue-text {
-  font-size: 18px;
-  line-height: 1.5;
-  margin: 0;
-  font-family: 'Roboto', serif;
-  text-shadow: 0 0 10px #0ff;
+  min-height: 300px;
+  background: black;
+  text-align: center;
 }
 .question-section {
+  display: inline-block;
+  padding: 16px;
   color: white;
-  padding: 10px;
   margin: 0;
   border-radius: 20px;
-  max-width: 90vw;
+  width: 50vw;
   align-self: center;
   z-index: 10;
   position: relative;
@@ -428,14 +393,7 @@ export default {
     0 0 50px #f093fb;
 }
 @media (max-width: 900px) {
-  .character {
-    bottom: -20px;
-    height: 100%;
-    width: 60%;
-  }
-}
-@media (max-width: 480px) {
-  .background{
+  .top-section{
     background-size: cover;
   }
   .character {
@@ -443,17 +401,42 @@ export default {
     height: 100%;
     width: 60%;
   }
+  .question-section {
+    display: block;
+    padding: 6px;
+    width: 100%;
+  }
 }
-@media (max-width: 600px) {
+@media (max-width: 480px) {
+  .top-section{
+    background-size: cover;
+  }
   .character {
     bottom: -20px;
     height: 100%;
     width: 60%;
   }
+  .question-section {
+    display: block;
+    padding: 6px;
+    width: 100%;
+  }
+}
+@media (max-width: 600px) {
+  .top-section{
+    background-size: cover;
+  }
+  .character {
+    bottom: -20px;
+    left: -100px;
+    height: 100%;
+    width: 100vh;
+  }
   .answers {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: 100%;
   }
   .question {
     font-size: 16px;
@@ -464,12 +447,15 @@ export default {
   .answer-btn, .neon-button {
     font-size: 13px;
     padding: 10px 16px;
+    width: 100%;
   }
   .dialogue-box {
     padding: 10px;
   }
   .question-section {
+    display: block;
     padding: 6px;
+    width: 100%;
   }
 }
 </style> 
