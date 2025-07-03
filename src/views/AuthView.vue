@@ -7,17 +7,13 @@
         <button class="btn btn-start" @click="currentStep = 'user_agreement'">Старт</button>
       </div>
     </div>
-    <div class="pdf" v-if="currentStep === 'user_agreement_pdf'">
-      <div class="close" @click="switchPdf()"><img src="@/assets/img/close.svg"></div>
-      <iframe src="https://abiturient360.pstu.ru/media/useragreement.pdf" width="100%" height="100%"></iframe>
-    </div>
     <div v-if="currentStep === 'user_agreement'" class="agreement-full">
       <div class="agreement-scroll agreement-full-scroll" ref="agreementScroll" @scroll="onAgreementScroll">
         <div class="agreement-content" v-html="agreementHtml"></div>
       </div>
       <div class="agreement-check agreement-full-check">
         <input type="checkbox" id="agreementCheck" v-model="agreementChecked" :disabled="!agreementScrolled" />
-        <label for="agreementCheck">Я ознакомлен и принимаю пользовательское соглашение</label>
+        <label class="white" for="agreementCheck">Я ознакомлен и принимаю пользовательское соглашение</label>
       </div>
       <button class="btn btn-agreement" :disabled="!agreementChecked" @click="goToDialogAccess">Продолжить</button>
     </div>
@@ -28,24 +24,27 @@
       <div class="auth" v-if="currentStep === 'auth'">
         <p class="text">Войдите через VK ID</p>
         <div id="VkIdSdkOneTap"></div>
-        <button @click="debug">Пропустить</button>
+        <button @click="debug">DEBUG</button>
       </div>
       <div class="confirmation" v-if="currentStep === 'dialog_access'">
         <p class="text">Подтвердите отправку сообщений Вам</p>
         <p>После подтверждения вам придут результаты теста и общая информация о поступлении!</p>
-        <a class="btn" href="https://vk.com/im?sel=-230312236">Разрешить!</a>
+        <a class="btn tinted" href="https://vk.com/im?sel=-230312236">Разрешить!</a>
         <button class="btn" @click="showRegistrationForm">Продолжить</button>
       </div>
       <div class="fill1" v-if="currentStep === 'fill1'">
         <div v-if="formError" class="form-error">{{ formError }}</div>
         <label for="lastname">Фамилия</label>
-        <input type="text" id="lastname" v-model="registraton.last_name" required>
+        <input type="text" id="lastname" v-model="registraton.last_name" required @blur="validateName('last_name')" :class="{'invalid': nameError.last_name}">
+        <span v-if="nameError.last_name" class="error">Фамилия должна начинаться с заглавной буквы и содержать только буквы</span>
         <label for="name">Имя</label>
-        <input type="text" id="name" v-model="registraton.first_name" required>
+        <input type="text" id="name" v-model="registraton.first_name" required @blur="validateName('first_name')" :class="{'invalid': nameError.first_name}">
+        <span v-if="nameError.first_name" class="error">Имя должно начинаться с заглавной буквы и содержать только буквы</span>
         <label for="secondname">Отчество</label>
-        <input type="text" id="secondname" v-model="registraton.middle_name" required>
+        <input type="text" id="secondname" v-model="registraton.middle_name" required @blur="validateName('middle_name')" :class="{'invalid': nameError.middle_name}">
+        <span v-if="nameError.middle_name" class="error">Отчество должно начинаться с заглавной буквы и содержать только буквы</span>
         <label for="phone">Номер телефона</label>
-        <input type="text" id="phone" v-model="phoneInput" @input="onPhoneInput" maxlength="18" placeholder="+7 (___) ___-__-__" required>
+        <input type="text" id="phone" v-model="phoneInput" @input="onPhoneInput" @keydown="onPhoneKeydown" maxlength="18" placeholder="+7 (___) ___-__-__" required>
         <label for="email">Электронная почта</label>
         <input type="email" id="email" v-model="registraton.email" @blur="validateEmail" :class="{'invalid': emailError}">
         <span v-if="emailError" class="error">Некорректный email</span>
@@ -53,6 +52,11 @@
       </div>
       <div class="fill2" v-if="currentStep === 'fill2'">
         <div v-if="formError" class="form-error">{{ formError }}</div>
+        <!-- <label for="city">Регион</label>
+        <input type="text" id="city" v-model="regionInput" @input="onRegionInput" @focus="showRegionDropdown = true" @blur="hideDropdown('region')" autocomplete="off" required>
+        <ul v-if="showRegionropdown && filteredRegions.length" class="dropdown">
+          <li v-for="region in filteredRegionos" :key="region" @mousedown.prevent="selectRegion(region)">{{ region }}</li>
+        </ul> -->
         <label for="city">Город</label>
         <input type="text" id="city" v-model="cityInput" @input="onCityInput" @focus="showCityDropdown = true" @blur="hideDropdown('city')" autocomplete="off" required>
         <ul v-if="showCityDropdown && filteredCities.length" class="dropdown">
@@ -86,7 +90,7 @@ export default {
   name: "AuthView",
   data() {
     return {
-      currentStep: 'dialog_access',
+      currentStep: 'intro',
       registraton: {
         last_name : "",
         first_name : "",
@@ -105,10 +109,15 @@ export default {
       showSchoolDropdown: false,
       cities: ["Пермь", "Москва", "Екатеринбург", "Казань", "Сочи"],
       schools: ["Школа №1", "Гимназия №2", "Лицей №3", "Школа №4", "Школа №5"],
-      agreementChecked: true,
-      agreementScrolled: true,
+      agreementChecked: false,
+      agreementScrolled: false,
       agreementHtml: '',
       formError: '',
+      nameError: {
+        last_name: false,
+        first_name: false,
+        middle_name: false
+      },
     };
   },
   computed: {
@@ -144,8 +153,6 @@ export default {
       this.currentStep = 'user_agreement';
       this.$nextTick(() => { this.renderVkButton() });
     }
-
-    // Load agreement HTML
     fetch('/media/useragreement.htm')
       .then(res => res.text())
       .then(html => { this.agreementHtml = '<p style="margin-bottom: 0;">(Прокрутите до конца, чтобы активировать чекбокс)</p><div style="height: 200px;"></div>' + html; });
@@ -177,6 +184,13 @@ export default {
     },
     validateFill1() {
       this.formError = '';
+      this.validateName('last_name');
+      this.validateName('first_name');
+      this.validateName('middle_name');
+      if (this.nameError.last_name || this.nameError.first_name || this.nameError.middle_name) {
+        this.formError = 'Проверьте правильность написания ФИО (с заглавной буквы, только буквы)';
+        return;
+      }
       if (!this.registraton.last_name || !this.registraton.first_name || !this.phoneInput || !this.registraton.middle_name) {
         this.formError = 'Заполните все обязательные поля!';
         return;
@@ -192,16 +206,33 @@ export default {
       const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       this.emailError = !re.test(this.registraton.email);
     },
+    validateName(field) {
+      const value = this.registraton[field];
+      const re = /^[A-ZА-ЯЁ][a-zа-яё]+$/u;
+      this.nameError[field] = !re.test(value);
+    },
     onPhoneInput(e) {
       let value = e.target.value.replace(/\D/g, '');
       if (value.startsWith('8')) value = '7' + value.slice(1);
       if (!value.startsWith('7')) value = '7' + value;
+      if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') {
+        this.phoneInput = this.formatPhone(value);
+        return;
+      }
       let formatted = '+7 (';
       if (value.length > 1) formatted += value.slice(1, 4);
       if (value.length >= 4) formatted += ') ' + value.slice(4, 7);
       if (value.length >= 7) formatted += '-' + value.slice(7, 9);
       if (value.length >= 9) formatted += '-' + value.slice(9, 11);
       this.phoneInput = formatted;
+    },
+    onPhoneKeydown(e) {
+      if (e.key === 'Backspace' || e.key === 'Delete') {
+        let value = this.phoneInput.replace(/\D/g, '');
+        value = value.slice(0, -1);
+        this.phoneInput = this.formatPhone(value);
+        e.preventDefault();
+      }
     },
     formatPhone(raw) {
       let value = raw.replace(/\D/g, '');
@@ -241,6 +272,7 @@ export default {
       }, 200);
     },
     goToTesting() {
+      console.log(this.registraton)
       this.formError = '';
       if (!this.cityInput || !this.schoolInput || !this.registraton.grade) {
         this.formError = 'Заполните все обязательные поля!';
@@ -297,7 +329,8 @@ export default {
 
 <style scoped>
 main {
-  min-height: 100vh;
+  height: var(--full-height);
+  overflow-y: auto;
   background: linear-gradient(135deg, #1a1a2e 0%, #23234b 100%);
   font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
   display: flex;
@@ -308,7 +341,7 @@ main {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw;
-  height: 100vh;
+  min-height: var(--full-height);
   background: linear-gradient(120deg, #23234b 0%, #1a1a2e 100%);
   display: flex;
   align-items: center;
@@ -356,7 +389,7 @@ main {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw;
-  height: 100vh;
+  min-height: var(--full-height);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -446,32 +479,54 @@ main {
   transition: background 0.2s, box-shadow 0.2s;
   text-shadow: 0 0 8px #fff8;
   font-weight: 600;
+  text-decoration: none;
+  text-align: center;
+}
+.btn.tinted{
+  background: linear-gradient(90deg, #ff5e62 0%, #ff9966 100%);
+  color: #fff;
+  box-shadow: 0 0 16px #ff5e6299, 0 0 24px #ff996688;
 }
 .block button:hover, .btn:hover {
   background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
   box-shadow: 0 0 24px #f093fb99, 0 0 32px #f5576c88;
 }
 label{
-    display: block;
-    margin-bottom: 5px;
-    font-size: 1.1rem;
-    margin-top: 18px;
-    color: #23234b;
-    font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+  font-size: 1.1rem;
+  margin-top: 18px;
+  color: black;
+  font-weight: 600;
+}
+label.white{
+  color: white;
+  height: fit-content;
+  margin: 0;
 }
 input, select{
-    display: block;
-    width: calc(100% - 20px);
-    font-size: 1rem;
-    border: 2px solid #667eea;
-    border-radius: 10px;
-    padding: 8px;
-    margin-bottom: 8px;
-    background: #fff;
-    color: #23234b;
-    transition: border 0.2s, box-shadow 0.2s;
-    box-shadow: 0 0 6px #667eea22;
-    font-weight: 500;
+  display: block;
+  width: 100%;
+  font-size: 1rem;
+  border: 2px solid #667eea;
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: #fff;
+  color: #23234b;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 6px #667eea22;
+  font-weight: 500;
+}
+select{
+  width: calc(100% - 20px);
+}
+input[type='checkbox']{
+  display: inline;
+  width: fit-content;
+  height: fit-content;
+  margin: 0;
+  margin-right: 20px;
 }
 input:focus, select:focus {
   border: 2px solid #f093fb;
@@ -525,6 +580,7 @@ select{
 }
 @media (max-width: 768px) {
   .block{
+    margin: 70px 0;
     padding: 20px 10px;
     width: 100vw;
     height: auto;
