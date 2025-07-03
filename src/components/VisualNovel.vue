@@ -302,10 +302,13 @@ export default {
   overflow: hidden;
   position: relative;
   background-color: #00023b;
+  display: flex;
+  flex-direction: column;
 }
 .top-section {
   width: 100vw;
-  height: calc(var(--full-height) - 300px);
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
   background-size: contain;
   background-position: bottom;
@@ -335,9 +338,10 @@ export default {
 }
 .bottom-section {
   width: 100vw;
-  min-height: 300px;
+  min-height: 250px;
   background: black;
   text-align: center;
+  flex: 0 0 auto;
 }
 .question-section {
   display: inline-block;
@@ -398,7 +402,7 @@ export default {
   }
   .character {
     bottom: -20px;
-    height: 100%;
+    height: 60vh;
     width: 60%;
   }
   .question-section {
@@ -413,7 +417,7 @@ export default {
   }
   .character {
     bottom: -20px;
-    height: 100%;
+    height: 60vh;
     width: 60%;
   }
   .question-section {
@@ -429,7 +433,7 @@ export default {
   .character {
     bottom: -20px;
     left: -100px;
-    height: 100%;
+    height: 60vh;
     width: 100vh;
   }
   .answers {
