@@ -1,21 +1,12 @@
 <template>
   <main>
-    <div v-if="currentStep === 'intro'" class="intro-full">
-      <div class="intro-content">
-        <h1>Добро пожаловать!</h1>
-        <p>Пройдите короткую регистрацию, чтобы начать.</p>
-        <button class="btn btn-start" @click="currentStep = 'user_agreement'">Старт</button>
-      </div>
-    </div>
     <div v-if="currentStep === 'user_agreement'" class="agreement-full">
       <div class="agreement-scroll agreement-full-scroll" ref="agreementScroll" @scroll="onAgreementScroll">
         <div class="agreement-content" v-html="agreementHtml"></div>
       </div>
-      <div class="agreement-check agreement-full-check">
-        <input type="checkbox" id="agreementCheck" v-model="agreementChecked" :disabled="!agreementScrolled" />
-        <label class="white" for="agreementCheck">Я ознакомлен и принимаю пользовательское соглашение</label>
+      <div class="agreement-buttons">
+        <button class="btn btn-back" @click="goBackToFill2">← Назад</button>
       </div>
-      <button class="btn btn-agreement" :disabled="!agreementChecked" @click="goToDialogAccess">Продолжить</button>
     </div>
     <div class="block" v-if="['auth','dialog_access','fill1','fill2'].includes(currentStep)">
       <div class="logo">
@@ -36,13 +27,13 @@
         <div v-if="formError" class="form-error">{{ formError }}</div>
         <label for="lastname">Фамилия</label>
         <input type="text" id="lastname" v-model="registraton.last_name" required @blur="validateName('last_name')" :class="{'invalid': nameError.last_name}">
-        <span v-if="nameError.last_name" class="error">Фамилия должна начинаться с заглавной буквы и содержать только буквы</span>
+        <span v-if="nameError.last_name" class="error">Фамилия должна начинаться содержать только буквы (дефис допустим)</span>
         <label for="name">Имя</label>
         <input type="text" id="name" v-model="registraton.first_name" required @blur="validateName('first_name')" :class="{'invalid': nameError.first_name}">
-        <span v-if="nameError.first_name" class="error">Имя должно начинаться с заглавной буквы и содержать только буквы</span>
+        <span v-if="nameError.first_name" class="error">Имя должно начинаться содержать только буквы (дефис допустим)</span>
         <label for="secondname">Отчество</label>
         <input type="text" id="secondname" v-model="registraton.middle_name" required @blur="validateName('middle_name')" :class="{'invalid': nameError.middle_name}">
-        <span v-if="nameError.middle_name" class="error">Отчество должно начинаться с заглавной буквы и содержать только буквы</span>
+        <span v-if="nameError.middle_name" class="error">Отчество должно начинаться содержать только буквы (дефис допустим)</span>
         <label for="phone">Номер телефона</label>
         <input type="text" id="phone" v-model="phoneInput" @input="onPhoneInput" @keydown="onPhoneKeydown" maxlength="18" placeholder="+7 (___) ___-__-__" required>
         <label for="email">Электронная почта</label>
@@ -58,15 +49,15 @@
           <li v-for="region in filteredRegionos" :key="region" @mousedown.prevent="selectRegion(region)">{{ region }}</li>
         </ul> -->
         <label for="city">Город</label>
-        <input type="text" id="city" v-model="cityInput" @input="onCityInput" @focus="showCityDropdown = true" @blur="hideDropdown('city')" autocomplete="off" required>
-        <ul v-if="showCityDropdown && filteredCities.length" class="dropdown">
+        <input type="text" id="city" v-model="cityInput" @input="onCityInput"@blur="hideDropdown('city')" autocomplete="off" required>
+        <!--  @focus="showCityDropdown = true"  <ul v-if="showCityDropdown && filteredCities.length" class="dropdown">
           <li v-for="city in filteredCities" :key="city" @mousedown.prevent="selectCity(city)">{{ city }}</li>
-        </ul>
+        </ul> -->
         <label for="school">Школа</label>
-        <input type="text" id="school" v-model="schoolInput" @input="onSchoolInput" @focus="showSchoolDropdown = true" @blur="hideDropdown('school')" autocomplete="off" required>
-        <ul v-if="showSchoolDropdown && filteredSchools.length" class="dropdown">
+        <input type="text" id="school" v-model="schoolInput" @input="onSchoolInput" @blur="hideDropdown('school')" autocomplete="off" required>
+        <!--  @focus="showSchoolDropdown = true"  <ul v-if="showSchoolDropdown && filteredSchools.length" class="dropdown">
           <li v-for="school in filteredSchools" :key="school" @mousedown.prevent="selectSchool(school)">{{ school }}</li>
-        </ul>
+        </ul> -->
         <label for="grade">Класс обучения</label>
         <select name="grade" id="grade" v-model="registraton.grade">
           <option value="7">7</option>
@@ -74,15 +65,20 @@
           <option value="9">9</option>
           <option value="10">10</option>
           <option value="11">11</option>
+          <option value="12">Я после колледжа/техникума</option>
         </select>
-        <button @click="goToTesting">Продолжить →</button>
+        <div class="agreement-check">
+          <input type="checkbox" id="agreementCheck" v-model="agreementChecked" />
+          <label for="agreementCheck">Я ознакомлен и принимаю <span class="agreement-link" @click="showAgreement">пользовательское соглашение</span></label>
+        </div>
+        <button @click="goToTesting" :disabled="!agreementChecked">Продолжить →</button>
       </div>
     </div>
   </main>
 </template>
 
 <script>
-import * as VKID from "@vkid/sdk";
+import * as VKID from "@vkid/sdk"
 import "regenerator-runtime/runtime"
 import * as Script from "@/assets/scripts.js"
 
@@ -90,7 +86,7 @@ export default {
   name: "AuthView",
   data() {
     return {
-      currentStep: 'intro',
+      currentStep: 'auth',
       registraton: {
         last_name : "",
         first_name : "",
@@ -118,16 +114,16 @@ export default {
         first_name: false,
         middle_name: false
       },
-    };
+    }
   },
   computed: {
     filteredCities() {
-      const q = this.cityInput.toLowerCase();
-      return this.cities.filter(city => city.toLowerCase().includes(q));
+      const q = this.cityInput.toLowerCase()
+      return this.cities.filter(city => city.toLowerCase().includes(q))
     },
     filteredSchools() {
-      const q = this.schoolInput.toLowerCase();
-      return this.schools.filter(school => school.toLowerCase().includes(q));
+      const q = this.schoolInput.toLowerCase()
+      return this.schools.filter(school => school.toLowerCase().includes(q))
     }
   },
   mounted(){
@@ -136,158 +132,178 @@ export default {
       redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
       scope: 'email messages phone groups',
       mode: VKID.ConfigAuthMode.Redirect
-    });
+    })
 
     if (Script.getCookie("reg") !== null) {
-      this.currentStep = 'dialog_access';
+      this.currentStep = 'dialog_access'
     }
     if(Script.getCookie('user_data')){
-      this.registraton = JSON.parse(Script.getCookie('user_data'));
-      this.phoneInput = this.formatPhone(this.registraton.phone);
-      this.cityInput = this.registraton.city;
-      this.schoolInput = this.registraton.school;
+      this.registraton = JSON.parse(Script.getCookie('user_data'))
+      this.phoneInput = this.formatPhone(this.registraton.phone)
+      this.cityInput = this.registraton.city
+      this.schoolInput = this.registraton.school
     }
     if(Script.getCookie("reg") !== null){
-      this.currentStep = 'dialog_access';
+      this.currentStep = 'dialog_access'
     }else{
-      this.currentStep = 'user_agreement';
-      this.$nextTick(() => { this.renderVkButton() });
+      this.currentStep = 'auth'
+      this.$nextTick(() => { this.renderVkButton() })
     }
     fetch('/media/useragreement.htm')
       .then(res => res.text())
-      .then(html => { this.agreementHtml = '<p style="margin-bottom: 0;">(Прокрутите до конца, чтобы активировать чекбокс)</p><div style="height: 200px;"></div>' + html; });
+      .then(html => { this.agreementHtml = html; })
   },
   methods: {
     // debug(){
     //   Script.setCookie("reg", 1)
-    //   this.currentStep = 'dialog_access'
+    //   window.location.href = process.env.VUE_APP_BASE_URL + '/auth
     // },
     switchPdf(){
-      this.currentStep = this.currentStep === 'user_agreement_pdf' ? 'user_agreement' : 'user_agreement_pdf';
+      this.currentStep = this.currentStep === 'user_agreement_pdf' ? 'user_agreement' : 'user_agreement_pdf'
     },
     renderVkButton(){
-      const container = document.getElementById('VkIdSdkOneTap');
+      const container = document.getElementById('VkIdSdkOneTap')
       if (container) {
-        const oneTap = new VKID.OneTap();
+        const oneTap = new VKID.OneTap()
         oneTap.render({
           container: container,
           showAlternativeLogin: false
-        });
+        })
       }
     },
     goToAuth() {
-      this.currentStep = 'auth';
-      this.$nextTick(() => { this.renderVkButton() });
+      this.currentStep = 'auth'
+      this.$nextTick(() => { this.renderVkButton() })
     },
     showRegistrationForm() {
-      this.currentStep = 'fill1';
+      this.currentStep = 'fill1'
     },
     validateFill1() {
-      this.formError = '';
-      this.validateName('last_name');
-      this.validateName('first_name');
-      this.validateName('middle_name');
-      if (this.nameError.last_name || this.nameError.first_name || this.nameError.middle_name) {
-        this.formError = 'Проверьте правильность написания ФИО (с заглавной буквы, только буквы)';
-        return;
+      this.formError = ''
+      this.validateName('last_name')
+      this.validateName('first_name')
+      
+      if (this.registraton.middle_name.trim()) {
+        this.validateName('middle_name')
       }
-      if (!this.registraton.last_name || !this.registraton.first_name || !this.phoneInput || !this.registraton.middle_name) {
-        this.formError = 'Заполните все обязательные поля!';
-        return;
+      
+      const hasNameErrors = this.nameError.last_name || this.nameError.first_name || 
+                           (this.registraton.middle_name.trim() && this.nameError.middle_name)
+      
+      if (hasNameErrors) {
+        this.formError = 'Проверьте правильность написания ФИО'
+        return
+      }
+      if (!this.registraton.last_name || !this.registraton.first_name || !this.phoneInput) {
+        this.formError = 'Заполните все обязательные поля!'
+        return
       }
       if (this.emailError) {
-        this.formError = 'Проверьте корректность email!';
-        return;
+        this.formError = 'Проверьте корректность email!'
+        return
       }
-      this.registraton.phone = this.unmaskPhone(this.phoneInput);
-      this.currentStep = 'fill2';
+      this.registraton.phone = this.unmaskPhone(this.phoneInput)
+      this.currentStep = 'fill2'
     },
     validateEmail() {
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      this.emailError = !re.test(this.registraton.email);
+      if (!this.registraton.email.trim()) {
+        this.emailError = false
+        return
+      }
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      this.emailError = !re.test(this.registraton.email)
     },
     validateName(field) {
-      const value = this.registraton[field];
-      const re = /^[A-ZА-ЯЁ][a-zа-яё]+$/u;
-      this.nameError[field] = !re.test(value);
+      const value = this.registraton[field]
+      if (field === 'middle_name' && !value.trim()) {
+        this.nameError[field] = false
+        return
+      }
+      
+      const re = /^[A-ZА-ЯЁ \-a-zа-яё]+$/u
+      this.nameError[field] = !re.test(value)
     },
     onPhoneInput(e) {
-      let value = e.target.value.replace(/\D/g, '');
-      if (value.startsWith('8')) value = '7' + value.slice(1);
-      if (!value.startsWith('7')) value = '7' + value;
+      let value = e.target.value.replace(/\D/g, '')
+      if (value.startsWith('8')) value = '7' + value.slice(1)
+      if (!value.startsWith('7')) value = '7' + value
       if (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward') {
-        this.phoneInput = this.formatPhone(value);
-        return;
+        this.phoneInput = this.formatPhone(value)
+        return
       }
-      let formatted = '+7 (';
-      if (value.length > 1) formatted += value.slice(1, 4);
-      if (value.length >= 4) formatted += ') ' + value.slice(4, 7);
-      if (value.length >= 7) formatted += '-' + value.slice(7, 9);
-      if (value.length >= 9) formatted += '-' + value.slice(9, 11);
-      this.phoneInput = formatted;
+      let formatted = '+7 ('
+      if (value.length > 1) formatted += value.slice(1, 4)
+      if (value.length >= 4) formatted += ') ' + value.slice(4, 7)
+      if (value.length >= 7) formatted += '-' + value.slice(7, 9)
+      if (value.length >= 9) formatted += '-' + value.slice(9, 11)
+      this.phoneInput = formatted
     },
     onPhoneKeydown(e) {
       if (e.key === 'Backspace' || e.key === 'Delete') {
-        let value = this.phoneInput.replace(/\D/g, '');
-        value = value.slice(0, -1);
-        this.phoneInput = this.formatPhone(value);
-        e.preventDefault();
+        let value = this.phoneInput.replace(/\D/g, '')
+        value = value.slice(0, -1)
+        this.phoneInput = this.formatPhone(value)
+        e.preventDefault()
       }
     },
     formatPhone(raw) {
-      let value = raw.replace(/\D/g, '');
-      if (!value) return '';
-      if (value.startsWith('8')) value = '7' + value.slice(1);
-      if (!value.startsWith('7')) value = '7' + value;
-      let formatted = '+7 (';
-      if (value.length > 1) formatted += value.slice(1, 4);
-      if (value.length >= 4) formatted += ') ' + value.slice(4, 7);
-      if (value.length >= 7) formatted += '-' + value.slice(7, 9);
-      if (value.length >= 9) formatted += '-' + value.slice(9, 11);
-      return formatted;
+      let value = raw.replace(/\D/g, '')
+      if (!value) return ''
+      if (value.startsWith('8')) value = '7' + value.slice(1)
+      if (!value.startsWith('7')) value = '7' + value
+      let formatted = '+7 ('
+      if (value.length > 1) formatted += value.slice(1, 4)
+      if (value.length >= 4) formatted += ') ' + value.slice(4, 7)
+      if (value.length >= 7) formatted += '-' + value.slice(7, 9)
+      if (value.length >= 9) formatted += '-' + value.slice(9, 11)
+      return formatted
     },
     unmaskPhone(masked) {
-      return masked.replace(/\D/g, '');
+      return masked.replace(/\D/g, '')
     },
     onCityInput() {
-      this.showCityDropdown = true;
+      this.showCityDropdown = true
     },
     selectCity(city) {
-      this.cityInput = city;
-      this.registraton.city = city;
-      this.showCityDropdown = false;
+      this.cityInput = city
+      this.registraton.city = city
+      this.showCityDropdown = false
     },
     onSchoolInput() {
-      this.showSchoolDropdown = true;
+      this.showSchoolDropdown = true
     },
     selectSchool(school) {
-      this.schoolInput = school;
-      this.registraton.school = school;
-      this.showSchoolDropdown = false;
+      this.schoolInput = school
+      this.registraton.school = school
+      this.showSchoolDropdown = false
     },
     hideDropdown(type) {
       setTimeout(() => {
-        if (type === 'city') this.showCityDropdown = false;
-        if (type === 'school') this.showSchoolDropdown = false;
-      }, 200);
+        if (type === 'city') this.showCityDropdown = false
+        if (type === 'school') this.showSchoolDropdown = false
+      }, 200)
     },
     goToTesting() {
       console.log(this.registraton)
-      this.formError = '';
+      this.formError = ''
       if (!this.cityInput || !this.schoolInput || !this.registraton.grade) {
-        this.formError = 'Заполните все обязательные поля!';
-        return;
+        this.formError = 'Заполните все обязательные поля!'
+        return
       }
-      this.registraton.city = this.cityInput;
-      this.registraton.school = this.schoolInput;
-      const vkTokens = Script.getCookie("vk_tokens");
+      if (!this.agreementChecked) {
+        this.formError = 'Необходимо принять пользовательское соглашение!'
+        return
+      }
+      this.registraton.city = this.cityInput
+      this.registraton.school = this.schoolInput
+      const vkTokens = Script.getCookie("vk_tokens")
       if (!vkTokens) {
-        this.formError = 'Ошибка: не найден VK ID';
-        return;
+        this.formError = 'Ошибка: не найден VK ID'
+        return
       }
-      const vk_id = Number(JSON.parse(vkTokens).vk_id);
-      const payload = { ...this.registraton, grade: Number(this.registraton.grade) };
-      Script.setCookie("user_data", JSON.stringify(payload));
+      const vk_id = Number(JSON.parse(vkTokens).vk_id)
+      const payload = { ...this.registraton, grade: Number(this.registraton.grade) }
+      Script.setCookie("user_data", JSON.stringify(payload))
       fetch(process.env.VUE_APP_BASE_URL + "/api/v1/register", {
         method: 'POST',
         headers: {
@@ -305,26 +321,32 @@ export default {
       .catch(console.warn)
     },
     onAgreementScroll() {
-      const el = this.$refs.agreementScroll;
+      const el = this.$refs.agreementScroll
       if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
-        this.agreementScrolled = true;
+        this.agreementScrolled = true
       }
     },
     goToDialogAccess() {
-      this.currentStep = 'dialog_access';
+      this.currentStep = 'dialog_access'
+    },
+    showAgreement() {
+      this.currentStep = 'user_agreement'
+    },
+    goBackToFill2() {
+      this.currentStep = 'fill2'
     },
   },
   watch: {
     async currentStep(val) {
       if (val === 'auth') {
-        this.$nextTick(() => { this.renderVkButton(); });
+        this.$nextTick(() => { this.renderVkButton(); })
       }
       if (val === 'dialog_access' && Script.getCookie('reg') === null) {
-        this.currentStep = 'auth';
+        this.currentStep = 'auth'
       }
     }
   }
-};
+}
 </script>
 
 <style scoped>
@@ -337,54 +359,6 @@ main {
   align-items: center;
   justify-content: center;
 }
-.intro-full {
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  width: 100vw;
-  min-height: var(--full-height);
-  background: linear-gradient(120deg, #23234b 0%, #1a1a2e 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-}
-.intro-content {
-  background: rgba(30, 30, 60, 0.98);
-  border-radius: 32px;
-  box-shadow: 0 0 32px 4px #667eea, 0 0 0 4px #23234b;
-  padding: 48px 36px 36px 36px;
-  text-align: center;
-  max-width: 400px;
-  border: 2px solid #764ba2;
-}
-.intro-content h1 {
-  font-size: 2.5rem;
-  margin-bottom: 18px;
-  color: #f093fb;
-  text-shadow: 0 0 10px #764ba2, 0 0 20px #667eea;
-}
-.intro-content p {
-  font-size: 1.2rem;
-  color: #fff;
-  margin-bottom: 32px;
-}
-.btn-start {
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  font-size: 1.2rem;
-  padding: 14px 36px;
-  border: none;
-  border-radius: 18px;
-  box-shadow: 0 0 16px #667eea, 0 0 32px #764ba2;
-  cursor: pointer;
-  transition: background 0.2s, box-shadow 0.2s;
-  text-shadow: 0 0 8px #fff;
-}
-.btn-start:hover {
-  background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
-  box-shadow: 0 0 32px #f093fb, 0 0 48px #f5576c;
-}
-
 .agreement-full {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -407,8 +381,15 @@ main {
   margin-bottom: 24px;
   overflow-y: auto;
   border: 2px solid #764ba2;
-  color: #fff;
+  color: #23234b;
   background-color: white;
+}
+.agreement-content {
+  line-height: 1.6;
+  font-size: 14px;
+}
+.agreement-content p {
+  margin-bottom: 12px;
 }
 .agreement-full-check {
   margin-bottom: 18px;
@@ -416,6 +397,45 @@ main {
   color: #f093fb;
   display: flex;
   align-items: center;
+}
+.agreement-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+}
+.btn-back {
+  background: linear-gradient(90deg, #3a3a5e 0%, #4a4a6e 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  padding: 12px 32px;
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 0 16px #3a3a5e, 0 0 32px #4a4a6e;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+  text-shadow: 0 0 8px #fff;
+}
+.btn-back:hover {
+  background: linear-gradient(90deg, #4a4a6e 0%, #5a5a7e 100%);
+  box-shadow: 0 0 24px #4a4a6e, 0 0 32px #5a5a7e;
+}
+.agreement-check {
+  margin: 20px 0;
+  font-size: 1.1rem;
+  color: #23234b;
+  display: flex;
+  align-items: center;
+}
+.agreement-link {
+  color: #667eea;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+.agreement-link:hover {
+  color: #f093fb;
 }
 .btn-agreement {
   background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
@@ -490,6 +510,12 @@ main {
 .block button:hover, .btn:hover {
   background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%);
   box-shadow: 0 0 24px #f093fb99, 0 0 32px #f5576c88;
+}
+.block button:disabled, .btn:disabled {
+  background: #3a3a5e;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
 }
 label{
   display: block;
