@@ -47,7 +47,7 @@ export default {
       return this.getFacultate(this.gameResult.branch)
     },
     gameResult(){
-      return JSON.parse(Script.getCookie('gameResult'))
+      return JSON.parse(Script.LocalStorage.get('gameResult'))
     }
   },
   mounted(){
@@ -88,9 +88,9 @@ export default {
   },
   methods: {
     playAgain() {
-      Script.removeCookie('selectedCharacter')
-      Script.removeCookie('gameProgress')
-      Script.removeCookie('gameResult');
+      Script.LocalStorage.remove('selectedCharacter')
+      Script.LocalStorage.remove('gameProgress')
+      Script.LocalStorage.remove('gameResult');
       this.$emit('change-character')
     },
     getFacultate(result){

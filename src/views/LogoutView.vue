@@ -11,10 +11,10 @@ export default {
         'Connection' : 'keep-alive'
       },
       body: JSON.stringify({
-        token : Script.getCookie("token")
+        token : Script.LocalStorage.get("token")
       })
     }).finally(()=>{
-      Script.clearCookie();
+      Script.LocalStorage.clear();
       this.$router.push("/");
     })
   },

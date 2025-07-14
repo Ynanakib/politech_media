@@ -8,14 +8,13 @@ import * as Script from "@/assets/scripts.js"
 export default {
   name: "DebugView",
   mounted(){
-    console.log("reg", Script.getCookie("reg"));
-    console.log("result", Script.getCookie("result"));
-    console.log("user_data", Script.getCookie("user_data"));
-    console.log("vk_tokens", Script.getCookie("vk_tokens"));
-    console.log("user_info", Script.getCookie("user_info"));
-    console.log("token", Script.getCookie("token"));
-    console.log("selectedCharacter", Script.getCookie("selectedCharacter"));
-    console.log("gameResult", Script.getCookie("gameResult"));
+    console.log("state", Script.LocalStorage.get("state"));
+    console.log("user_data", Script.LocalStorage.get("user_data"));
+    console.log("vk_tokens", Script.LocalStorage.get("vk_tokens"));
+    console.log("user_info", Script.LocalStorage.get("user_info"));
+    console.log("token", Script.LocalStorage.get("token"));
+    console.log("selectedCharacter", Script.LocalStorage.get("selectedCharacter"));
+    console.log("gameResult", Script.LocalStorage.get("gameResult"));
   },
   methods:{
     delete(){

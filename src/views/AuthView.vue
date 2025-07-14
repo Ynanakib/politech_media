@@ -8,7 +8,7 @@
         <button class="btn btn-back" @click="goBackToFill2">← Назад</button>
       </div>
     </div>
-    <div class="block" v-if="['auth','dialog_access','fill1','fill2'].includes(currentStep)">
+    <div class="block" v-if="['auth', 'fill1','fill2'].includes(currentStep)">
       <div class="logo">
         <img src="@/assets/img/pnipu_logo.png" />
       </div>
@@ -16,12 +16,6 @@
         <p class="text">Войдите через VK ID</p>
         <div id="VkIdSdkOneTap"></div>
         <!-- <button @click="debug">DEBUG</button> -->
-      </div>
-      <div class="confirmation" v-if="currentStep === 'dialog_access'">
-        <p class="text">Подтвердите отправку сообщений Вам</p>
-        <p>После подтверждения вам придут результаты теста и общая информация о поступлении!</p>
-        <a class="btn tinted" href="https://vk.com/im?sel=-230312236">Разрешить!</a>
-        <button class="btn" @click="showRegistrationForm">Продолжить</button>
       </div>
       <div class="fill1" v-if="currentStep === 'fill1'">
         <div v-if="formError" class="form-error">{{ formError }}</div>
@@ -69,7 +63,7 @@
         </select>
         <div class="agreement-check">
           <input type="checkbox" id="agreementCheck" v-model="agreementChecked" />
-          <label for="agreementCheck">Я ознакомлен и принимаю <span class="agreement-link" @click="showAgreement">пользовательское соглашение</span></label>
+          <label for="agreementCheck">Я ознакомлен (-а) и принимаю условия <span class="agreement-link" @click="showAgreement">пользовательского соглашения</span></label>
         </div>
         <button @click="goToTesting" :disabled="!agreementChecked">Продолжить →</button>
       </div>
@@ -86,7 +80,7 @@ export default {
   name: "AuthView",
   data() {
     return {
-      currentStep: 'auth',
+      currentStep: "",
       registraton: {
         last_name : "",
         first_name : "",
@@ -133,29 +127,27 @@ export default {
       scope: 'email messages phone groups',
       mode: VKID.ConfigAuthMode.Redirect
     })
-
-    if (Script.getCookie("reg") !== null) {
-      this.currentStep = 'dialog_access'
+    if(Script.LocalStorage.get("state") == "vk"){
+      this.currentStep = 'auth'
+      this.$nextTick(() => { this.renderVkButton() })
+    }else{
+      this.currentStep = 'fill1'
     }
-    if(Script.getCookie('user_data')){
-      this.registraton = JSON.parse(Script.getCookie('user_data'))
+
+    if(Script.LocalStorage.get('user_data')){
+      this.registraton = JSON.parse(Script.LocalStorage.get('user_data'))
       this.phoneInput = this.formatPhone(this.registraton.phone)
       this.cityInput = this.registraton.city
       this.schoolInput = this.registraton.school
     }
-    if(Script.getCookie("reg") !== null){
-      this.currentStep = 'dialog_access'
-    }else{
-      this.currentStep = 'auth'
-      this.$nextTick(() => { this.renderVkButton() })
-    }
+
     fetch('/media/useragreement.htm')
       .then(res => res.text())
       .then(html => { this.agreementHtml = html; })
   },
   methods: {
     // debug(){
-    //   Script.setCookie("reg", 1)
+    //   Script.LocalStorage.set("reg", 1)
     //   window.location.href = process.env.VUE_APP_BASE_URL + '/auth
     // },
     switchPdf(){
@@ -284,7 +276,6 @@ export default {
       }, 200)
     },
     goToTesting() {
-      console.log(this.registraton)
       this.formError = ''
       if (!this.cityInput || !this.schoolInput || !this.registraton.grade) {
         this.formError = 'Заполните все обязательные поля!'
@@ -296,14 +287,14 @@ export default {
       }
       this.registraton.city = this.cityInput
       this.registraton.school = this.schoolInput
-      const vkTokens = Script.getCookie("vk_tokens")
+      const vkTokens = Script.LocalStorage.get("vk_tokens")
       if (!vkTokens) {
         this.formError = 'Ошибка: не найден VK ID'
         return
       }
       const vk_id = Number(JSON.parse(vkTokens).vk_id)
       const payload = { ...this.registraton, grade: Number(this.registraton.grade) }
-      Script.setCookie("user_data", JSON.stringify(payload))
+      Script.LocalStorage.set("user_data", JSON.stringify(payload))
       fetch(process.env.VUE_APP_BASE_URL + "/api/v1/register", {
         method: 'POST',
         headers: {
@@ -311,23 +302,14 @@ export default {
           'Connection': 'keep-alive'
         },
         body: JSON.stringify({
-          vk_id: JSON.parse(Script.getCookie("vk_tokens")).vk_id,
+          vk_id: JSON.parse(Script.LocalStorage.get("vk_tokens")).vk_id,
           payload: this.registraton
         })
       })
       .then( data => data.json() )
-      .then( data => Script.setCookie("token", data.token) )
+      .then( data => Script.LocalStorage.set("token", data.token) )
       .then(() => this.$router.push("testing"))
       .catch(console.warn)
-    },
-    onAgreementScroll() {
-      const el = this.$refs.agreementScroll
-      if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
-        this.agreementScrolled = true
-      }
-    },
-    goToDialogAccess() {
-      this.currentStep = 'dialog_access'
     },
     showAgreement() {
       this.currentStep = 'user_agreement'
@@ -335,16 +317,6 @@ export default {
     goBackToFill2() {
       this.currentStep = 'fill2'
     },
-  },
-  watch: {
-    async currentStep(val) {
-      if (val === 'auth') {
-        this.$nextTick(() => { this.renderVkButton(); })
-      }
-      if (val === 'dialog_access' && Script.getCookie('reg') === null) {
-        this.currentStep = 'auth'
-      }
-    }
   }
 }
 </script>

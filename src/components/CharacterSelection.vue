@@ -87,7 +87,7 @@ export default {
   },
   mounted() {
     // Check if character is already selected
-    const savedCharacter = Script.getCookie('selectedCharacter')
+    const savedCharacter = Script.LocalStorage.get('selectedCharacter')
     if (savedCharacter) {
       this.selectedCharacter = JSON.parse(savedCharacter)
       this.confirmSelection()
@@ -109,7 +109,7 @@ export default {
     confirmSelection() {
       if (this.selectedCharacter) {
         // Save to Script
-        Script.setCookie('selectedCharacter', JSON.stringify(this.selectedCharacter))
+        Script.LocalStorage.set('selectedCharacter', JSON.stringify(this.selectedCharacter))
         
         // Emit event to parent to switch to game component
         this.$emit('character-selected', this.selectedCharacter)

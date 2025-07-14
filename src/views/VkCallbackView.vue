@@ -30,13 +30,14 @@ onMounted(async () => {
         try {
             const obj = await VKID.Auth.exchangeCode(code, device_id);
             let tokens = {
+                type: "vk",
                 access_token: obj.access_token,
                 refresh_token: obj.refresh_token,
                 vk_id: obj.user_id
             };
             let userInfo = await VKID.Auth.userInfo(tokens.access_token);
-            Script.setCookie("user_info", JSON.stringify(userInfo.user))
-            Script.setCookie("vk_tokens", JSON.stringify(tokens));
+            Script.LocalStorage.set("user_info", JSON.stringify(userInfo.user))
+            Script.LocalStorage.set("vk_tokens", JSON.stringify(tokens));
 
             const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/auth', {
                 method: 'POST',
@@ -49,17 +50,21 @@ onMounted(async () => {
             const result = await response.json();
 
             if (response.status === 202){
-                Script.setCookie("token", result.token);
+                Script.LocalStorage.set("token", result.token);
                 window.location.href = process.env.VUE_APP_BASE_URL + '/testing';
             }else{
                 if(response.status === 201){
-                    Script.setCookie("reg", "1");
+                    Script.LocalStorage.set("status", "reg");
                     window.location.href = process.env.VUE_APP_BASE_URL + '/auth';
                 }else{
+                    window.location.href = process.env.VUE_APP_BASE_URL + '/';
                     console.error("Ошибка авторизации")
                 }
             } 
         } catch (error) {
+            if(error.error == "invalid_request"){
+                window.location.href = process.env.VUE_APP_BASE_URL + '/';
+            }
             console.error("Ошибка при аутентификации:", error);
         }
     })()

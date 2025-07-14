@@ -4,6 +4,7 @@ import TestingView from '../views/TestingView.vue'
 import VkCallbackView from '@/views/VkCallbackView.vue'
 import LogoutView from '@/views/LogoutView.vue'
 import DebugView from '@/views/DebugView.vue'
+import AuthParsingView from '@/views/AuthParsingView.vue'
 
 const routes = [
   {
@@ -19,6 +20,14 @@ const routes = [
     name: 'auth',
     component: () => import('../views/AuthView.vue'),
     meta: {
+      title : "Абитуриент 360° - регистрация"
+    }
+  },
+  {
+    path: "/auth/:id",
+    name: 'parseAuth',
+    component: AuthParsingView,
+    meta: {
       title : "Абитуриент 360°"
     }
   },
@@ -27,7 +36,7 @@ const routes = [
     name: 'testing',
     component: TestingView,
     meta: {
-      title : "Абитуриент 360°"
+      title : "Абитуриент 360° - профориентационный тест"
     }
   },
   {

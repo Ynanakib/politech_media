@@ -38,10 +38,10 @@ export default {
   },
   mounted() {
     if(
-      Script.getCookie("token") == undefined || 
-      Script.getCookie("token") == null || 
-      Script.getCookie("vk_tokens") == null || 
-      Script.getCookie("vk_tokens") == undefined
+      Script.LocalStorage.get("token") == undefined || 
+      Script.LocalStorage.get("token") == null || 
+      Script.LocalStorage.get("vk_tokens") == null || 
+      Script.LocalStorage.get("vk_tokens") == undefined
     )
       this.$router.push("/");
     window.scrollTo(0, 1);
@@ -50,8 +50,8 @@ export default {
   methods: {
     checkInitialView() {
       // Check if character is already selected
-      const savedCharacter = Script.getCookie('selectedCharacter')
-      const savedProgress = Script.getCookie('gameProgress')
+      const savedCharacter = Script.LocalStorage.get('selectedCharacter')
+      const savedProgress = Script.LocalStorage.get('gameProgress')
       
       if (savedCharacter && savedProgress) {
         // Check if game is completed
@@ -80,14 +80,14 @@ export default {
     
     onPlayAgain() {
       // Clear game progress but keep character
-      Script.removeCookie('gameProgress')
+      Script.LocalStorage.remove('gameProgress')
       this.currentView = 'game'
     },
     
     onChangeCharacter() {
       // Clear everything and go back to character selection
-      Script.removeCookie('selectedCharacter')
-      Script.removeCookie('gameProgress')
+      Script.LocalStorage.remove('selectedCharacter')
+      Script.LocalStorage.remove('gameProgress')
       this.currentView = 'character-selection'
     }
   }

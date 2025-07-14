@@ -131,11 +131,11 @@ export default {
       }
     },
     loadGameProgress() {
-      const savedCharacter = Script.getCookie('selectedCharacter');
+      const savedCharacter = Script.LocalStorage.get('selectedCharacter');
       if (savedCharacter) {
         this.characterImage = JSON.parse(savedCharacter).image;
       }
-      Script.removeCookie('gameProgress');
+      Script.LocalStorage.remove('gameProgress');
     },
     saveGameProgress() {},
     animateCharacter() {
@@ -288,7 +288,7 @@ export default {
       }
       this.dominantBranch = finalBranch;
       this.gameState = 'done';
-      Script.setCookie('gameResult', JSON.stringify({
+      Script.LocalStorage.set('gameResult', JSON.stringify({
         branch: this.dominantBranch,
         branchGroup: this.dominantBranchGroup
       }));
@@ -299,8 +299,8 @@ export default {
           'Connection' : 'keep-alive'
         },
         body: JSON.stringify({
-          token: Script.getCookie("token"),
-          result: JSON.parse(Script.getCookie("gameResult")).branch
+          token: Script.LocalStorage.get("token"),
+          result: JSON.parse(Script.LocalStorage.get("gameResult")).branch
         })
       })
       this.$emit('game-completed', this.totalAnswered);
