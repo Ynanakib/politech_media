@@ -127,7 +127,7 @@ export default {
       scope: 'email messages phone groups',
       mode: VKID.ConfigAuthMode.Redirect
     })
-    if(Script.LocalStorage.get("state") == "vk"){
+    if(Script.LocalStorage.get("state") == "vk" || Script.LocalStorage.get("state") == "auth" || Script.LocalStorage.get("state") == null || Script.LocalStorage.get("state") == undefined){
       this.currentStep = 'auth'
       this.$nextTick(() => { this.renderVkButton() })
     }else{

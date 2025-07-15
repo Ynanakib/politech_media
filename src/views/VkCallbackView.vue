@@ -54,7 +54,7 @@ onMounted(async () => {
                 window.location.href = process.env.VUE_APP_BASE_URL + '/testing';
             }else{
                 if(response.status === 201){
-                    Script.LocalStorage.set("status", "reg");
+                    Script.LocalStorage.set("state", "reg");
                     window.location.href = process.env.VUE_APP_BASE_URL + '/auth';
                 }else{
                     window.location.href = process.env.VUE_APP_BASE_URL + '/';
