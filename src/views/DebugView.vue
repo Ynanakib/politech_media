@@ -1,5 +1,8 @@
 <template>
   <button @click="this.delete()">delete :)</button>
+  <pre style="color: white; text-align: left;">{{ output() }}</pre>
+  <pre style="color: white; text-align: left;">{{ this.result }}</pre>
+  <a href="./" style="color: white;">НАЗАД</a>
 </template>
 <script>
 import "regenerator-runtime/runtime"
@@ -7,20 +10,30 @@ import * as Script from "@/assets/scripts.js"
 
 export default {
   name: "DebugView",
-  mounted(){
-    console.log("state", Script.LocalStorage.get("state"));
-    console.log("user_data", Script.LocalStorage.get("user_data"));
-    console.log("vk_tokens", Script.LocalStorage.get("vk_tokens"));
-    console.log("user_info", Script.LocalStorage.get("user_info"));
-    console.log("token", Script.LocalStorage.get("token"));
-    console.log("selectedCharacter", Script.LocalStorage.get("selectedCharacter"));
-    console.log("gameResult", Script.LocalStorage.get("gameResult"));
+  data(){
+    return {
+      result: ""
+    }
   },
   methods:{
     delete(){
-      fetch(process.env.VUE_APP_BASE_URL + '/api/v1/debug', { method: 'POST' })
-      .then(e => e.json())
-      .then(console.log)
+      Script.LocalStorage.clear()
+      fetch(process.env.VUE_APP_BASE_URL + '/api/v1/debug?vk_id=299484198')
+      .then(e => e.text())
+      .then(e => this.result = e)
+      
+      fetch(process.env.VUE_APP_BASE_URL + '/api/v1/debug?vk_id=604022898')
+      .then(e => e.text())
+      .then(e => this.result += e + "\n")
+    },
+    output(){
+      return "state " + Script.LocalStorage.get("state") + "\n"
+        + "user_data " + Script.LocalStorage.get("user_data") + "\n"
+        + "vk_tokens " + Script.LocalStorage.get("vk_tokens") + "\n"
+        + "user_info " + Script.LocalStorage.get("user_info") + "\n"
+        + "token " + Script.LocalStorage.get("token") + "\n"
+        + "selectedCharacter " + Script.LocalStorage.get("selectedCharacter") + "\n"
+        + "gameResult " + Script.LocalStorage.get("gameResult") + "\n"
     }
   }
 }
