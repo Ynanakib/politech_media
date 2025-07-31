@@ -15,7 +15,7 @@
       <div class="auth" v-if="currentStep === 'auth'">
         <p class="text">Войдите через VK ID</p>
         <div id="VkIdSdkOneTap"></div>
-        <!-- <button @click="debug">DEBUG</button> -->
+        <button @click="debug">DEBUG</button>
       </div>
       <div class="fill1" v-if="currentStep === 'fill1'">
         <div v-if="formError" class="form-error">{{ formError }}</div>
@@ -36,22 +36,19 @@
         <button @click="validateFill1">Продолжить →</button>
       </div>
       <div class="fill2" v-if="currentStep === 'fill2'">
-        <div v-if="formError" class="form-error">{{ formError }}</div>
-        <!-- <label for="city">Регион</label>
-        <input type="text" id="city" v-model="regionInput" @input="onRegionInput" @focus="showRegionDropdown = true" @blur="hideDropdown('region')" autocomplete="off" required>
-        <ul v-if="showRegionropdown && filteredRegions.length" class="dropdown">
-          <li v-for="region in filteredRegionos" :key="region" @mousedown.prevent="selectRegion(region)">{{ region }}</li>
-        </ul> -->
+
         <label for="city">Город</label>
-        <input type="text" id="city" v-model="cityInput" @input="onCityInput"@blur="hideDropdown('city')" autocomplete="off" required>
-        <!--  @focus="showCityDropdown = true"  <ul v-if="showCityDropdown && filteredCities.length" class="dropdown">
-          <li v-for="city in filteredCities" :key="city" @mousedown.prevent="selectCity(city)">{{ city }}</li>
-        </ul> -->
+        <input type="text" id="city" v-model="cityInput" @input="onCityInput" @blur="hideDropdown('city')" autocomplete="off" @focus="showCityDropdown = true" required>
+        <ul v-if="showCityDropdown && filteredCities.length" class="dropdown">
+          <li v-for="city in filteredCities" :key="city" @mousedown.prevent="selectCity(city.title, city.id)">{{ city.title + " " + ( city.area ? city.area : "") }}</li>
+        </ul>
+
         <label for="school">Школа</label>
-        <input type="text" id="school" v-model="schoolInput" @input="onSchoolInput" @blur="hideDropdown('school')" autocomplete="off" required>
-        <!--  @focus="showSchoolDropdown = true"  <ul v-if="showSchoolDropdown && filteredSchools.length" class="dropdown">
-          <li v-for="school in filteredSchools" :key="school" @mousedown.prevent="selectSchool(school)">{{ school }}</li>
-        </ul> -->
+        <input type="text" id="school" v-model="schoolInput" @input="onSchoolInput" @blur="hideDropdown('school')" autocomplete="off" @focus="showSchoolDropdown = true" required>
+        <ul v-if="showSchoolDropdown && filteredSchools.length" class="dropdown">
+          <li v-for="school in filteredSchools" :key="school" @mousedown.prevent="selectSchool(school.title)">{{ school.title }}</li>
+        </ul>
+
         <label for="grade">Класс обучения</label>
         <select name="grade" id="grade" v-model="registraton.grade">
           <option value="7">7</option>
@@ -61,11 +58,13 @@
           <option value="11">11</option>
           <option value="12">Я после колледжа/техникума</option>
         </select>
+
         <div class="agreement-check">
           <input type="checkbox" id="agreementCheck" v-model="agreementChecked" />
           <label for="agreementCheck">Я ознакомлен (-а) и принимаю условия <span class="agreement-link" @click="showAgreement">пользовательского соглашения</span></label>
         </div>
         <button @click="goToTesting" :disabled="!agreementChecked">Продолжить →</button>
+
       </div>
     </div>
   </main>
@@ -94,13 +93,14 @@ export default {
       phoneInput: '',
       emailError: false,
       cityInput: '',
+      cityId: 110,
+      isHandCityInput: true,
       schoolInput: '',
       showCityDropdown: false,
       showSchoolDropdown: false,
-      cities: ["Пермь", "Москва", "Екатеринбург", "Казань", "Сочи"],
-      schools: ["Школа №1", "Гимназия №2", "Лицей №3", "Школа №4", "Школа №5"],
+      cities: [],
+      schools: [],
       agreementChecked: false,
-      agreementScrolled: false,
       agreementHtml: '',
       formError: '',
       nameError: {
@@ -113,20 +113,24 @@ export default {
   computed: {
     filteredCities() {
       const q = this.cityInput.toLowerCase()
-      return this.cities.filter(city => city.toLowerCase().includes(q))
+      return this.cities.filter(city => city.title.toLowerCase().includes(q))
     },
     filteredSchools() {
       const q = this.schoolInput.toLowerCase()
-      return this.schools.filter(school => school.toLowerCase().includes(q))
+      return this.schools.filter(school => { 
+        return school.title.toLowerCase().includes(q) && school.city_id == this.cityId
+      })
     }
   },
   mounted(){
-    VKID.Config.init({
-      app: process.env.VUE_APP_VKAPP_ID,
-      redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
-      scope: 'email messages phone groups',
-      mode: VKID.ConfigAuthMode.Redirect
-    })
+    fetch("/media/cities.json").then(req => req.json()).then(req => this.cities = req)
+    fetch("/media/schools.json").then(req => req.json()).then(req => this.schools = req)
+    // VKID.Config.init({
+    //   app: process.env.VUE_APP_VKAPP_ID,
+    //   redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
+    //   scope: 'email messages phone groups',
+    //   mode: VKID.ConfigAuthMode.Redirect
+    // })
     if(Script.LocalStorage.get("state") == "vk" || Script.LocalStorage.get("state") == "auth" || Script.LocalStorage.get("state") == null || Script.LocalStorage.get("state") == undefined){
       this.currentStep = 'auth'
       this.$nextTick(() => { this.renderVkButton() })
@@ -146,10 +150,10 @@ export default {
       .then(html => { this.agreementHtml = html; })
   },
   methods: {
-    // debug(){
-    //   Script.LocalStorage.set("reg", 1)
-    //   window.location.href = process.env.VUE_APP_BASE_URL + '/auth
-    // },
+    debug(){
+      Script.LocalStorage.set("state", "reg")
+      window.location.href = process.env.VUE_APP_BASE_URL + '/auth'
+    },
     switchPdf(){
       this.currentStep = this.currentStep === 'user_agreement_pdf' ? 'user_agreement' : 'user_agreement_pdf'
     },
@@ -255,10 +259,13 @@ export default {
     },
     onCityInput() {
       this.showCityDropdown = true
+      this.isHandCityInput = true
     },
-    selectCity(city) {
+    selectCity(city, cityId) {
+      this.isHandCityInput = false
       this.cityInput = city
       this.registraton.city = city
+      this.cityId = cityId
       this.showCityDropdown = false
     },
     onSchoolInput() {
@@ -270,10 +277,15 @@ export default {
       this.showSchoolDropdown = false
     },
     hideDropdown(type) {
-      setTimeout(() => {
-        if (type === 'city') this.showCityDropdown = false
+        if (type === 'city'){
+          this.showCityDropdown = false
+          if(this.isHandCityInput){
+            console.log(this.cityId )
+            this.cityId = this.cities.filter(city => city.title.toLowerCase() == this.cityInput.toLowerCase())[0].id
+            console.log(this.cityId )
+          }
+        }
         if (type === 'school') this.showSchoolDropdown = false
-      }, 200)
     },
     goToTesting() {
       this.formError = ''
