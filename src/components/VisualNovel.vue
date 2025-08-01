@@ -141,7 +141,7 @@ export default {
     animateCharacter() {
       this.characterVisible = true;
       this.characterPosition = -30;
-      const targetPosition = 5;
+      const targetPosition = 20;
       const speed = 0.5;
       const animate = () => {
         if (this.characterPosition < targetPosition) {
@@ -342,7 +342,7 @@ export default {
   position: relative;
   bottom: -50px;
   height: 100%;
-  width: 50vw;
+  width: 100vw;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: bottom;
@@ -401,7 +401,7 @@ export default {
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   box-shadow: 0 0 20px #667eea;
 }
-.answer-btn:hover:not(:disabled) {
+.answer-btn:hover{
   transform: translateY(-2px);
   box-shadow: 
     0 0 30px #667eea,
@@ -420,28 +420,19 @@ export default {
     0 0 50px #f093fb;
 }
 @media (max-width: 900px) {
+  .answer-btn:hover{
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 20px #667eea;
+  }
   .top-section{
     background-size: cover;
   }
   .character {
-    bottom: -20px;
-    height: 60vh;
-    width: 60%;
-  }
-  .question-section {
-    display: block;
-    padding: 6px;
-    width: 100%;
-  }
-}
-@media (max-width: 480px) {
-  .top-section{
-    background-size: cover;
-  }
-  .character {
-    bottom: -20px;
-    height: 60vh;
-    width: 60%;
+    position: relative;
+    height: 100vh;
+    width: 80vw;
+    bottom: 220px
   }
   .question-section {
     display: block;
@@ -454,10 +445,9 @@ export default {
     background-size: cover;
   }
   .character {
-    bottom: -20px;
-    left: -100px;
-    height: 60vh;
-    width: 100vh;
+    position: relative;
+    height: 100vh;
+    width: 120vw;
   }
   .answers {
     display: flex;
@@ -490,9 +480,9 @@ export default {
     background-size: cover;
   }
   .character {
-    bottom: -20px;
-    height: 60vh;
-    width: 60%;
+    bottom: 220px;
+    height: 100vh;
+    width: 100%;
   }
   .question-section {
     display: block;

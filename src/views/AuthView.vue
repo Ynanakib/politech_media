@@ -441,7 +441,7 @@ main {
 
 .block {
   border-radius: 20px;
-  background: #fff;
+  background: #1a1a2e;
   padding: 40px 60px;
   max-width: 470px;
   width: 90%;
@@ -459,6 +459,7 @@ main {
 }
 .logo img {
   max-width: 170px;
+  filter: invert();
 }
 .auth p.text {
   margin: 30px 0;
@@ -508,6 +509,7 @@ label{
   margin-top: 18px;
   color: black;
   font-weight: 600;
+  color: #fff;
 }
 label.white{
   color: white;
@@ -548,7 +550,7 @@ select{
 }
 .dropdown {
   position: absolute;
-  background: #fff;
+  background: #2a2a4b;
   border: 2px solid #764ba2;
   max-height: 220px;
   overflow-y: auto;
@@ -564,9 +566,10 @@ select{
   transition: background 0.15s;
   color: #23234b;
   font-weight: 500;
+  color: white
 }
 .dropdown li:hover {
-  background: #f093fb22;
+  background: #5555bb;
 }
 .error {
   color: #f5576c;

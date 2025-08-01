@@ -37,13 +37,13 @@ export default {
     }
   },
   mounted() {
-    if(
-      Script.LocalStorage.get("token") == undefined || 
-      Script.LocalStorage.get("token") == null || 
-      Script.LocalStorage.get("vk_tokens") == null || 
-      Script.LocalStorage.get("vk_tokens") == undefined
-    )
-      this.$router.push("/");
+    // if(
+    //   Script.LocalStorage.get("token") == undefined || 
+    //   Script.LocalStorage.get("token") == null || 
+    //   Script.LocalStorage.get("vk_tokens") == null || 
+    //   Script.LocalStorage.get("vk_tokens") == undefined
+    // )
+    //   this.$router.push("/");
     window.scrollTo(0, 1);
     this.checkInitialView()
   },
