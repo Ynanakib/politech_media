@@ -33,6 +33,7 @@ export default {
   data() {
     return {
       currentView: 'character-selection',
+      selectedCharacter: null,
       totalQuestions: 0
     }
   },
@@ -63,24 +64,33 @@ export default {
           this.currentView = 'game'
         }
       } else if (savedCharacter) {
+        // Character is selected but no game progress - start the game
         this.currentView = 'game'
+        this.selectedCharacter = JSON.parse(savedCharacter)
       } else {
         this.currentView = 'character-selection'
       }
     },
     
-    onCharacterSelected() {
+    onCharacterSelected(character) {
+      this.selectedCharacter = character
       this.currentView = 'game'
     },
     
     onGameCompleted(answeredQuestions) {
       this.totalQuestions = answeredQuestions
+      // Save game progress to show congratulations on reload
+      Script.LocalStorage.set('gameProgress', JSON.stringify({
+        currentScene: 6, // Mark as completed
+        answeredQuestions: answeredQuestions
+      }))
       this.currentView = 'congratulations'
     },
     
     onPlayAgain() {
       // Clear game progress but keep character
       Script.LocalStorage.remove('gameProgress')
+      Script.LocalStorage.remove('gameResult')
       this.currentView = 'game'
     },
     
@@ -88,6 +98,8 @@ export default {
       // Clear everything and go back to character selection
       Script.LocalStorage.remove('selectedCharacter')
       Script.LocalStorage.remove('gameProgress')
+      Script.LocalStorage.remove('gameResult')
+      this.selectedCharacter = null
       this.currentView = 'character-selection'
     }
   }
