@@ -38,33 +38,30 @@ export default {
     }
   },
   mounted() {
-    // if(
-    //   Script.LocalStorage.get("token") == undefined || 
-    //   Script.LocalStorage.get("token") == null || 
-    //   Script.LocalStorage.get("vk_tokens") == null || 
-    //   Script.LocalStorage.get("vk_tokens") == undefined
-    // )
-    //   this.$router.push("/");
+    if(
+      Script.LocalStorage.get("token") == undefined || 
+      Script.LocalStorage.get("token") == null || 
+      Script.LocalStorage.get("vk_tokens") == null || 
+      Script.LocalStorage.get("vk_tokens") == undefined
+    )
+      this.$router.push("/");
     window.scrollTo(0, 1);
     this.checkInitialView()
   },
   methods: {
     checkInitialView() {
-      // Check if character is already selected
       const savedCharacter = Script.LocalStorage.get('selectedCharacter')
       const savedProgress = Script.LocalStorage.get('gameProgress')
       
       if (savedCharacter && savedProgress) {
-        // Check if game is completed
         const progress = JSON.parse(savedProgress)
-        if (progress.currentScene >= 6) { // Assuming 7 questions total (0-6)
+        if (progress.currentScene >= 6) {
           this.currentView = 'congratulations'
           this.totalQuestions = progress.answeredQuestions || 7
         } else {
           this.currentView = 'game'
         }
       } else if (savedCharacter) {
-        // Character is selected but no game progress - start the game
         this.currentView = 'game'
         this.selectedCharacter = JSON.parse(savedCharacter)
       } else {
@@ -79,9 +76,7 @@ export default {
     
     onGameCompleted(answeredQuestions) {
       this.totalQuestions = answeredQuestions
-      // Save game progress to show congratulations on reload
       Script.LocalStorage.set('gameProgress', JSON.stringify({
-        currentScene: 6, // Mark as completed
         answeredQuestions: answeredQuestions
       }))
       this.currentView = 'congratulations'
@@ -95,7 +90,6 @@ export default {
     },
     
     onChangeCharacter() {
-      // Clear everything and go back to character selection
       Script.LocalStorage.remove('selectedCharacter')
       Script.LocalStorage.remove('gameProgress')
       Script.LocalStorage.remove('gameResult')
