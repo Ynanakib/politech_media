@@ -6,16 +6,13 @@
           class="character" 
           :class="{ 'character-enter': characterVisible }"
           :style="{ 
-            backgroundImage: `url(${characterImage})`,
-            right: characterPosition + '%'
+            backgroundImage: `url(${characterImage})`
           }"
         ></div>
     </div>
     <!-- Bottom: Question and Answers -->
     <div class="bottom-section">
-      <div class="dialogue-box" v-if="currentQuestionData && currentQuestionData.dialogue">
-        <p class="dialogue-text">{{ currentQuestionData.dialogue }}</p>
-      </div>
+      <!-- Question and Answers Section -->
       <div class="question-section" v-if="currentQuestionData && currentQuestionData.question">
         <h3 class="question">{{ currentQuestionData.question }}</h3>
         <div class="answers">
@@ -42,11 +39,10 @@ export default {
   data() {
     return {
       characterVisible: false,
-      characterPosition: 80,
+      selectedCharacter: null,
       selectedAnswer: null,
       loading: true,
       isTransitioning: false,
-      characterImage: null,
       allQuestions: null,
       currentQuestions: [],
       currentQuestionIndex: 0,
@@ -70,6 +66,9 @@ export default {
     },
     currentAnswers() {
       return this.shuffledAnswers;
+    },
+    characterImage() {
+      return this.selectedCharacter?.image || '';
     },
     currentBackground() {
       // First 6 questions: always main.png
@@ -109,6 +108,14 @@ export default {
         }
         this.shuffledAnswers = this.shuffleArray(answersArr);
       }
+    },
+    selectedCharacter: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          this.animateCharacter();
+        }
+      }
     }
   },
   async mounted() {
@@ -119,9 +126,8 @@ export default {
   methods: {
     async loadData() {
       try {
-        // const questionsResponse = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/media/questions');
-        // this.allQuestions = await questionsResponse.json();
-        this.allQuestions = JSON.parse(`{ "root": [ { "question": "Какие качества делают тебя сильнее?", "variants": { "akf/mtf" : "находчивость, умение быстро обучаться", "sf/idst" : "ловкость и аккуратность", "fpmm/etf/gumf" : "острый ум и креативность", "htf/gnf" : "смелость и энергичность" } }, { "question": "Какой образ тебе подходит?", "variants": { "akf/mtf" : "генератор идей, изобретатель", "sf/idst" : "на все руки мастер", "fpmm/etf/gumf" : "гений критического мышления", "htf/gnf" : "любитель экстрима" } }, { "question": "Какой мастер-класс привлёк бы твоё внимание на выставке «Образование и карьера»? ", "variants": { "akf/mtf" : "управление беспилотным летательным аппаратом", "sf/idst" : "эксплуатация строительных 3D-принтеров", "fpmm/etf/gumf" : "создание и продвижение видеоигр", "htf/gnf" : "выделение ДНК из пищевых продуктов" } }, { "question": "Человеческой цивилизации угрожает скорое исчезновение. Чтобы её спасти, тебе понадобится: ", "variants": { "akf/mtf" : "суперкомпьютер", "sf/idst" : "супер-автомобиль", "fpmm/etf/gumf" : "супер-скрипт", "htf/gnf" : "супер-энергия" } }, { "question": "Ты хорошо учился в школе. Осталось несколько шагов, чтобы сбылась твоя мечта:", "variants": { "akf/mtf" : "запускать космические корабли", "sf/idst" : "строить современные города", "fpmm/etf/gumf" : "обучать людей и роботов", "htf/gnf" : "заниматься экологией и биотехнологиями" } }, { "question": "Какое рабочее место наиболее приглянулось тебе?", "variants": { "akf/mtf" : "испытательный стенд", "sf/idst" : "конструкторское бюро", "fpmm/etf/gumf" : "место у персонального компьютера, работа с нейросетью", "htf/gnf" : "лаборатория" } } ], "appended_question": { "question": "Ты согласился участвовать в эксперименте. И теперь тебе предстоит: ", "variants": { "akf/mtf" : "испытать работу ракетного двигателя на альтернативном топливе", "sf/idst" : "проверить на прочность сооружение из инновационных материалов", "fpmm/etf/gumf" : "протестировать искусственный интеллект на креативность", "htf/gnf" : "создать трёхмерную модель горной породы в виртуальной лаборатории" } }, "groups":[ [ { "question": " Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?", "variants": { "akf" : "буду делать эскизы летательных аппаратов будущего", "mtf" : "начну собирать механическую руку-манипулятор для робота" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "akf" : "создание прототипов деталей ракетных двигателей", "mtf" : "лазерная печать металлических изделий на основе 3D-модели" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "akf" : "предприятия авиастроения и космической отрасли", "mtf" : "предприятия металлургической отрасли и машиностроения" } } ], [ { "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?", "variants": { "sf" : "смастерю макет своего дома мечты", "idst" : "соберу модель легендарной Chevrolet Camaro" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "sf" : "цифровое моделирование зданий под заказ", "idst" : "разработка автомобиля на альтернативной энергии" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "sf" : "предприятия и компании в индустрии строительства", "idst" : "предприятия транспортной отрасли" } } ], [ { "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?", "variants": { "htf" : "проведу химические опыты из подручных средств", "gnf" : "составлю каталог своей коллекции минералов" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "htf" : "лаборант в лаборатории инновационной фармацевтики", "gnf" : "отправлюсь в исследовательскую экспедицию с геологами" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "htf" : "компании, выпускающие химическую продукцию", "gnf" : "компании нефтегазовой отрасли" } } ], [ { "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома? ", "variants": { "etf" : "переустановлю ПО на своём компьютере", "gumf" : "изучу тренды в соцсетях для продвижения своего блога", "fpmm" : "помогу друзьям решить сложные задачки по математике" } }, { "question": "Какую подработку ты выберешь, если будет такая возможность?", "variants": { "etf" : "разработка мобильного приложения", "gumf" : "работа над проектом по развитию городской среды", "fpmm" : "обучение нейросетей" } }, { "question": "Где ты видишь себя после окончания Политеха?", "variants": { "etf" : "IT-компании, предприятия по производству роботов", "gumf" : "консалтинговые фирмы, государственные структуры и бизнесы", "fpmm" : "компании, выпускающие электронику, технологии с оптоволокном и пр." } } ] ] }`);
+        const questionsResponse = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/media/questions');
+        this.allQuestions = await questionsResponse.json();
         this.currentQuestions = this.allQuestions.root;
         this.totalQuestions = this.allQuestions.root.length;
         this.loading = false;
@@ -133,39 +139,25 @@ export default {
     loadGameProgress() {
       const savedCharacter = Script.LocalStorage.get('selectedCharacter');
       if (savedCharacter) {
-        this.characterImage = JSON.parse(savedCharacter).image;
+        this.selectedCharacter = JSON.parse(savedCharacter);
+        console.log('Loaded character:', this.selectedCharacter);
+      } else {
+        console.log('No character found in localStorage');
       }
       Script.LocalStorage.remove('gameProgress');
-    },
-    saveGameProgress() {},
-    animateCharacter() {
-      this.characterVisible = true;
-      this.characterPosition = -30;
-      const targetPosition = 20;
-      const speed = 0.5;
-      const animate = () => {
-        if (this.characterPosition < targetPosition) {
-          this.characterPosition += speed;
-          requestAnimationFrame(animate);
-        }
-      };
-      animate();
     },
     selectAnswer(answerKey) {
       if (this.isTransitioning) return;
       this.isTransitioning = true;
       this.selectedAnswer = answerKey;
       this.totalAnswered++;
-      // Tiebreaker logic
       if (this.gameState === 'tiebreaker') {
-        // The answerKey is the group key
         this.dominantBranchGroup = answerKey;
         this.moveToGroupQuestions();
         this.isTransitioning = false;
         this.selectedAnswer = null;
         return;
       }
-      // Normal logic
       const branches = answerKey.split('/');
       branches.forEach(branch => {
         this.branchScores[branch] = (this.branchScores[branch] || 0) + 1;
@@ -239,16 +231,17 @@ export default {
       if (!this.dominantBranchGroup) {
         this.determineBranchGroup();
       }
+      
       this.gameState = 'group_questions';
+      this.currentQuestionIndex = 0;
+      this.selectedAnswer = null;
+      this.branchScores = {}; // Reset scores for the final decision
+      
+      // Load the appropriate group questions based on dominantBranchGroup
       const groupIndex = this.getGroupIndex(this.dominantBranchGroup);
-      if (groupIndex !== -1) {
+      if (groupIndex >= 0 && this.allQuestions.groups[groupIndex]) {
         this.currentQuestions = this.allQuestions.groups[groupIndex];
-        this.totalQuestions += this.currentQuestions.length;
-        this.currentQuestionIndex = 0;
-        this.selectedAnswer = null;
-        this.branchScores = {}; // Reset scores for the final decision
-      } else {
-        this.finishGame(); // No group questions found
+        this.totalQuestions = this.currentQuestions.length;
       }
     },
     getGroupIndex(groupKey) {
@@ -287,6 +280,7 @@ export default {
         }
       }
       this.dominantBranch = finalBranch;
+      
       this.gameState = 'done';
       Script.LocalStorage.set('gameResult', JSON.stringify({
         branch: this.dominantBranch,
@@ -305,6 +299,7 @@ export default {
       })
       this.$emit('game-completed', this.totalAnswered);
     },
+    
     shuffleArray(array) {
       // return array;
       let arr = array.slice();
@@ -313,6 +308,12 @@ export default {
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
       return arr;
+    },
+    saveGameProgress() {},
+    animateCharacter() {
+      this.characterVisible = true;
+      console.log('Character visible:', this.characterVisible);
+      console.log('Character image:', this.characterImage);
     }
   }
 }
@@ -418,6 +419,66 @@ export default {
   box-shadow: 
     0 0 30px #f093fb,
     0 0 50px #f093fb;
+}
+
+.character-response {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.response-box {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 600px;
+  box-shadow: 0 0 30px #0ff;
+}
+
+.response-text {
+  font-size: 1.3rem;
+  color: #fff;
+  line-height: 1.6;
+  margin: 0;
+  text-shadow: 0 0 5px #0ff;
+  text-align: center;
+}
+
+.continue-btn {
+  padding: 15px 40px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #f0f, #ff00ff);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 20px #f0f;
+}
+
+.continue-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px #f0f;
+}
+
+@media (max-width: 600px) {
+  .response-text {
+    font-size: 1rem;
+  }
+  
+  .response-box {
+    padding: 20px;
+    margin: 10px;
+  }
+  
+  .continue-btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+  }
 }
 @media (max-width: 900px) {
   .answer-btn:hover{

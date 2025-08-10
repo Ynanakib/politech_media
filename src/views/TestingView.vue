@@ -33,30 +33,29 @@ export default {
   data() {
     return {
       currentView: 'character-selection',
+      selectedCharacter: null,
       totalQuestions: 0
     }
   },
   mounted() {
-    // if(
-    //   Script.LocalStorage.get("token") == undefined || 
-    //   Script.LocalStorage.get("token") == null || 
-    //   Script.LocalStorage.get("vk_tokens") == null || 
-    //   Script.LocalStorage.get("vk_tokens") == undefined
-    // )
-    //   this.$router.push("/");
+    if(
+      Script.LocalStorage.get("token") == undefined || 
+      Script.LocalStorage.get("token") == null || 
+      Script.LocalStorage.get("vk_tokens") == null || 
+      Script.LocalStorage.get("vk_tokens") == undefined
+    )
+      this.$router.push("/");
     window.scrollTo(0, 1);
     this.checkInitialView()
   },
   methods: {
     checkInitialView() {
-      // Check if character is already selected
       const savedCharacter = Script.LocalStorage.get('selectedCharacter')
       const savedProgress = Script.LocalStorage.get('gameProgress')
       
       if (savedCharacter && savedProgress) {
-        // Check if game is completed
         const progress = JSON.parse(savedProgress)
-        if (progress.currentScene >= 6) { // Assuming 7 questions total (0-6)
+        if (progress.currentScene >= 6) {
           this.currentView = 'congratulations'
           this.totalQuestions = progress.answeredQuestions || 7
         } else {
@@ -64,30 +63,37 @@ export default {
         }
       } else if (savedCharacter) {
         this.currentView = 'game'
+        this.selectedCharacter = JSON.parse(savedCharacter)
       } else {
         this.currentView = 'character-selection'
       }
     },
     
-    onCharacterSelected() {
+    onCharacterSelected(character) {
+      this.selectedCharacter = character
       this.currentView = 'game'
     },
     
     onGameCompleted(answeredQuestions) {
       this.totalQuestions = answeredQuestions
+      Script.LocalStorage.set('gameProgress', JSON.stringify({
+        answeredQuestions: answeredQuestions
+      }))
       this.currentView = 'congratulations'
     },
     
     onPlayAgain() {
       // Clear game progress but keep character
       Script.LocalStorage.remove('gameProgress')
+      Script.LocalStorage.remove('gameResult')
       this.currentView = 'game'
     },
     
     onChangeCharacter() {
-      // Clear everything and go back to character selection
       Script.LocalStorage.remove('selectedCharacter')
       Script.LocalStorage.remove('gameProgress')
+      Script.LocalStorage.remove('gameResult')
+      this.selectedCharacter = null
       this.currentView = 'character-selection'
     }
   }
