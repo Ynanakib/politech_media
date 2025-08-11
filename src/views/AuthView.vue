@@ -15,6 +15,7 @@
       <div class="auth" v-if="currentStep === 'auth'">
         <p class="text">Войдите через VK ID</p>
         <div id="VkIdSdkOneTap"></div>
+        <!-- <button @click="debug()">ДЕБАГ</button> -->
       </div>
       <div class="fill1" v-if="currentStep === 'fill1'">
         <div v-if="formError" class="form-error">{{ formError }}</div>
@@ -151,7 +152,7 @@ export default {
   methods: {
     debug(){
       Script.LocalStorage.set("state", "reg")
-      window.location.href = process.env.VUE_APP_BASE_URL + '/auth'
+      window.location.href =  '/auth'
     },
     switchPdf(){
       this.currentStep = this.currentStep === 'user_agreement_pdf' ? 'user_agreement' : 'user_agreement_pdf'
