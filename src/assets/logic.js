@@ -44,6 +44,7 @@ class TestingLogic {
   async loadQuestions() {
     try {
       const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/media/questions');
+      // const response = await fetch('/media/questions.json');
       this.allQuestions = await response.json();
       return Promise.resolve();
     } catch (error) {
