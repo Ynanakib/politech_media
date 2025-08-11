@@ -43,82 +43,38 @@
 
 <script>
 import * as Script from "@/assets/scripts.js"
+import { CharacterFactory } from '@/assets/newScript.js'
+
 export default {
   name: 'CharacterSelection',
   data() {
     return {
       selectedCharacter: null,
       mobileActiveCharacterId: null,
-      characters: [
-        {
-          id: 1,
-          name: "Даша",
-          description: "🌟 Спецфича: держать группу в (страхе) дедлайнах\n🚀 Суперскилл: знает ФИО всех преподавателей\n💣 Слабость: переживает приступ паники при потере журнала посещаемости",
-          class: "Староста группы",
-          image: './media/img/characters/dasha.png',
-          mobileInfo: `🎮 Староста группы\n📌 крутая ДАША`,
-          responses: {
-            'akf/mtf': "Отлично! АКФ/МТФ - это твой путь! 🚀 Там ты сможешь реализовать свой потенциал в авиации и машиностроении. Готов(а) продолжить?",
-            'sf/idst': "Превосходно! СФ/ИДСТ - твой выбор! 🏗️ Строительство и транспорт ждут тебя. Продолжаем?",
-            'fpmm/etf/gumf': "Великолепно! ФПММ/ЭТФ/GUMF - твоя стихия! 💻 IT и управление - твоё будущее. Готов(а) к следующим вопросам?",
-            'htf/gnf': "Потрясающе! ХТФ/GNF - твой факультет! 🔬 Химия и геология - твоя дорога. Продолжаем?"
-          },
-          finalResponse: "Поздравляю! Ты успешно прошёл(а) профмиссию! 🎉 Твой результат показывает отличное понимание своих склонностей. Желаю удачи в учёбе! 📚"
-        },
-        {
-          id: 2,
-          name: "Макс",
-          description: "🌟 Спецфича: организация крутых ивентов и заряд атмосферы на уровне бога мемов\n🚀 Суперскилл: дружба со всеми в универе гарантирована\n💣 Слабость: частенько пропускает пары ради грандиозных мероприятий",
-          class: "Студент-активист",
-          image: './media/img/characters/max.png',
-          mobileInfo: `🎮 Студент-активист\n📌 нереальный МАКС`,
-          responses: {
-            'akf/mtf': "Вау! АКФ/МТФ - это круто! 🚀 Авиация и машиностроение - твоя стихия! Готов(а) к следующим вопросам?",
-            'sf/idst': "Классно! СФ/ИДСТ - отличный выбор! 🏗️ Строительство и транспорт - твоё призвание! Продолжаем?",
-            'fpmm/etf/gumf': "Супер! ФПММ/ЭТФ/GUMF - твоя территория! 💻 IT и управление - твоя сила! Готов(а) к продолжению?",
-            'htf/gnf': "Ах, ХТФ/GNF - это что-то! 🔬 Химия и геология - твоя страсть! Продолжаем?"
-          },
-          finalResponse: "Вау! Ты молодец! 🎉 Профмиссия пройдена на отлично! Твой результат просто супер! Удачи в учёбе! 🚀"
-        },
-        {
-          id: 3,
-          name: "Вадим Сергеевич",
-          description: "🌟 Спецфича: объясняет сложные темы простыми словами\n🚀 Суперскилл: мотивирует стать лучшей версией себя, применяя прогрессивные методы обучения\n💣 Слабость: предпочитает проведение пар оформлению бумаг, замедляя административные процессы",
-          class: "Преподаватель",
-          image: './media/img/characters/vadim.png',
-          mobileInfo: `🎮 Преподаватель\n📌 исследователь \nВАДИМ СЕРГЕЕВИЧ`,
-          responses: {
-            'akf/mtf': "Интересно! АКФ/МТФ показывает твою склонность к техническим наукам. 🚀 Авиация и машиностроение - отличный выбор. Готов(а) продолжить?",
-            'sf/idst': "Замечательно! СФ/ИДСТ отражает твою практическую направленность. 🏗️ Строительство и транспорт - перспективное направление. Продолжаем?",
-            'fpmm/etf/gumf': "Отлично! ФПММ/ЭТФ/GUMF говорит о твоём аналитическом мышлении. 💻 IT и управление - современные технологии. Готов(а) к следующим вопросам?",
-            'htf/gnf': "Превосходно! ХТФ/GNF показывает твою исследовательскую натуру. 🔬 Химия и геология - фундаментальные науки. Продолжаем?"
-          },
-          finalResponse: "Отличная работа! 🎉 Ты показал(а) глубокое понимание своих способностей. Результат говорит о правильном выборе направления. Успехов в учёбе! 📚"
-        },
-        {
-          id: 4,
-          name: "Барсик",
-          description: "🌟 Спецфича: расслабляющий мурр-эффект\n🚀 Суперскилл: мгновенно восстанавливает потерянную энергию\n💣 Слабость: комплекс ПНИПУ - ну уж очень любит лазить по деревьям и застревать на них",
-          class: "Кот учёный",
-          image: './media/img/characters/cat.png',
-          mobileInfo: `🎮 Кот учёный\n📌 магистр БАРСИК`,
-          responses: {
-            'akf/mtf': "Мяу! АКФ/МТФ - это полёт! 🚀 Авиация и машиностроение - твоя высота! Готов(а) к продолжению?",
-            'sf/idst': "Мурр! СФ/ИДСТ - это основа! 🏗️ Строительство и транспорт - твоя стабильность! Продолжаем?",
-            'fpmm/etf/gumf': "Мяу-мяу! ФПММ/ЭТФ/GUMF - это технологии! 💻 IT и управление - твоя будущность! Готов(а) к следующим вопросам?",
-            'htf/gnf': "Муррр! ХТФ/GNF - это наука! 🔬 Химия и геология - твоя природа! Продолжаем?"
-          },
-          finalResponse: "Мяу! Поздравляю! 🎉 Ты прошёл(а) профмиссию как настоящий профессионал! Твой результат просто муррр! Удачи! 🐱"
-        }
-      ]
+      characters: []
     }
   },
   mounted() {
+    // Initialize characters from CharacterFactory
+    this.characters = CharacterFactory.getAllCharacters().map(character => ({
+      id: character.id,
+      name: character.name,
+      description: character.description,
+      class: character.class,
+      image: character.image,
+      mobileInfo: character.mobileDescription,
+      responses: character.facultyResponses,
+      finalResponse: character.finalLine
+    }));
+
     // Check if character is already selected
     const savedCharacter = Script.LocalStorage.get('selectedCharacter')
     if (savedCharacter) {
-      this.selectedCharacter = JSON.parse(savedCharacter)
-      this.confirmSelection()
+      const characterData = JSON.parse(savedCharacter)
+      this.selectedCharacter = this.characters.find(char => char.id === characterData.id)
+      if (this.selectedCharacter) {
+        this.confirmSelection()
+      }
     }
   },
   methods: {
@@ -136,11 +92,16 @@ export default {
     },
     confirmSelection() {
       if (this.selectedCharacter) {
-        // Save to Script
-        Script.LocalStorage.set('selectedCharacter', JSON.stringify(this.selectedCharacter))
+        // Get the full character object from CharacterFactory
+        const fullCharacter = CharacterFactory.getCharacterById(this.selectedCharacter.id)
         
-        // Emit event to parent to switch to character replica component
-        this.$emit('character-selected', this.selectedCharacter)
+        if (fullCharacter) {
+          // Save to Script using the full character object
+          Script.LocalStorage.set('selectedCharacter', JSON.stringify(fullCharacter.toJSON()))
+          
+          // Emit event to parent with the full character object
+          this.$emit('character-selected', fullCharacter)
+        }
       }
     }
   },

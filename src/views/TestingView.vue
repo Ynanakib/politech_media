@@ -4,9 +4,10 @@
       v-if="currentView === 'character-selection'"
       @character-selected="onCharacterSelected"
     />
-    <VisualNovel 
+    <TestGame 
       v-else-if="currentView === 'game'"
       @game-completed="onGameCompleted"
+      @no-character="onNoCharacter"
     />
     <CongratulationsScreen 
       v-else-if="currentView === 'congratulations'"
@@ -19,7 +20,7 @@
 
 <script>
 import CharacterSelection from '@/components/CharacterSelection.vue'
-import VisualNovel from '@/components/VisualNovel.vue'
+import TestGame from '@/components/TestGame.vue'
 import CongratulationsScreen from '@/components/Congratulations.vue'
 import * as Script from "@/assets/scripts.js"
 
@@ -27,7 +28,7 @@ export default {
   name: 'App',
   components: {
     CharacterSelection,
-    VisualNovel,
+    TestGame,
     CongratulationsScreen
   },
   data() {
@@ -52,19 +53,23 @@ export default {
     checkInitialView() {
       const savedCharacter = Script.LocalStorage.get('selectedCharacter')
       const savedProgress = Script.LocalStorage.get('gameProgress')
+      const gameResult = Script.LocalStorage.get('gameResult')
       
-      if (savedCharacter && savedProgress) {
-        const progress = JSON.parse(savedProgress)
-        if (progress.currentScene >= 6) {
-          this.currentView = 'congratulations'
-          this.totalQuestions = progress.answeredQuestions || 7
-        } else {
-          this.currentView = 'game'
-        }
+      if (savedCharacter && gameResult) {
+        // Game is completed, show congratulations
+        this.currentView = 'congratulations'
+        const result = JSON.parse(gameResult)
+        this.totalQuestions = result.totalAnswered || 7
+      } else if (savedCharacter && savedProgress) {
+        // Game in progress, continue
+        this.currentView = 'game'
+        this.selectedCharacter = JSON.parse(savedCharacter)
       } else if (savedCharacter) {
+        // Character selected but no progress, start new game
         this.currentView = 'game'
         this.selectedCharacter = JSON.parse(savedCharacter)
       } else {
+        // No character selected, show character selection
         this.currentView = 'character-selection'
       }
     },
@@ -76,9 +81,7 @@ export default {
     
     onGameCompleted(answeredQuestions) {
       this.totalQuestions = answeredQuestions
-      Script.LocalStorage.set('gameProgress', JSON.stringify({
-        answeredQuestions: answeredQuestions
-      }))
+      // Game result is already saved by TestGame component
       this.currentView = 'congratulations'
     },
     
@@ -94,6 +97,11 @@ export default {
       Script.LocalStorage.remove('gameProgress')
       Script.LocalStorage.remove('gameResult')
       this.selectedCharacter = null
+      this.currentView = 'character-selection'
+    },
+    
+    onNoCharacter() {
+      // No character found, go back to character selection
       this.currentView = 'character-selection'
     }
   }
