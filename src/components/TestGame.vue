@@ -1,5 +1,8 @@
 <template>
-  <div class="test-game" :style="{ backgroundImage: `url(${currentBackground})` }">
+  <div class="test-game">
+    <div class="background" :style="{ backgroundImage: `url(${currentBackground})` }">
+
+    </div>
     <!-- Character Field -->
     <div 
       class="character-field"
@@ -41,8 +44,18 @@
           class="continue-btn neon-button"
           :disabled="isTransitioning"
         >
-          Продолжить
+          Да, продолжить
         </button>
+        <!-- <button 
+          @click="handleProceed"
+          @pointerup="handleProceed"
+          type="button"
+          class="continue-btn neon-button"
+          :disabled="isTransitioning"
+          style="margin-left: 20px;"
+        >
+          Нет, продолжить
+        </button> -->
       </div>
 
       <!-- Character Response Section -->
@@ -89,10 +102,10 @@
           <h2 class="character-name">{{ currentStageData.character.name }}</h2>
           <p class="message-text">{{ currentStageData.message }}</p>
         </div>
-        <div class="result-info">
+        <!-- <div class="result-info">
           <p class="result-text">Ваш результат: {{ getFacultyName(currentStageData.result.branchGroup) }}</p>
           <p class="result-detail">Факультет: {{ currentStageData.result.branch }}</p>
-        </div>
+        </div> -->
         <button 
           @click="handleContinueToResults"
           class="continue-btn neon-button"
@@ -369,7 +382,7 @@ export default {
     async animateCharacterExit() {
       return new Promise((resolve) => {
         // Only left and right movement allowed
-        const sides = ['left', 'right'];
+        const sides = ['left']; //'right'
         this.characterExitSide = sides[Math.floor(Math.random() * sides.length)];
         
         // Animate exit
@@ -445,6 +458,14 @@ export default {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+.background{
+  width: 100%;
+  height: calc(100% - 220px);
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
 }
 
 /* Character Field */
