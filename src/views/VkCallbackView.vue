@@ -18,6 +18,13 @@ onMounted(async () => {
             codeVerifier += chars[randIndex];
         }
 
+        // Check if VK APP ID is available
+        if (!process.env.VUE_APP_VKAPP_ID) {
+            console.error('VK_APP_ID not configured. Cannot complete authentication.');
+            window.location.href = process.env.VUE_APP_BASE_URL + '/';
+            return;
+        }
+
         VKID.Config.init({
             app: process.env.VUE_APP_VKAPP_ID,
             state: state,

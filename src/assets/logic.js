@@ -13,8 +13,10 @@ class TestingLogic {
     this.currentQuestions = [];
     this.currentQuestionIndex = 0;
     this.branchScores = {};
+    this.generalGroupScores = {}; // 1 point per selected faculty group in general testing
     this.dominantBranchGroup = null;
     this.dominantBranch = null;
+    this.specialBranchScores = {}; // counts per faculty in special questions
     this.totalAnswered = 0;
     this.tiebreakerGroups = [];
     this.gameState = 'initial'; // initial, playing, tiebreaker, completed
@@ -43,8 +45,13 @@ class TestingLogic {
    */
   async loadQuestions() {
     try {
-      const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/media/questions');
-      // const response = await fetch('/media/questions.json');
+    let url = ""
+      if (true) {
+        url = '/media/questions.json';
+      }else{
+        url = process.env.VUE_APP_BASE_URL + '/api/v1/media/questions';
+      }
+      const response = await fetch(url);
       this.allQuestions = await response.json();
       return Promise.resolve();
     } catch (error) {
@@ -67,6 +74,8 @@ class TestingLogic {
       this.currentStage = progress.currentStage || 'character_replica';
       this.currentQuestionIndex = progress.currentQuestionIndex || 0;
       this.branchScores = progress.branchScores || {};
+      this.generalGroupScores = progress.generalGroupScores || {};
+      this.specialBranchScores = progress.specialBranchScores || {};
       this.dominantBranchGroup = progress.dominantBranchGroup || null;
       this.dominantBranch = progress.dominantBranch || null;
       this.totalAnswered = progress.totalAnswered || 0;
@@ -94,6 +103,8 @@ class TestingLogic {
       currentStage: this.currentStage,
       currentQuestionIndex: this.currentQuestionIndex,
       branchScores: this.branchScores,
+      generalGroupScores: this.generalGroupScores,
+      specialBranchScores: this.specialBranchScores,
       dominantBranchGroup: this.dominantBranchGroup,
       dominantBranch: this.dominantBranch,
       totalAnswered: this.totalAnswered,
@@ -241,7 +252,11 @@ class TestingLogic {
           resolve(this.proceedToGeneralQuestions());
           break;
         case 'general_questions':
-          resolve(this.processGeneralQuestionAnswer(answerKey));
+          if (this.gameState === 'tiebreaker') {
+            resolve(this.processTiebreakerAnswer(answerKey));
+          } else {
+            resolve(this.processGeneralQuestionAnswer(answerKey));
+          }
           break;
         case 'special_questions':
           resolve(this.processSpecialQuestionAnswer(answerKey));
@@ -261,6 +276,9 @@ class TestingLogic {
     this.currentQuestions = this.allQuestions.root;
     this.currentQuestionIndex = 0;
     this.branchScores = {};
+    this.generalGroupScores = {};
+    this.dominantBranchGroup = null;
+    this.gameState = 'playing';
     
     this.saveGameProgress();
     return this.getGeneralQuestionData();
@@ -272,11 +290,17 @@ class TestingLogic {
    * @returns {Object} Next stage data
    */
   processGeneralQuestionAnswer(answerKey) {
-    // Update branch scores
+    // Update branch scores (individual faculty scores)
     const branches = answerKey.split('/');
     branches.forEach(branch => {
       this.branchScores[branch] = (this.branchScores[branch] || 0) + 1;
     });
+    // Also count one point per selected faculty group (general testing group score)
+    this.generalGroupScores[answerKey] = (this.generalGroupScores[answerKey] || 0) + 1;
+
+    console.log(`Question ${this.currentQuestionIndex + 1} answered: ${answerKey}`);
+    console.log('Current branch scores:', this.branchScores);
+    console.log('Current general group scores:', this.generalGroupScores);
 
     // Move to next question or check for completion
     if (this.currentQuestionIndex < this.currentQuestions.length - 1) {
@@ -284,11 +308,25 @@ class TestingLogic {
       this.saveGameProgress();
       return this.getGeneralQuestionData();
     } else {
-      // Check for tiebreaker
-      const tieGroups = this.getTiedGroups();
+      // Check for tiebreaker after all 6 questions
+      console.log('All 6 questions completed. Checking for ties...');
+      let tieGroups = this.getTiedGroupsFromGeneralGroupScores();
+      console.log('Tie groups from generalGroupScores:', tieGroups);
+
+      // Fallback: derive tie from branchScores grouping if needed (for old saves)
+      if (tieGroups.length !== 2) {
+        const fallbackTie = this.getTiedGroups();
+        console.log('Tie groups from branchScores fallback:', fallbackTie);
+        if (fallbackTie.length === 2) {
+          tieGroups = fallbackTie;
+        }
+      }
+      
       if (tieGroups.length === 2) {
+        console.log('Showing tiebreaker question (7th question)');
         return this.showTiebreaker(tieGroups);
       } else {
+        console.log('No qualifying tie found, proceeding to character response');
         return this.proceedToCharacterResponse();
       }
     }
@@ -300,8 +338,9 @@ class TestingLogic {
    * @returns {Object} Next stage data
    */
   processSpecialQuestionAnswer(answerKey) {
-    this.dominantBranch = answerKey;
-    
+    // Increment per-faculty score within the chosen dominant group
+    this.specialBranchScores[answerKey] = (this.specialBranchScores[answerKey] || 0) + 1;
+
     if (this.currentQuestionIndex < this.currentQuestions.length - 1) {
       this.currentQuestionIndex++;
       this.saveGameProgress();
@@ -318,12 +357,57 @@ class TestingLogic {
    */
   showTiebreaker(tieGroups) {
     this.gameState = 'tiebreaker';
-    this.tiebreakerGroups = tieGroups;
-    this.currentQuestions = [this.allQuestions.appended_question];
+    this.tiebreakerGroups = tieGroups; // [{key:'akf/mtf'}, {key:'sf/idst'}]
+    // Build a tiebreaker question constrained to only the two tied groups
+    const full = this.allQuestions.appended_question;
+    const allowed = Object.fromEntries(
+      Object.entries(full.variants).filter(([key]) =>
+        tieGroups.some(g => g.key === key)
+      )
+    );
+    const constrainedQuestion = {
+      question: full.question,
+      variants: allowed
+    };
+    this.currentQuestions = [constrainedQuestion];
     this.currentQuestionIndex = 0;
-    
+
+    console.log('Showing constrained tiebreaker question with variants:', Object.keys(allowed));
+
     this.saveGameProgress();
     return this.getGeneralQuestionData();
+  }
+
+  /**
+   * Process tiebreaker answer (7th question)
+   * @param {string} answerKey - Selected answer key
+   * @returns {Object} Next stage data
+   */
+  processTiebreakerAnswer(answerKey) {
+    console.log(`Tiebreaker answered: ${answerKey}`);
+    console.log('Tied groups:', this.tiebreakerGroups);
+
+    // In tiebreaker we render variants with keys exactly equal to group keys (e.g., 'akf/mtf')
+    const selectedGroupKey = answerKey;
+    const isTiedGroup = this.tiebreakerGroups.some(group => group.key === selectedGroupKey);
+
+    if (isTiedGroup) {
+      this.dominantBranchGroup = selectedGroupKey;
+      console.log(`Selected group ${selectedGroupKey} as dominant`);
+    } else {
+      // Defensive fallback
+      this.dominantBranchGroup = this.tiebreakerGroups[0]?.key || null;
+      console.log(`Fallback to tied group: ${this.dominantBranchGroup}`);
+    }
+
+    // Reset tiebreaker state
+    this.gameState = 'playing';
+    this.tiebreakerGroups = [];
+
+    console.log(`Final dominant group: ${this.dominantBranchGroup}`);
+
+    // Proceed to character response
+    return this.proceedToCharacterResponse();
   }
 
   /**
@@ -331,7 +415,10 @@ class TestingLogic {
    * @returns {Object} Character response data
    */
   proceedToCharacterResponse() {
-    this.determineBranchGroup();
+    // Only determine branch group if not already set (e.g., from tiebreaker)
+    if (!this.dominantBranchGroup) {
+      this.determineBranchGroup();
+    }
     
     const responseData = {
       type: 'character_response',
@@ -354,6 +441,7 @@ class TestingLogic {
     this.currentStage = 'special_questions';
     this.currentQuestionIndex = 0;
     this.branchScores = {};
+    this.specialBranchScores = {};
     
     // Load appropriate group questions
     const groupIndex = this.getGroupIndex(this.dominantBranchGroup);
@@ -371,6 +459,25 @@ class TestingLogic {
    */
   finishGame() {
     this.gameState = 'completed';
+
+    // Determine final faculty (branch) by max count across special answers
+    let finalBranch = null;
+    let maxCount = -1;
+    for (const [branch, count] of Object.entries(this.specialBranchScores || {})) {
+      if (count > maxCount) {
+        maxCount = count;
+        finalBranch = branch;
+      }
+    }
+    // Fallback to last selected if all zero or empty
+    if (!finalBranch) {
+      // Attempt to infer from last special question options if available
+      finalBranch = this.currentQuestions?.[this.currentQuestionIndex]?.variants
+        ? Object.keys(this.currentQuestions[this.currentQuestionIndex].variants)[0]
+        : null;
+    }
+
+    this.dominantBranch = finalBranch;
     
     // Save final result
     LocalStorage.set('gameResult', JSON.stringify({
@@ -431,22 +538,51 @@ class TestingLogic {
       'fpmm': 'fpmm/etf/gumf', 'etf': 'fpmm/etf/gumf', 'gumf': 'fpmm/etf/gumf',
     };
     
+    // Calculate faculty group scores from individual branch scores
     const groupScores = {};
     for (const branch in this.branchScores) {
       const group = groupMapping[branch];
-      groupScores[group] = (groupScores[group] || 0) + this.branchScores[branch];
+      if (group) {
+        groupScores[group] = (groupScores[group] || 0) + this.branchScores[branch];
+      }
     }
     
+    // Sort groups by score (highest first)
     const sorted = Object.entries(groupScores).sort((a, b) => b[1] - a[1]);
     if (sorted.length < 2) return [];
     
-    if (sorted[0][1] === sorted[1][1]) {
+    // Check if top 2 groups have the same score (tie)
+    if (sorted[0][1] === sorted[1][1] && sorted[0][1] > 0) {
       return [
-        { key: sorted[0][0] },
-        { key: sorted[1][0] }
+        { key: sorted[0][0], score: sorted[0][1] },
+        { key: sorted[1][0], score: sorted[1][1] }
       ];
     }
     
+    return [];
+  }
+
+  /**
+   * Get tied groups for tiebreaker based on generalGroupScores
+   * @returns {Array} Tied groups with keys exactly like in root variants (e.g., 'akf/mtf')
+   */
+  getTiedGroupsFromGeneralGroupScores() {
+    // Sort by score desc
+    const sorted = Object.entries(this.generalGroupScores)
+      .sort((a, b) => b[1] - a[1]);
+
+    if (sorted.length < 2) return [];
+
+    const topScore = sorted[0][1];
+    const secondScore = sorted[1][1];
+
+    if (topScore > 0 && topScore === secondScore) {
+      return [
+        { key: sorted[0][0], score: topScore },
+        { key: sorted[1][0], score: secondScore }
+      ];
+    }
+
     return [];
   }
 
@@ -461,17 +597,31 @@ class TestingLogic {
       'fpmm': 'fpmm/etf/gumf', 'etf': 'fpmm/etf/gumf', 'gumf': 'fpmm/etf/gumf',
     };
     
-    let maxScore = 0;
-    let topBranch = '';
-    
+    // Calculate faculty group scores from individual branch scores
+    const groupScores = {};
     for (const branch in this.branchScores) {
-      if (this.branchScores[branch] > maxScore) {
-        maxScore = this.branchScores[branch];
-        topBranch = branch;
+      const group = groupMapping[branch];
+      if (group) {
+        groupScores[group] = (groupScores[group] || 0) + this.branchScores[branch];
       }
     }
     
-    this.dominantBranchGroup = groupMapping[topBranch];
+    console.log('Individual branch scores:', this.branchScores);
+    console.log('Calculated group scores:', groupScores);
+    
+    // Find the group with the highest score
+    let maxScore = 0;
+    let topGroup = '';
+    
+    for (const group in groupScores) {
+      if (groupScores[group] > maxScore) {
+        maxScore = groupScores[group];
+        topGroup = group;
+      }
+    }
+    
+    this.dominantBranchGroup = topGroup;
+    console.log(`Determined dominant group: ${this.dominantBranchGroup} with score: ${maxScore}`);
   }
 
   /**
@@ -551,6 +701,7 @@ class TestingLogic {
    * @returns {Array} Shuffled array
    */
   shuffleArray(array) {
+    return array;
     const arr = array.slice();
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -581,12 +732,31 @@ class TestingLogic {
    * @returns {Object} Game statistics
    */
   getGameStats() {
+    // Calculate faculty group scores for display
+    const groupMapping = {
+      'akf': 'akf/mtf', 'mtf': 'akf/mtf',
+      'sf': 'sf/idst', 'idst': 'sf/idst',
+      'htf': 'htf/gnf', 'gnf': 'htf/gnf',
+      'fpmm': 'fpmm/etf/gumf', 'etf': 'fpmm/etf/gumf', 'gumf': 'fpmm/etf/gumf',
+    };
+    
+    const groupScores = {};
+    for (const branch in this.branchScores) {
+      const group = groupMapping[branch];
+      if (group) {
+        groupScores[group] = (groupScores[group] || 0) + this.branchScores[branch];
+      }
+    }
+    
     return {
       currentStage: this.currentStage,
       totalAnswered: this.totalAnswered,
       branchScores: this.branchScores,
+      groupScores: groupScores,
+      specialBranchScores: this.specialBranchScores,
       dominantBranchGroup: this.dominantBranchGroup,
-      gameState: this.gameState
+      gameState: this.gameState,
+      tiebreakerGroups: this.tiebreakerGroups
     };
   }
 }

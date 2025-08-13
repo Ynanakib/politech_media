@@ -36,6 +36,8 @@
         </div>
         <button 
           @click="handleProceed"
+          @pointerup="handleProceed"
+          type="button"
           class="continue-btn neon-button"
           :disabled="isTransitioning"
         >
@@ -51,6 +53,8 @@
         </div>
         <button 
           @click="handleProceed"
+          @pointerup="handleProceed"
+          type="button"
           class="continue-btn neon-button"
           :disabled="isTransitioning"
         >
@@ -67,6 +71,8 @@
               v-for="answer in currentStageData.answers" 
               :key="answer.key"
               @click="handleAnswer(answer.key)"
+              @pointerup="handleAnswer(answer.key)"
+              type="button"
               class="answer-btn neon-button"
               :class="{ 'selected': selectedAnswer === answer.key }"
               :disabled="isTransitioning || selectedAnswer !== null"
@@ -433,7 +439,12 @@ export default {
   background-color: #00023b;
   display: flex;
   flex-direction: column;
-  background-size: cover; 
+  background-size: cover;
+  -webkit-overflow-scrolling: touch;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 /* Character Field */
@@ -463,6 +474,11 @@ export default {
   transition: all 0.8s ease-in-out;
   animation: character-idle 4s ease-in-out infinite;
   animation-delay: 1.5s;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 /* Character Exit Animations */
@@ -490,11 +506,13 @@ export default {
   opacity: 0;
   transform: scale(0);
   transition: all 0.5s ease-in-out;
+  pointer-events: none;
 }
 
 .dynamic-object-visible {
   opacity: 1;
   transform: scale(1);
+  pointer-events: auto;
 }
 
 .dynamic-object-image {
@@ -599,6 +617,12 @@ export default {
   text-align: left;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   box-shadow: 0 0 20px #667eea;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .answer-btn:hover:not(:disabled) {
@@ -637,6 +661,12 @@ export default {
   transition: all 0.3s ease;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   box-shadow: 0 0 20px #f0f;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .continue-btn:hover:not(:disabled),
@@ -736,9 +766,9 @@ export default {
 }
 
 @keyframes character-idle {
-  0% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-  100% { transform: translateY(0); }
+  0% { transform: translateY(0) translateZ(0); }
+  50% { transform: translateY(-12px) translateZ(0); }
+  100% { transform: translateY(0) translateZ(0); }
 }
 
 @keyframes dynamicObjectBounce {
@@ -766,94 +796,414 @@ export default {
 
 /* Responsive Design */
 @media (max-width: 900px) {
-  .answer-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    box-shadow: 0 0 20px #667eea;
+  .test-game {
+    height: 100vh;
+    overflow: hidden;
   }
   
   .character-field {
-    background-size: cover;
+    width: 50%;
+    height: calc(100vh - 200px);
+    min-height: 350px;
   }
   
   .character-image {
-    position: relative;
-    height: 100vh;
-    width: 80vw;
-    bottom: 220px;
+    height: 100%;
+    width: 100%;
+    background-size: contain;
+    background-position: bottom center;
+  }
+  
+  .user-field {
+    min-height: 200px;
+    padding: 20px 15px;
   }
   
   .question-content {
-    display: block;
-    padding: 6px;
-    width: 100%;
-  }
-}
-
-@media (max-width: 600px) {
-  .response-text {
-    font-size: 1rem;
+    width: 90%;
+    max-width: 600px;
+    padding: 20px 15px;
   }
   
-  .response-box {
-    padding: 20px;
-    margin: 10px;
+  .question-text {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+  
+  .answers-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .answer-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .character-name {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+  }
+  
+  .message-text {
+    font-size: 1rem;
+    line-height: 1.5;
   }
   
   .continue-btn {
     padding: 12px 30px;
     font-size: 1rem;
+    min-height: 45px;
   }
   
+  .result-info {
+    padding: 15px;
+    margin: 15px 0;
+  }
+  
+  .result-text {
+    font-size: 1.1rem;
+  }
+  
+  .result-detail {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
   .character-field {
-    background-size: cover;
+    width: 60%;
+    height: calc(100vh - 180px);
+    min-height: 300px;
   }
   
   .character-image {
-    position: relative;
-    height: 100vh;
-    width: 120vw;
+    height: 100%;
+    width: 100%;
   }
   
-  .answers-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
+  .user-field {
+    min-height: 180px;
+    padding: 15px 10px;
+  }
+  
+  .question-content {
+    width: 95%;
+    padding: 15px 10px;
   }
   
   .question-text {
     font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .answers-grid {
+    gap: 10px;
   }
   
   .answer-btn {
+    padding: 10px 15px;
     font-size: 13px;
-    padding: 10px 16px;
-    width: 100%;
+    min-height: 45px;
+    border-radius: 20px;
   }
   
-  .question-content {
-    display: block;
-    padding: 6px;
-    width: 100%;
+  .character-name {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+  }
+  
+  .message-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  
+  .continue-btn {
+    padding: 10px 25px;
+    font-size: 0.9rem;
+    min-height: 40px;
+  }
+  
+  .result-info {
+    padding: 12px;
+    margin: 12px 0;
+  }
+  
+  .result-text {
+    font-size: 1rem;
+  }
+  
+  .result-detail {
+    font-size: 0.9rem;
+  }
+  
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 15px;
+  }
+  
+  .loading-text {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
   .character-field {
-    background-size: cover;
+    width: 70%;
+    height: calc(100vh - 160px);
+    min-height: 250px;
   }
   
   .character-image {
-    bottom: 220px;
-    height: 100vh;
+    height: 100%;
     width: 100%;
   }
   
+  .user-field {
+    min-height: 160px;
+    padding: 12px 8px;
+  }
+  
   .question-content {
-    display: block;
-    padding: 6px;
+    width: 98%;
+    padding: 12px 8px;
+  }
+  
+  .question-text {
+    font-size: 15px;
+    margin-bottom: 10px;
+  }
+  
+  .answers-grid {
+    gap: 8px;
+  }
+  
+  .answer-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 40px;
+    border-radius: 18px;
+  }
+  
+  .character-name {
+    font-size: 1.2rem;
+    margin-bottom: 6px;
+  }
+  
+  .message-text {
+    font-size: 0.85rem;
+    line-height: 1.3;
+  }
+  
+  .continue-btn {
+    padding: 8px 20px;
+    font-size: 0.85rem;
+    min-height: 35px;
+  }
+  
+  .result-info {
+    padding: 10px;
+    margin: 10px 0;
+  }
+  
+  .result-text {
+    font-size: 0.9rem;
+  }
+  
+  .result-detail {
+    font-size: 0.8rem;
+  }
+  
+  .loading-spinner {
+    width: 35px;
+    height: 35px;
+    margin-bottom: 12px;
+  }
+  
+  .loading-text {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .character-field {
+    width: 80%;
+    height: calc(100vh - 140px);
+    min-height: 200px;
+  }
+  
+  .user-field {
+    min-height: 140px;
+    padding: 10px 6px;
+  }
+  
+  .question-content {
     width: 100%;
+    padding: 10px 6px;
+  }
+  
+  .question-text {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .answer-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+    min-height: 35px;
+    border-radius: 15px;
+  }
+  
+  .character-name {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+  }
+  
+  .message-text {
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+  
+  .continue-btn {
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    min-height: 30px;
+  }
+  
+  .result-info {
+    padding: 8px;
+    margin: 8px 0;
+  }
+  
+  .result-text {
+    font-size: 0.85rem;
+  }
+  
+  .result-detail {
+    font-size: 0.75rem;
+  }
+}
+
+/* Touch-friendly improvements for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .answer-btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .answer-btn:active {
+    transform: scale(0.98);
+    transition: transform 0.06s ease;
+  }
+  
+  .continue-btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  .continue-btn:active {
+    transform: scale(0.98);
+    transition: transform 0.06s ease;
+  }
+}
+
+/* Safe area support for devices with notches */
+@supports (padding: max(0px)) {
+  .test-game {
+    padding-top: max(0px, env(safe-area-inset-top));
+    padding-bottom: max(0px, env(safe-area-inset-bottom));
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+  
+  .user-field {
+    padding-bottom: max(30px, env(safe-area-inset-bottom) + 30px);
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .character-image {
+    animation: none;
+  }
+  
+  .character-field,
+  .character-image,
+  .dynamic-object {
+    transition: none;
+  }
+  
+  .answer-btn,
+  .continue-btn {
+    transition: none;
+  }
+  
+  .answer-btn:hover:not(:disabled),
+  .continue-btn:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Prevent zoom on input focus for iOS */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  .answer-btn,
+  .continue-btn {
+    font-size: 16px;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 900px) and (orientation: landscape) {
+  .character-field {
+    width: 40%;
+    height: calc(100vh - 120px);
+    min-height: 200px;
+  }
+  
+  .user-field {
+    min-height: 120px;
+    padding: 10px 15px;
+  }
+  
+  .question-content {
+    padding: 10px 15px;
+  }
+  
+  .question-text {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  
+  .answers-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .answer-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    min-height: 35px;
+  }
+  
+  .character-name {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+  }
+  
+  .message-text {
+    font-size: 0.9rem;
+    line-height: 1.3;
+  }
+  
+  .continue-btn {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    min-height: 30px;
   }
 }
 </style>

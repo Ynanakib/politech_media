@@ -15,7 +15,7 @@
       <div class="auth" v-if="currentStep === 'auth'">
         <p class="text">Войдите через VK ID</p>
         <div id="VkIdSdkOneTap"></div>
-        <!-- <button @click="debug()">ДЕБАГ</button> -->
+        <button v-if="isDebug" @click="debug()">ДЕБАГ</button>
       </div>
       <div class="fill1" v-if="currentStep === 'fill1'">
         <div v-if="formError" class="form-error">{{ formError }}</div>
@@ -120,17 +120,29 @@ export default {
       return this.schools.filter(school => { 
         return school.title.toLowerCase().includes(q) && school.city_id == this.cityId
       })
+    },
+    isDebug(){
+      try{
+        return process.env.VUE_APP_VKAPP_ID == undefined
+      }catch{
+        return true
+      }
     }
   },
   mounted(){
     fetch("/media/cities.json").then(req => req.json()).then(req => this.cities = req)
     fetch("/media/schools.json").then(req => req.json()).then(req => this.schools = req)
-    VKID.Config.init({
-      app: process.env.VUE_APP_VKAPP_ID,
-      redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
-      scope: 'email messages phone groups',
-      mode: VKID.ConfigAuthMode.Redirect
-    })
+    // Only initialize VK ID if the app ID is available
+    if (process.env.VUE_APP_VKAPP_ID) {
+      VKID.Config.init({
+        app: process.env.VUE_APP_VKAPP_ID,
+        redirectUrl: process.env.VUE_APP_BASE_URL+'/vk-callback',
+        scope: 'email messages phone groups',
+        mode: VKID.ConfigAuthMode.Redirect
+      })
+    } else {
+      console.warn('VK_APP_ID not found in environment variables. VK authentication will be disabled.');
+    }
     if(Script.LocalStorage.get("state") == "vk" || Script.LocalStorage.get("state") == "auth" || Script.LocalStorage.get("state") == null || Script.LocalStorage.get("state") == undefined){
       this.currentStep = 'auth'
       this.$nextTick(() => { this.renderVkButton() })
@@ -158,13 +170,23 @@ export default {
       this.currentStep = this.currentStep === 'user_agreement_pdf' ? 'user_agreement' : 'user_agreement_pdf'
     },
     renderVkButton(){
+      // Only render VK button if VK ID is properly initialized
+      if (!process.env.VUE_APP_VKAPP_ID) {
+        console.warn('Cannot render VK button: VK_APP_ID not configured');
+        return;
+      }
+      
       const container = document.getElementById('VkIdSdkOneTap')
       if (container) {
-        const oneTap = new VKID.OneTap()
-        oneTap.render({
-          container: container,
-          showAlternativeLogin: false
-        })
+        try {
+          const oneTap = new VKID.OneTap()
+          oneTap.render({
+            container: container,
+            showAlternativeLogin: false
+          })
+        } catch (error) {
+          console.error('Failed to render VK button:', error);
+        }
       }
     },
     goToAuth() {
