@@ -1,7 +1,8 @@
 <template>
   <div class="test-game">
-    <div class="background" :style="{ backgroundImage: `url(${currentBackground})` }">
-
+    <div class="background" :style="{ backgroundImage: `url(${currentBackground})`, width: `${this.backgroundHeight * 1.5}px`, height: `${this.backgroundHeight}px`}">
+      <div class="bookshelf" :style="{ backgroundImage: `url(./media/img/dynamic/bookshelf.png)` }"></div>
+      <div class="dynamicObject book" :style="{ backgroundImage: `url(./media/img/dynamic/book.png)`}"></div>
     </div>
     <!-- Character Field -->
     <div 
@@ -138,6 +139,7 @@ export default {
       characterExitSide: null,
       characterEnterSide: null,
       dynamicObjectVisible: false,
+      backgroundHeight: 703,
       fallbackCharacter: {
         image: './media/img/characters/empty.png',
         name: '',
@@ -455,10 +457,11 @@ export default {
 }
 
 .background{
-  width: 100%;
-  height: calc(100% - 220px);
+  /* width: 100%;
+  height: calc(100% - 220px); */
+  margin: 0 auto;
   background-position: center;
-  background-size: contain;
+  background-size: cover;
   background-repeat: no-repeat;
 }
 
@@ -1221,4 +1224,33 @@ export default {
     min-height: 30px;
   }
 }
+
+.dynamicObject{
+  position: relative;
+  width: 200px;
+  height: 200px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.bookshelf{
+  position: sticky;
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  z-index: 3;
+}
+.book{  
+  z-index: 1;
+  rotate: 64grad;
+  width: 200px;
+  height: 140px;
+  top: -644px;
+  left: 81%;
+  transition: all;
+  transition-duration: 5s;
+}
+
 </style>
