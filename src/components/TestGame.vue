@@ -1,8 +1,12 @@
 <template>
   <div class="test-game">
     <div class="background" :style="{ backgroundImage: `url(${currentBackground})`, width: `${this.backgroundHeight * 1.5}px`, height: `${this.backgroundHeight}px`}">
-      <div class="bookshelf" :style="{ backgroundImage: `url(./media/img/dynamic/bookshelf.png)` }"></div>
-      <div class="dynamicObject book" :style="{ backgroundImage: `url(./media/img/dynamic/book.png)`}"></div>
+      <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="bookshelf" :style="{ backgroundImage: `url(./media/img/dynamic/bookshelf.png)` }"></div>
+      <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="dynamicObject book" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/book.png)`,
+          top: `${-0.91 * this.backgroundHeight}px`,
+          left: `${ 1.228 * this.backgroundHeight}px`
+        }"></div>
     </div>
     <!-- Character Field -->
     <div 
@@ -45,7 +49,7 @@
           class="continue-btn neon-button"
           :disabled="isTransitioning"
         >
-          Да, продолжить
+          Продолжить
         </button>
       </div>
 
@@ -200,13 +204,11 @@ export default {
       return ['transition-overlay'];
     },
     characterStyles() {
-      const styles = {};
-      
-      if (this.dynamicObject?.position) {
-        styles.left = this.dynamicObject.position.x || '50%';
-        styles.top = this.dynamicObject.position.y || '50%';
-      }
-      
+      const styles = {}
+      console.log("char style changed")
+      styles.top = ``
+      styles.height = `${this.backgroundHeight+20}px`
+      styles.width = `${(this.backgroundHeight+20)/1.5}px`
       return styles;
     },
     dynamicObjectStyles() {
@@ -220,8 +222,8 @@ export default {
       return styles;
     }
   },
-  async mounted() {
-    await this.initializeGame();
+  beforeMount() {
+    this.initializeGame();    
   },
   methods: {
     async initializeGame() {
@@ -255,6 +257,7 @@ export default {
         this.loading = false;
         this.$emit('no-character');
       }
+      this.calcHeight()
     },
 
     restoreProgressFromLocalStorage() {
@@ -315,6 +318,7 @@ export default {
         if (this.dynamicObject) {
           await this.showDynamicObject();
         }
+        this.calcHeight()
         // Process answer
         const nextData = await this.gameManager.processAction('answer', answerKey);
         // Always patch character to selected one if missing or wrong
@@ -338,6 +342,7 @@ export default {
         console.error('Failed to process answer:', error);
         this.isTransitioning = false;
       }
+      this.calcHeight()
     },
     
     async handleProceed() {
@@ -373,6 +378,7 @@ export default {
         console.error('Failed to process proceed action:', error);
         this.isTransitioning = false;
       }
+      this.calcHeight()
     },
     
     async animateCharacterExit() {
@@ -434,7 +440,11 @@ export default {
       };
       
       return facultyNames[branchGroup] || branchGroup;
-    }
+    },
+
+    calcHeight(){
+      this.backgroundHeight = document.getElementsByTagName("body")[0].offsetHeight - document.getElementsByClassName("user-field")[0].offsetHeight;
+    }    
   }
 };
 </script>
@@ -470,9 +480,6 @@ export default {
   position: absolute;
   left: 0;
   top: 0;
-  width: 40%;
-  height: calc(100vh - 220px);
-  min-height: 400px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -482,9 +489,9 @@ export default {
 }
 
 .character-image {
-  position: relative;
-  height: 100%;
   width: 100%;
+  height: 100%;
+  position: relative;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: bottom;
@@ -598,7 +605,7 @@ export default {
 
 .question-content {
   display: inline-block;
-  padding: 16px;
+  padding: 0;
   color: white;
   margin: 0;
   border-radius: 20px;
@@ -663,7 +670,6 @@ export default {
     0 0 30px #f093fb,
     0 0 50px #f093fb;
 }
-
 
 
 .continue-btn,
@@ -819,22 +825,14 @@ export default {
     overflow: hidden;
   }
   
-  .character-field {
-    width: 50%;
-    height: calc(100vh - 200px);
-    min-height: 350px;
-  }
-  
   .character-image {
-    height: 100%;
-    width: 100%;
     background-size: contain;
     background-position: bottom center;
   }
   
   .user-field {
     min-height: 200px;
-    padding: 20px 15px;
+    padding: 15px;
   }
   
   .question-content {
@@ -844,13 +842,18 @@ export default {
   }
   
   .question-text {
-    font-size: 18px;
     margin-bottom: 15px;
   }
   
   .answers-grid {
     grid-template-columns: 1fr;
+    margin-bottom: 0px;
     gap: 12px;
+  }
+  
+
+  .message-text{
+    font-size: 18px;
   }
   
   .answer-btn {
@@ -863,18 +866,12 @@ export default {
   }
   
   .character-name {
-    font-size: 1.6rem;
+    font-size: 24px;
     margin-bottom: 10px;
-  }
-  
-  .message-text {
-    font-size: 1rem;
-    line-height: 1.5;
   }
   
   .continue-btn {
     padding: 12px 30px;
-    font-size: 1rem;
     min-height: 45px;
   }
   
@@ -882,31 +879,13 @@ export default {
     padding: 15px;
     margin: 15px 0;
   }
-  
-  .result-text {
-    font-size: 1.1rem;
-  }
-  
-  .result-detail {
-    font-size: 1rem;
-  }
 }
 
 @media (max-width: 600px) {
-  .character-field {
-    width: 60%;
-    height: calc(100vh - 180px);
-    min-height: 300px;
-  }
-  
-  .character-image {
-    height: 100%;
-    width: 100%;
-  }
   
   .user-field {
     min-height: 180px;
-    padding: 15px 10px;
+    padding: 15px 8px;
   }
   
   .question-content {
@@ -915,34 +894,27 @@ export default {
   }
   
   .question-text {
-    font-size: 16px;
     margin-bottom: 12px;
   }
   
   .answers-grid {
+    margin-bottom: 0px;
     gap: 10px;
   }
   
   .answer-btn {
+    text-align: center;
     padding: 10px 15px;
-    font-size: 13px;
     min-height: 45px;
     border-radius: 20px;
   }
   
   .character-name {
-    font-size: 1.4rem;
     margin-bottom: 8px;
-  }
-  
-  .message-text {
-    font-size: 0.9rem;
-    line-height: 1.4;
   }
   
   .continue-btn {
     padding: 10px 25px;
-    font-size: 0.9rem;
     min-height: 40px;
   }
   
@@ -951,40 +923,18 @@ export default {
     margin: 12px 0;
   }
   
-  .result-text {
-    font-size: 1rem;
-  }
-  
-  .result-detail {
-    font-size: 0.9rem;
-  }
-  
   .loading-spinner {
     width: 40px;
     height: 40px;
     margin-bottom: 15px;
   }
-  
-  .loading-text {
-    font-size: 1rem;
-  }
 }
 
 @media (max-width: 480px) {
-  .character-field {
-    width: 70%;
-    height: calc(100vh - 160px);
-    min-height: 250px;
-  }
-  
-  .character-image {
-    height: 100%;
-    width: 100%;
-  }
   
   .user-field {
     min-height: 160px;
-    padding: 12px 8px;
+    padding: 5px;
   }
   
   .question-content {
@@ -993,34 +943,26 @@ export default {
   }
   
   .question-text {
-    font-size: 15px;
     margin-bottom: 10px;
   }
   
   .answers-grid {
+    margin-bottom: 0px;
     gap: 8px;
   }
   
   .answer-btn {
     padding: 8px 12px;
-    font-size: 12px;
     min-height: 40px;
     border-radius: 18px;
   }
   
   .character-name {
-    font-size: 1.2rem;
     margin-bottom: 6px;
-  }
-  
-  .message-text {
-    font-size: 0.85rem;
-    line-height: 1.3;
   }
   
   .continue-btn {
     padding: 8px 20px;
-    font-size: 0.85rem;
     min-height: 35px;
   }
   
@@ -1029,35 +971,18 @@ export default {
     margin: 10px 0;
   }
   
-  .result-text {
-    font-size: 0.9rem;
-  }
-  
-  .result-detail {
-    font-size: 0.8rem;
-  }
-  
   .loading-spinner {
     width: 35px;
     height: 35px;
     margin-bottom: 12px;
   }
-  
-  .loading-text {
-    font-size: 0.9rem;
-  }
 }
 
 @media (max-width: 360px) {
-  .character-field {
-    width: 80%;
-    height: calc(100vh - 140px);
-    min-height: 200px;
-  }
   
   .user-field {
     min-height: 140px;
-    padding: 10px 6px;
+    padding: 5px;
   }
   
   .question-content {
@@ -1066,44 +991,31 @@ export default {
   }
   
   .question-text {
-    font-size: 14px;
     margin-bottom: 8px;
   }
   
   .answer-btn {
     padding: 6px 10px;
-    font-size: 11px;
     min-height: 35px;
     border-radius: 15px;
   }
-  
-  .character-name {
-    font-size: 1.1rem;
-    margin-bottom: 5px;
+
+  .answers-grid{
+    margin-bottom: 0px;
   }
   
-  .message-text {
-    font-size: 0.8rem;
-    line-height: 1.2;
+  .character-name {
+    margin-bottom: 5px;
   }
   
   .continue-btn {
     padding: 6px 16px;
-    font-size: 0.8rem;
     min-height: 30px;
   }
   
   .result-info {
     padding: 8px;
     margin: 8px 0;
-  }
-  
-  .result-text {
-    font-size: 0.85rem;
-  }
-  
-  .result-detail {
-    font-size: 0.75rem;
   }
 }
 
@@ -1130,20 +1042,6 @@ export default {
   }
 }
 
-/* Safe area support for devices with notches */
-@supports (padding: max(0px)) {
-  .test-game {
-    padding-top: max(0px, env(safe-area-inset-top));
-    padding-bottom: max(0px, env(safe-area-inset-bottom));
-    padding-left: max(0px, env(safe-area-inset-left));
-    padding-right: max(0px, env(safe-area-inset-right));
-  }
-  
-  .user-field {
-    padding-bottom: max(30px, env(safe-area-inset-bottom) + 30px);
-  }
-}
-
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   .character-image {
@@ -1167,25 +1065,12 @@ export default {
   }
 }
 
-/* Prevent zoom on input focus for iOS */
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  .answer-btn,
-  .continue-btn {
-    font-size: 16px;
-  }
-}
-
 /* Landscape orientation adjustments */
 @media (max-width: 900px) and (orientation: landscape) {
-  .character-field {
-    width: 40%;
-    height: calc(100vh - 120px);
-    min-height: 200px;
-  }
   
   .user-field {
     min-height: 120px;
-    padding: 10px 15px;
+    padding: 5px;
   }
   
   .question-content {
@@ -1193,12 +1078,12 @@ export default {
   }
   
   .question-text {
-    font-size: 16px;
     margin-bottom: 8px;
   }
   
   .answers-grid {
     grid-template-columns: repeat(2, 1fr);
+    margin-bottom: 0px;
     gap: 8px;
   }
   
@@ -1209,18 +1094,11 @@ export default {
   }
   
   .character-name {
-    font-size: 1.2rem;
     margin-bottom: 5px;
-  }
-  
-  .message-text {
-    font-size: 0.9rem;
-    line-height: 1.3;
   }
   
   .continue-btn {
     padding: 8px 20px;
-    font-size: 0.9rem;
     min-height: 30px;
   }
 }
@@ -1247,10 +1125,6 @@ export default {
   rotate: 64grad;
   width: 200px;
   height: 140px;
-  top: -644px;
-  left: 81%;
-  transition: all;
-  transition-duration: 5s;
 }
 
 </style>

@@ -645,15 +645,15 @@ class TestingLogic {
    */
   getQuestionBackground() {
     // Use new backgrounds for test questions
+    if(this.gameState === 'tiebreaker'){
+      return `/media/img/backgrounds/mainTest/7.png`
+    }
     if (this.currentStage === 'general_questions') {
       // Use numbered backgrounds for each question if available
       const testBgPath = `/media/img/backgrounds/mainTest/${this.currentQuestionIndex + 1}.png`;
       // Fallback to .PNG if .png not found (handle both cases)
       // For simplicity, always return .png (ensure all backgrounds are present or adjust as needed)
       return testBgPath;
-    }
-    if (this.gameState === 'tiebreaker') {
-      return '/media/img/backgrounds/main.png';
     }
     // Use new faculty backgrounds for special questions and results
     const backgroundMap = {
@@ -759,6 +759,126 @@ class TestingLogic {
       tiebreakerGroups: this.tiebreakerGroups
     };
   }
+
+  /**
+   * Get question information by number
+   * @param {number} questionNumber - Question number (1-10)
+   * @returns {Object|null} Question information with type and details
+   */
+  getQuestionInfoByNumber(questionNumber) {
+    if (!this.allQuestions) {
+      return null;
+    }
+
+    // Основные вопросы (1-6)
+    if (questionNumber >= 1 && questionNumber <= 6) {
+      const questionIndex = questionNumber - 1;
+      if (this.allQuestions.root && this.allQuestions.root[questionIndex]) {
+        const question = this.allQuestions.root[questionIndex];
+        return {
+          number: questionNumber,
+          type: 'general',
+          stage: 'general_questions',
+          question: question.question,
+          variants: question.variants,
+          facultyGroups: Object.keys(question.variants),
+          description: `Основной вопрос ${questionNumber} из 6`
+        };
+      }
+    }
+
+    // Дополнительный вопрос (7) - tiebreaker
+    if (questionNumber === 7) {
+      if (this.allQuestions.appended_question) {
+        const question = this.allQuestions.appended_question;
+        return {
+          number: questionNumber,
+          type: 'tiebreaker',
+          stage: 'general_questions',
+          question: question.question,
+          variants: question.variants,
+          facultyGroups: Object.keys(question.variants),
+          description: 'Дополнительный вопрос для разрешения ничьей'
+        };
+      }
+    }
+
+    // Вопросы факультетов (8-10)
+    if (questionNumber >= 8 && questionNumber <= 10) {
+      const facultyQuestionIndex = questionNumber - 8;
+      
+      // Определяем группу факультетов
+      const facultyGroups = [
+        { key: 'akf/mtf', name: 'Авиастроение и металлургия' },
+        { key: 'sf/idst', name: 'Строительство и транспорт' },
+        { key: 'htf/gnf', name: 'Химия и геология' },
+        { key: 'fpmm/etf/gumf', name: 'Физика, электроника и управление' }
+      ];
+
+      if (this.allQuestions.groups && this.allQuestions.groups.length > 0) {
+        // Возвращаем информацию для всех групп факультетов
+        const allFacultyQuestions = [];
+        
+        facultyGroups.forEach((group, groupIndex) => {
+          if (this.allQuestions.groups[groupIndex] && 
+              this.allQuestions.groups[groupIndex][facultyQuestionIndex]) {
+            const question = this.allQuestions.groups[groupIndex][facultyQuestionIndex];
+            allFacultyQuestions.push({
+              number: questionNumber,
+              type: 'faculty',
+              stage: 'special_questions',
+              facultyGroup: group.key,
+              facultyGroupName: group.name,
+              question: question.question,
+              variants: question.variants,
+              faculties: Object.keys(question.variants),
+              description: `Вопрос факультета ${questionNumber - 7} из 3 для группы "${group.name}"`
+            });
+          }
+        });
+
+        return allFacultyQuestions.length > 0 ? allFacultyQuestions : null;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Get current question number based on game state
+   * @returns {number|null} Current question number
+   */
+  getCurrentQuestionNumber() {
+    if (this.currentStage === 'character_replica') {
+      return 0; // До начала вопросов
+    }
+    
+    if (this.currentStage === 'general_questions') {
+      if (this.gameState === 'tiebreaker') {
+        return 7; // Дополнительный вопрос
+      }
+      return this.currentQuestionIndex + 1; // 1-6 основные вопросы
+    }
+    
+    if (this.currentStage === 'special_questions') {
+      return this.currentQuestionIndex + 8; // 8-10 вопросы факультетов
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get detailed information about current question
+   * @returns {Object|null} Current question information
+   */
+  getCurrentQuestionInfo() {
+    const currentNumber = this.getCurrentQuestionNumber();
+    if (currentNumber === null || currentNumber === 0) {
+      return null;
+    }
+    
+    return this.getQuestionInfoByNumber(currentNumber);
+  }
 }
 
 /**
@@ -852,6 +972,31 @@ class GameStateManager {
    */
   getGameStats() {
     return this.testingLogic.getGameStats();
+  }
+
+  /**
+   * Get question information by number
+   * @param {number} questionNumber - Question number (1-10)
+   * @returns {Object|null} Question information
+   */
+  getQuestionInfoByNumber(questionNumber) {
+    return this.testingLogic.getQuestionInfoByNumber(questionNumber);
+  }
+
+  /**
+   * Get current question number
+   * @returns {number|null} Current question number
+   */
+  getCurrentQuestionNumber() {
+    return this.testingLogic.getCurrentQuestionNumber();
+  }
+
+  /**
+   * Get current question information
+   * @returns {Object|null} Current question information
+   */
+  getCurrentQuestionInfo() {
+    return this.testingLogic.getCurrentQuestionInfo();
   }
 }
 
