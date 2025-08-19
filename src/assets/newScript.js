@@ -14,6 +14,7 @@ class GameCharacter {
    * @param {string} config.greeting - Greeting line
    * @param {Object} config.facultyResponses - Responses for 4 faculty groups
    * @param {string} config.finalLine - Final congratulatory line
+   * @param {string} config.backgroundImage - Background image on lines
    */
   constructor(config) {
     this.id = config.id;
@@ -25,6 +26,7 @@ class GameCharacter {
     this.greeting = config.greeting;
     this.facultyResponses = config.facultyResponses;
     this.finalLine = config.finalLine;
+    this.backgroundImage = config.backgroundImage
   }
 
   /**
@@ -37,7 +39,8 @@ class GameCharacter {
       name: this.name,
       class: this.class,
       description: this.mobileDescription,
-      image: this.image
+      image: this.image,
+      backgroundImage: this.backgroundImage
     };
   }
 
@@ -54,7 +57,8 @@ class GameCharacter {
       image: this.image,
       greeting: this.greeting,
       facultyResponses: this.facultyResponses,
-      finalLine: this.finalLine
+      finalLine: this.finalLine,
+      backgroundImage: this.backgroundImage
     };
   }
 
@@ -83,6 +87,10 @@ class GameCharacter {
     return this.finalLine;
   }
 
+  getBackgroundImage(){
+    return this.backgroundImage;
+  }
+
   /**
    * Convert character to JSON format for storage
    * @returns {Object} JSON representation
@@ -97,7 +105,8 @@ class GameCharacter {
       image: this.image,
       greeting: this.greeting,
       facultyResponses: this.facultyResponses,
-      finalLine: this.finalLine
+      finalLine: this.finalLine,
+      backgroundImage: this.backgroundImage
     };
   }
 
@@ -122,7 +131,7 @@ class CharacterFactory {
       class: "Староста группы",
       description: "🌟 Спецфича: держать группу в (страхе) дедлайнах\n🚀 Суперскилл: знает ФИО всех преподавателей\n💣 Слабость: переживает приступ паники при потере журнала посещаемости",
       mobileDescription: "🎮 Староста группы\n📌 крутая ДАША",
-  image: '/media/img/characters/dasha.png',
+      image: '/media/img/characters/dasha.png',
       greeting: "Привет! Я Даша, староста группы! Готова помочь тебе пройти профмиссию и найти свой путь в университете! 📚✨",
       facultyResponses: {
         'akf/mtf': "Ух, расписание преподавателей сразу нескольких факультетов я точно не запомню, давай чётко определим: аэрокос или мехтех?",
@@ -130,7 +139,8 @@ class CharacterFactory {
         'fpmm/etf/gumf': "Ух, расписание преподавателей сразу нескольких факультетов я точно не запомню, давай чётко определим: матмех, гумфак или электротех?",
         'htf/gnf': "Ух, расписание преподавателей сразу нескольких факультетов я точно не запомню, давай чётко определим: химтех или горно-нефтяной?"
       },
-      finalLine: "По моим подсчетам, ты справился со всеми заданиями, а значит, заработал автомат по дисциплине “самоопределение”! Давай посмотрим, на какой факультет тебя привели твои способности."
+      finalLine: "По моим подсчетам, ты справился со всеми заданиями, а значит, заработал автомат по дисциплине “самоопределение”! Давай посмотрим, на какой факультет тебя привели твои способности.",
+      backgroundImage: "/media/img/backgrounds/mainTest/7.png",
     });
   }
 
@@ -141,7 +151,7 @@ class CharacterFactory {
       class: "Студент-активист",
       description: "🌟 Спецфича: организация крутых ивентов и заряд атмосферы на уровне бога мемов\n🚀 Суперскилл: дружба со всеми в универе гарантирована\n💣 Слабость: частенько пропускает пары ради грандиозных мероприятий",
       mobileDescription: "🎮 Студент-активист\n📌 нереальный МАКС",
-  image: '/media/img/characters/max.png',
+      image: '/media/img/characters/max.png',
       greeting: "Эй, народ, засветились в нашем приключении по выбору призвания?! Приготовьтесь выбрать факультет мечты и поймать политехнический вайб!",
       facultyResponses: {
         'akf/mtf': "йоооу, намечается такой денс-батл между аэрокосом и мехтехом, кто же станет твоим победителем?",
@@ -149,7 +159,8 @@ class CharacterFactory {
         'fpmm/etf/gumf': "йоооу, намечается такой денс-батл между матмехом, гумфаком и электротехом, кто же станет твоим победителем?",
         'htf/gnf': "йоооу, намечается такой денс-батл между химтехом и горно-нефтяным, кто же станет твоим победителем?"
       },
-      finalLine: "Вау-у, ты здорово потрудился! Думаю, поступив к нам, ты точно зажжешь на студвесне, а в составе какого факультета – давай узнаем!"
+      finalLine: "Вау-у, ты здорово потрудился! Думаю, поступив к нам, ты точно зажжешь на студвесне, а в составе какого факультета – давай узнаем!",
+      backgroundImage: "/media/img/backgrounds/mainTest/2.png",
     });
   }
 
@@ -160,7 +171,7 @@ class CharacterFactory {
       class: "Преподаватель",
       description: "🌟 Спецфича: объясняет сложные темы простыми словами\n🚀 Суперскилл: мотивирует стать лучшей версией себя, применяя прогрессивные методы обучения\n💣 Слабость: предпочитает проведение пар оформлению бумаг, замедляя административные процессы",
       mobileDescription: "🎮 Преподаватель\n📌 исследователь \nВАДИМ СЕРГЕЕВИЧ",
-  image: '/media/img/characters/vadim.png',
+      image: '/media/img/characters/vadim.png',
       greeting: "Приветствую, будущий студент! Готов открыть карту профнавигации? Вместе мы будем применять уникальные механики самоопределения! Включайся и делай первый ход!",
       facultyResponses: {
         'akf/mtf': "Напомню, в одномодальной математической системе может существовать единственное наивысшее значение! Кто станет твоим максимумом - аэрокос или мехтех?",
@@ -168,7 +179,8 @@ class CharacterFactory {
         'fpmm/etf/gumf': "Напомню, в одномодальной математической системе может существовать единственное наивысшее значение! Кто станет твоим максимумом - матмех, гумфак или электротех?",
         'htf/gnf': "Напомню, в одномодальной математической системе может существовать единственное наивысшее значение! Кто станет твоим максимумом - химтех или горно-нефтяной?"
       },
-      finalLine: "Коллега, у вас отлично развиты когнитивные навыки! Давайте посмотрим какой из факультетов стал счастливчиком, обретя такого талантливого абитуриента!"
+      finalLine: "Коллега, у вас отлично развиты когнитивные навыки! Давайте посмотрим какой из факультетов стал счастливчиком, обретя такого талантливого абитуриента!",
+      backgroundImage: "/media/img/backgrounds/mainTest/5.png",
     });
   }
 
@@ -179,7 +191,7 @@ class CharacterFactory {
       class: "Кот учёный",
       description: "🌟 Спецфича: расслабляющий мурр-эффект\n🚀 Суперскилл: мгновенно восстанавливает потерянную энергию\n💣 Слабость: комплекс ПНИПУ - ну уж очень любит лазить по деревьям и застревать на них",
       mobileDescription: "🎮 Кот учёный\n📌 магистр БАРСИК",
-  image: '/media/img/characters/cat.png',
+      image: '/media/img/characters/cat.png',
       greeting: "Приветственный “Мяу” юному искателю призвания! Побольше радости и спокойствия  —  будь уверен, дело всей жизни найдет тебя, если ты будешь в гармонии с собой! Сыграем?",
       facultyResponses: {
         'akf/mtf': "Мяу, абитуриент! Сейчас решим, кто тебе ближе — аэрокос с двигателями или мехтех с механизмами",
@@ -187,7 +199,8 @@ class CharacterFactory {
         'fpmm/etf/gumf': "Мяу, абитуриент! Сейчас решим, кто тебе ближе — матмех с формулами, гумфак с идеями  или электротех с микросхемами",
         'htf/gnf': "Мяу, абитуриент! Сейчас решим, кто тебе ближе — химтех с колбами или горно-нефтяной с буровыми вышками"
       },
-      finalLine: "Ты просто зааамурчательно прошел игру! Я был счастлив провести с тобой время, давай посмотрим, какой факультет подходит тебе больше всего!"
+      finalLine: "Ты просто зааамурчательно прошел игру! Я был счастлив провести с тобой время, давай посмотрим, какой факультет подходит тебе больше всего!",
+      backgroundImage: "/media/img/backgrounds/mainTest/1.png",
     });
   }
 

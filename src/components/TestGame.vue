@@ -46,16 +46,6 @@
         >
           Да, продолжить
         </button>
-        <!-- <button 
-          @click="handleProceed"
-          @pointerup="handleProceed"
-          type="button"
-          class="continue-btn neon-button"
-          :disabled="isTransitioning"
-          style="margin-left: 20px;"
-        >
-          Нет, продолжить
-        </button> -->
       </div>
 
       <!-- Character Response Section -->
@@ -149,14 +139,19 @@ export default {
       characterEnterSide: null,
       dynamicObjectVisible: false,
       fallbackCharacter: {
-        image: './media/img/characters/dasha.png',
-        name: 'Даша'
+        image: './media/img/characters/empty.png',
+        name: '',
+        backgroundImage: ''
       }
     };
   },
   computed: {
     currentBackground() {
-      return this.currentStageData?.background || './media/img/backgrounds/main.png';
+      if(this.currentStageData?.type === 'game_completed' || this.currentStageData?.type === 'character_response'){
+        return this.currentStageData?.character?.backgroundImage;
+      }else{
+        return this.currentStageData?.background || './media/img/backgrounds/main.png';
+      }
     },
     characterImage() {
       // Always use the selected character's image if available
@@ -364,8 +359,7 @@ export default {
           nextData.character = selectedChar.getFullInfo();
         }
         this.currentStageData = nextData;
-        // Сохраняем прогресс на этапе character_replica
-        if (nextData.type === 'character_replica' && this.gameManager && this.gameManager.testingLogic) {
+        if (this.gameManager && this.gameManager.testingLogic) {
           this.gameManager.testingLogic.saveGameProgress();
         }
         await this.animateCharacterEnter();

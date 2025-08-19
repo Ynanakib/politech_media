@@ -488,7 +488,8 @@ main {
   font-size: 1.2rem;
   text-align: center;
   padding: 0 60px;
-  color: #23234b;
+  color: #f2e6ff;
+  /*color: #23234b;*/
   font-weight: 600;
 }
 .block button, .btn {
