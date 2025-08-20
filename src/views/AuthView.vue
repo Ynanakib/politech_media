@@ -302,9 +302,7 @@ export default {
         if (type === 'city'){
           this.showCityDropdown = false
           if(this.isHandCityInput){
-            console.log(this.cityId )
             this.cityId = this.cities.filter(city => city.title.toLowerCase() == this.cityInput.toLowerCase())[0].id
-            console.log(this.cityId )
           }
         }
         if (type === 'school') this.showSchoolDropdown = false

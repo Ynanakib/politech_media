@@ -1,14 +1,50 @@
 <template>
   <div class="test-game">
-    <div class="background" :style="{ backgroundImage: `url(${currentBackground})`, width: `${this.backgroundHeight * 1.5}px`, height: `${this.backgroundHeight}px`}">
+    <div class="background" :style="{ 
+      backgroundImage: `url(${currentBackground})`, 
+      width: `${this.backgroundHeight * 1.5}px`, 
+      height: `${this.backgroundHeight}px`,
+      marginLeft: this.backgroundHeight * 1.5 > this.windowWidth ? `${(this.windowWidth - this.backgroundHeight * 1.5) / 2}px` : `auto`
+    }">
+      <div v-if="currentStageData?.type === 'character_replica'" class="dynamicObject politeh" :style="{ backgroundImage: `url(./media/img/backgrounds/main.png)` }"></div>
+
       <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="bookshelf" :style="{ backgroundImage: `url(./media/img/dynamic/bookshelf.png)` }"></div>
       <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="dynamicObject book" :style="{ 
           backgroundImage: `url(./media/img/dynamic/book.png)`,
-          top: `${-0.91 * this.backgroundHeight}px`,
+          top: `${ -0.91 * this.backgroundHeight}px`,
           left: `${ 1.228 * this.backgroundHeight}px`
         }"></div>
+
+        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/maneken1.png)` ,
+          left: `${this.backgroundHeight * 0.5}px`,
+          top: `${ 0.55 * this.backgroundHeight}px`,
+          width: `${this.backgroundHeight / 11.52}px`,
+          height: `${this.backgroundHeight / 5.76}px`
+        }"></div>
+        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/maneken2.png)` ,
+          left: `${this.backgroundHeight * 0.65}px`,
+          top: `${ 0.55 * this.backgroundHeight-100}px`,
+          width: `${this.backgroundHeight / 11.52}px`,
+          height: `${this.backgroundHeight / 5.76}px`
+        }"></div>
+        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/maneken3.png)` ,
+          left: `${this.backgroundHeight * 0.8}px`,
+          top: `${ 0.55 * this.backgroundHeight-200}px`,
+          width: `${this.backgroundHeight / 11.52}px`,
+          height: `${this.backgroundHeight / 5.76}px`
+        }"></div>
+        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/maneken4.png)` ,
+          left: `${this.backgroundHeight * 0.95}px`,
+          top: `${ 0.55 * this.backgroundHeight-300}px`,
+          width: `${this.backgroundHeight / 11.52}px`,
+          height: `${this.backgroundHeight / 5.76}px`
+        }"></div>
+
     </div>
-    <!-- Character Field -->
     <div 
       class="character-field"
       :class="characterAnimationClasses"
@@ -19,24 +55,7 @@
         :style="{ backgroundImage: `url(${characterImage})` }"
       ></div>
     </div>
-
-    <!-- Dynamic Object Overlay -->
-    <div 
-      v-if="dynamicObject"
-      class="dynamic-object"
-      :class="dynamicObjectAnimationClasses"
-      :style="dynamicObjectStyles"
-    >
-      <img 
-        :src="dynamicObject.image" 
-        :alt="dynamicObject.trigger"
-        class="dynamic-object-image"
-      />
-    </div>
-
-    <!-- Interactive User Field -->
     <div class="user-field">
-      <!-- Character Replica Section -->
       <div v-if="currentStageData?.type === 'character_replica'" class="character-replica">
         <div class="character-message">
           <h2 class="character-name">{{ currentStageData.character.name }}</h2>
@@ -52,8 +71,6 @@
           Продолжить
         </button>
       </div>
-
-      <!-- Character Response Section -->
       <div v-else-if="currentStageData?.type === 'character_response'" class="character-response">
         <div class="character-message">
           <h2 class="character-name">{{ currentStageData.character.name }}</h2>
@@ -69,8 +86,6 @@
           Продолжить
         </button>
       </div>
-
-      <!-- Question Section -->
       <div v-else-if="isQuestionStage" class="question-section">
         <div class="question-content">
           <h3 class="question-text">{{ currentStageData.question }}</h3>
@@ -90,17 +105,11 @@
           </div>
         </div>
       </div>
-
-      <!-- Game Completed Section -->
       <div v-else-if="currentStageData?.type === 'game_completed'" class="game-completed">
         <div class="character-message">
           <h2 class="character-name">{{ currentStageData.character.name }}</h2>
           <p class="message-text">{{ currentStageData.message }}</p>
         </div>
-        <!-- <div class="result-info">
-          <p class="result-text">Ваш результат: {{ getFacultyName(currentStageData.result.branchGroup) }}</p>
-          <p class="result-detail">Факультет: {{ currentStageData.result.branch }}</p>
-        </div> -->
         <button 
           @click="handleContinueToResults"
           class="continue-btn neon-button"
@@ -109,15 +118,11 @@
           Продолжить
         </button>
       </div>
-
-      <!-- Loading State -->
       <div v-else-if="loading" class="loading-state">
         <div class="loading-spinner"></div>
         <p class="loading-text">Загрузка...</p>
       </div>
     </div>
-
-    <!-- Transition Overlay -->
     <div 
       v-if="false"
       class="transition-overlay"
@@ -127,9 +132,9 @@
 </template>
 
 <script>
-import { GameStateManager } from '@/assets/logic.js';
-import { CharacterFactory } from '@/assets/newScript.js';
-import { LocalStorage } from '@/assets/scripts.js';
+import { GameStateManager } from '@/assets/logic.js'
+import { CharacterFactory } from '@/assets/newScript.js'
+import { LocalStorage } from '@/assets/scripts.js'
 
 export default {
   name: 'TestGame',
@@ -142,84 +147,58 @@ export default {
       selectedAnswer: null,
       characterExitSide: null,
       characterEnterSide: null,
-      dynamicObjectVisible: false,
       backgroundHeight: 703,
       fallbackCharacter: {
         image: './media/img/characters/empty.png',
         name: '',
         backgroundImage: ''
-      }
-    };
+      },
+      windowWidth: window.innerWidth,
+      manekens: [true, true, true, true],
+      exposition: [true, true, true, true]
+    }
   },
   computed: {
     currentBackground() {
       if(this.currentStageData?.type === 'game_completed' || this.currentStageData?.type === 'character_response'){
-        return this.currentStageData?.character?.backgroundImage;
+        return this.currentStageData?.character?.backgroundImage
       }else{
-        return this.currentStageData?.background || './media/img/backgrounds/main.png';
+        return this.currentStageData?.background || './media/img/backgrounds/main.png'
       }
     },
     characterImage() {
-      // Always use the selected character's image if available
       if (this.currentStageData?.character?.image) {
-        return this.currentStageData.character.image;
+        return this.currentStageData.character.image
       }
-      // fallback only if no character at all
-      return this.fallbackCharacter.image;
-    },
-    dynamicObject() {
-      return this.currentStageData?.dynamicObject || null;
+      return this.fallbackCharacter.image
     },
     isQuestionStage() {
       return this.currentStageData?.type === 'general_question' || 
-             this.currentStageData?.type === 'special_question';
+             this.currentStageData?.type === 'special_question'
     },
     characterAnimationClasses() {
-      const classes = ['character-field'];
+      const classes = ['character-field']
       
       if (this.isTransitioning) {
         if (this.characterExitSide) {
-          classes.push(`character-exit-${this.characterExitSide}`);
+          classes.push(`character-exit-${this.characterExitSide}`)
         }
         if (this.characterEnterSide) {
-          classes.push(`character-enter-${this.characterEnterSide}`);
+          classes.push(`character-enter-${this.characterEnterSide}`)
         }
       }
       
-      return classes;
-    },
-    dynamicObjectAnimationClasses() {
-      const classes = ['dynamic-object'];
-      
-      if (this.dynamicObjectVisible) {
-        classes.push('dynamic-object-visible');
-        if (this.dynamicObject?.animation) {
-          classes.push(`dynamic-object-${this.dynamicObject.animation}`);
-        }
-      }
-      
-      return classes;
+      return classes
     },
     transitionClasses() {
-      return ['transition-overlay'];
+      return ['transition-overlay']
     },
     characterStyles() {
       const styles = {}
-      console.log("char style changed")
       styles.top = ``
       styles.height = `${this.backgroundHeight+20}px`
       styles.width = `${(this.backgroundHeight+20)/1.5}px`
-      return styles;
-    },
-    dynamicObjectStyles() {
-      const styles = {};
-      
-      if (this.dynamicObject?.position) {
-        styles.left = this.dynamicObject.position.x || '50%';
-        styles.top = this.dynamicObject.position.y || '50%';
-      }
-      
-      return styles;
+      return styles
     }
   },
   beforeMount() {
@@ -228,84 +207,70 @@ export default {
   methods: {
     async initializeGame() {
       try {
-        this.loading = true;
-        // Initialize game manager
-        this.gameManager = new GameStateManager();
-        await this.gameManager.initialize();
-
-        // Try to restore progress
-        const savedProgress = LocalStorage.get('gameProgress');
-        const savedCharacter = LocalStorage.get('selectedCharacter');
+        this.loading = true
+        this.gameManager = new GameStateManager()
+        await this.gameManager.initialize()
+        const savedProgress = LocalStorage.get('gameProgress')
+        const savedCharacter = LocalStorage.get('selectedCharacter')
         if (savedProgress && savedCharacter) {
-          // Restore game state from localStorage
-          this.restoreProgressFromLocalStorage();
+          this.restoreProgressFromLocalStorage()
         } else if (savedCharacter) {
-          // No progress, but character selected
-          const characterData = JSON.parse(savedCharacter);
-          const character = CharacterFactory.getCharacterById(characterData.id);
+          const characterData = JSON.parse(savedCharacter)
+          const character = CharacterFactory.getCharacterById(characterData.id)
           if (character) {
-            await this.startGame(character);
+            await this.startGame(character)
           } else {
-            this.$emit('no-character');
+            this.$emit('no-character')
           }
         } else {
-          this.$emit('no-character');
+          this.$emit('no-character')
         }
-        this.loading = false;
+        this.loading = false
+
       } catch (error) {
-        console.error('Failed to initialize game:', error);
-        this.loading = false;
-        this.$emit('no-character');
+        console.error('Failed to initialize game:', error)
+        this.loading = false
+        this.$emit('no-character')
       }
       this.calcHeight()
     },
 
     restoreProgressFromLocalStorage() {
-      // This assumes gameManager is initialized and LocalStorage has valid data
-      // The gameManager.getCurrentData() will reflect the restored state
-      let data = this.gameManager.getCurrentData();
-      // Если этап character_replica, явно получаем данные для этого этапа
+      let data = this.gameManager.getCurrentData()
       if (data?.type === 'character_replica' || !data) {
         if (this.gameManager && this.gameManager.testingLogic && typeof this.gameManager.testingLogic.getCharacterReplicaData === 'function') {
-          data = this.gameManager.testingLogic.getCharacterReplicaData();
+          data = this.gameManager.testingLogic.getCharacterReplicaData()
         }
       }
-      this.currentStageData = data;
-      // Критично: обновляем gameManager.currentData для корректной работы processAction
-      this.gameManager.currentData = data;
-      // Patch character info if needed
-      const savedCharacter = LocalStorage.get('selectedCharacter');
+      this.currentStageData = data
+      this.gameManager.currentData = data
+      const savedCharacter = LocalStorage.get('selectedCharacter')
       if (savedCharacter && this.currentStageData) {
-        const charData = JSON.parse(savedCharacter);
-        const character = CharacterFactory.getCharacterById(charData.id);
+        const charData = JSON.parse(savedCharacter)
+        const character = CharacterFactory.getCharacterById(charData.id)
         if (character && (!this.currentStageData.character || this.currentStageData.character.id !== character.id)) {
-          this.currentStageData.character = character.getFullInfo();
+          this.currentStageData.character = character.getFullInfo()
         }
       }
     },
     
     async startGame(character) {
       try {
-        // Check if there's saved progress
-        const savedProgress = LocalStorage.get('gameProgress');
+        const savedProgress = LocalStorage.get('gameProgress')
         if (savedProgress) {
-          // Restore game state
-          this.currentStageData = this.gameManager.getCurrentData();
-          // Patch character if missing (for old saves)
+          this.currentStageData = this.gameManager.getCurrentData()
           if (!this.currentStageData?.character?.image) {
-            this.currentStageData.character = character.getFullInfo();
+            this.currentStageData.character = character.getFullInfo()
           }
         } else {
-          // Start new game
-          this.currentStageData = await this.gameManager.startGame(character);
+          this.currentStageData = await this.gameManager.startGame(character)
         }
-        // Always ensure the selected character is used for all stages
         if (this.currentStageData && this.currentStageData.character && this.currentStageData.character.id !== character.id) {
-          this.currentStageData.character = character.getFullInfo();
+          this.currentStageData.character = character.getFullInfo()
         }
-        this.animateCharacterEnter();
+        this.animateCharacterEnter()
       } catch (error) {
-        console.error('Failed to start game:', error);
+        console.error('Failed to start game:', error)
       }
     },
     
@@ -314,7 +279,12 @@ export default {
       this.selectedAnswer = answerKey;
       this.isTransitioning = true;
       try {
+        if (this.gameManager && this.gameManager.getCurrentQuestionNumber() === 2) {
+          const { updateGroupFlags } = await import('@/assets/logic.js')
+          updateGroupFlags(this.manekens, answerKey)
+        }
         await this.animateCharacterExit();
+        await this.animateCurrentQuestion();
         if (this.dynamicObject) {
           await this.showDynamicObject();
         }
@@ -354,6 +324,7 @@ export default {
       this.isTransitioning = true;
       try {
         await this.animateCharacterExit();
+        await this.animateCurrentQuestion();
         const nextData = await this.gameManager.processAction('proceed');
         // Always patch character to selected one if missing or wrong
         const savedCharacter = LocalStorage.get('selectedCharacter');
@@ -383,11 +354,8 @@ export default {
     
     async animateCharacterExit() {
       return new Promise((resolve) => {
-        // Only left and right movement allowed
         const sides = ['left']; //'right'
         this.characterExitSide = sides[Math.floor(Math.random() * sides.length)];
-        
-        // Animate exit
         setTimeout(() => {
           resolve();
         }, 800);
@@ -408,27 +376,14 @@ export default {
       });
     },
     
-    async showDynamicObject() {
-      return new Promise((resolve) => {
-        this.dynamicObjectVisible = true;
-        
-        setTimeout(() => {
-          this.dynamicObjectVisible = false;
-          resolve();
-        }, 2000); // Show dynamic object for 2 seconds
-      });
-    },
-    
     handleGameComplete() {
-      // Save final result
       if (this.currentStageData?.result) {
-        LocalStorage.set('gameResult', JSON.stringify(this.currentStageData.result));
+        LocalStorage.set('gameResult', JSON.stringify(this.currentStageData.result))
       }
     },
     
     handleContinueToResults() {
-      // Emit game completion event
-      this.$emit('game-completed', this.currentStageData.result.totalAnswered || 0);
+      this.$emit('game-completed', this.currentStageData.result.totalAnswered || 0)
     },
     
     getFacultyName(branchGroup) {
@@ -437,16 +392,91 @@ export default {
         'sf/idst': 'Строительный факультет / Институт дорожного строительства и транспорта',
         'fpmm/etf/gumf': 'Факультет прикладной математики и механики / Электротехнический факультет / Гуманитарный факультет',
         'htf/gnf': 'Химико-технологический факультет / Геологический факультет'
-      };
+      }
       
-      return facultyNames[branchGroup] || branchGroup;
+      return facultyNames[branchGroup] || branchGroup
     },
 
     calcHeight(){
-      this.backgroundHeight = document.getElementsByTagName("body")[0].offsetHeight - document.getElementsByClassName("user-field")[0].offsetHeight;
-    }    
+      this.backgroundHeight = document.getElementsByTagName("body")[0].offsetHeight - document.getElementsByClassName("user-field")[0].offsetHeight
+    },
+    
+    async animateCurrentQuestion(){
+      return new Promise((resolve)=>{
+        let question = {
+          tag: "politeh",
+          time: 5000
+        }
+        let postProcess = true;
+        
+        if(this.currentStageData?.type === 'character_replica'){
+          question = {
+            tag: "politeh",
+            time: 5000
+          }
+        }else{
+          switch(this.gameManager.getCurrentQuestionNumber()){
+            case 1:
+              question.tag = "book"
+              question.time = 5000
+              document.getElementsByClassName("book")[0].style.top = "-50%"
+              document.getElementsByClassName("book")[0].style.left = "50%"
+              document.getElementsByClassName("book")[0].style.zIndex = 3
+              break;
+            case 2:
+              question.tag = "maneken"
+              question.time = 3000
+              let manekens = document.getElementsByClassName("maneken")
+              for(let i = 0; i<4; i++){
+                manekens[i].classList.remove("animated")
+                if(!this.manekens[i]){
+                  manekens[i].classList.add("animated")
+                }
+              }
+              postProcess = false;
+              break;
+            case 3:
+              question.tag = ""
+              question.time = 0
+              break;
+            case 4:
+              question.tag = ""
+              question.time = 0
+              break;
+            case 5:
+              question.tag = ""
+              question.time = 0
+              break;
+            case 6:
+              question.tag = ""
+              question.time = 0
+              break;
+            case 7:
+              question.tag = ""
+              question.time = 0
+              break;
+            default:
+              question.tag = "politeh"
+              question.time = 5000
+              break;
+          }
+        }
+        if(postProcess){
+          const targetEl = document.getElementsByClassName(question.tag)[0]
+          if (!targetEl) {
+            resolve();
+            return;
+          }
+          targetEl.classList.remove("animated")
+          targetEl.classList.add("animated")
+        }
+        setTimeout(() => {
+          resolve();
+        }, question.time)
+      })
+    }
   }
-};
+}
 </script>
 
 <style scoped>
@@ -467,15 +497,12 @@ export default {
 }
 
 .background{
-  /* width: 100%;
-  height: calc(100% - 220px); */
   margin: 0 auto;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
 }
 
-/* Character Field */
 .character-field {
   position: absolute;
   left: 0;
@@ -506,7 +533,6 @@ export default {
   transform: translateZ(0);
 }
 
-/* Character Exit Animations */
 .character-exit-left {
   animation: characterExitLeft 0.5s ease-in-out forwards;
 }
@@ -515,7 +541,6 @@ export default {
   animation: characterExitRight 0.5s ease-in-out forwards;
 }
 
-/* Character Enter Animations */
 .character-enter-left {
   animation: characterEnterLeft 0.5s ease-in-out forwards;
 }
@@ -524,42 +549,6 @@ export default {
   animation: characterEnterRight 0.5s ease-in-out forwards;
 }
 
-/* Dynamic Object */
-.dynamic-object {
-  position: absolute;
-  z-index: 20;
-  opacity: 0;
-  transform: scale(0);
-  transition: all 0.5s ease-in-out;
-  pointer-events: none;
-}
-
-.dynamic-object-visible {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
-}
-
-.dynamic-object-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-/* Dynamic Object Animations */
-.dynamic-object-bounce {
-  animation: dynamicObjectBounce 2s ease-in-out;
-}
-
-.dynamic-object-rotate {
-  animation: dynamicObjectRotate 2s ease-in-out;
-}
-
-.dynamic-object-fade {
-  animation: dynamicObjectFade 2s ease-in-out;
-}
-
-/* User Field */
 .user-field {
   position: absolute;
   bottom: 0;
@@ -747,7 +736,6 @@ export default {
   color: #0ff;
 }
 
-/* Transition Overlay */
 .transition-overlay {
   position: absolute;
   top: 0;
@@ -768,7 +756,6 @@ export default {
   opacity: 1;
 }
 
-/* Animations */
 @keyframes characterExitLeft {
   0% { transform: translateX(0); opacity: 1; }
   100% { transform: translateX(-100%); opacity: 0; }
@@ -795,30 +782,11 @@ export default {
   100% { transform: translateY(0) translateZ(0); }
 }
 
-@keyframes dynamicObjectBounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0) scale(1); }
-  40% { transform: translateY(-30px) scale(1.1); }
-  60% { transform: translateY(-15px) scale(1.05); }
-}
-
-@keyframes dynamicObjectRotate {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.2); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-
-@keyframes dynamicObjectFade {
-  0% { opacity: 0; transform: scale(0.5); }
-  50% { opacity: 1; transform: scale(1.2); }
-  100% { opacity: 0; transform: scale(1); }
-}
-
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* Responsive Design */
 @media (max-width: 900px) {
   .test-game {
     height: 100vh;
@@ -1019,7 +987,6 @@ export default {
   }
 }
 
-/* Touch-friendly improvements for mobile */
 @media (hover: none) and (pointer: coarse) {
   .answer-btn {
     -webkit-tap-highlight-color: transparent;
@@ -1042,7 +1009,6 @@ export default {
   }
 }
 
-/* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   .character-image {
     animation: none;
@@ -1065,7 +1031,6 @@ export default {
   }
 }
 
-/* Landscape orientation adjustments */
 @media (max-width: 900px) and (orientation: landscape) {
   
   .user-field {
@@ -1105,8 +1070,6 @@ export default {
 
 .dynamicObject{
   position: relative;
-  width: 200px;
-  height: 200px;
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -1122,9 +1085,33 @@ export default {
 }
 .book{  
   z-index: 1;
+  transition: all;
+  transition-duration: 3s;
   rotate: 64grad;
   width: 200px;
   height: 140px;
 }
-
+.book.animated{
+  rotate: 0grad;
+  left: 50%;
+  top: -50%
+}
+.politeh.animated{
+  width: 600%;
+  margin-left: -250%;
+  background-position: 50% 80%;
+}
+.politeh{
+  transition: all;
+  transition-duration: 5s;
+  width: 100%;
+  height: 100%;
+}
+.maneken{
+  transition: all;
+  transition-duration: 2s;
+}
+.maneken.animated{
+  opacity: 0;
+}
 </style>

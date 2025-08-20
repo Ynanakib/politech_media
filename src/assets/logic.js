@@ -298,9 +298,6 @@ class TestingLogic {
     // Also count one point per selected faculty group (general testing group score)
     this.generalGroupScores[answerKey] = (this.generalGroupScores[answerKey] || 0) + 1;
 
-    console.log(`Question ${this.currentQuestionIndex + 1} answered: ${answerKey}`);
-    console.log('Current branch scores:', this.branchScores);
-    console.log('Current general group scores:', this.generalGroupScores);
 
     // Move to next question or check for completion
     if (this.currentQuestionIndex < this.currentQuestions.length - 1) {
@@ -309,24 +306,19 @@ class TestingLogic {
       return this.getGeneralQuestionData();
     } else {
       // Check for tiebreaker after all 6 questions
-      console.log('All 6 questions completed. Checking for ties...');
       let tieGroups = this.getTiedGroupsFromGeneralGroupScores();
-      console.log('Tie groups from generalGroupScores:', tieGroups);
 
       // Fallback: derive tie from branchScores grouping if needed (for old saves)
       if (tieGroups.length !== 2) {
         const fallbackTie = this.getTiedGroups();
-        console.log('Tie groups from branchScores fallback:', fallbackTie);
         if (fallbackTie.length === 2) {
           tieGroups = fallbackTie;
         }
       }
       
       if (tieGroups.length === 2) {
-        console.log('Showing tiebreaker question (7th question)');
         return this.showTiebreaker(tieGroups);
       } else {
-        console.log('No qualifying tie found, proceeding to character response');
         return this.proceedToCharacterResponse();
       }
     }
@@ -372,7 +364,6 @@ class TestingLogic {
     this.currentQuestions = [constrainedQuestion];
     this.currentQuestionIndex = 0;
 
-    console.log('Showing constrained tiebreaker question with variants:', Object.keys(allowed));
 
     this.saveGameProgress();
     return this.getGeneralQuestionData();
@@ -384,8 +375,6 @@ class TestingLogic {
    * @returns {Object} Next stage data
    */
   processTiebreakerAnswer(answerKey) {
-    console.log(`Tiebreaker answered: ${answerKey}`);
-    console.log('Tied groups:', this.tiebreakerGroups);
 
     // In tiebreaker we render variants with keys exactly equal to group keys (e.g., 'akf/mtf')
     const selectedGroupKey = answerKey;
@@ -393,18 +382,14 @@ class TestingLogic {
 
     if (isTiedGroup) {
       this.dominantBranchGroup = selectedGroupKey;
-      console.log(`Selected group ${selectedGroupKey} as dominant`);
     } else {
       // Defensive fallback
       this.dominantBranchGroup = this.tiebreakerGroups[0]?.key || null;
-      console.log(`Fallback to tied group: ${this.dominantBranchGroup}`);
     }
 
     // Reset tiebreaker state
     this.gameState = 'playing';
     this.tiebreakerGroups = [];
-
-    console.log(`Final dominant group: ${this.dominantBranchGroup}`);
 
     // Proceed to character response
     return this.proceedToCharacterResponse();
@@ -606,9 +591,6 @@ class TestingLogic {
       }
     }
     
-    console.log('Individual branch scores:', this.branchScores);
-    console.log('Calculated group scores:', groupScores);
-    
     // Find the group with the highest score
     let maxScore = 0;
     let topGroup = '';
@@ -621,7 +603,6 @@ class TestingLogic {
     }
     
     this.dominantBranchGroup = topGroup;
-    console.log(`Determined dominant group: ${this.dominantBranchGroup} with score: ${maxScore}`);
   }
 
   /**
@@ -1002,3 +983,53 @@ class GameStateManager {
 
 // Export classes for use in other modules
 export { TestingLogic, GameStateManager };
+
+// Add utility to update selection flags based on answer
+/**
+ * Update a group flags array based on the selected answer.
+ * Mutates and returns the array: all values set to false except the chosen group.
+ * Index mapping:
+ * 0 -> fpmm/etf/gumf
+ * 1 -> akf/mtf
+ * 3 -> sf/idst
+ * 4 -> htf/gnf (also accepts gnf/htf)
+ * Accepts both group keys (e.g., 'akf/mtf') and single branches (e.g., 'akf').
+ * @param {boolean[]} flags
+ * @param {string} answerKey
+ * @returns {boolean[]} flags (mutated)
+ */
+export function updateGroupFlags(flags, answerKey) {
+  if (!Array.isArray(flags)) return flags;
+  if (typeof answerKey !== 'string') return flags;
+
+  const branchToGroup = {
+    'akf': 'akf/mtf', 'mtf': 'akf/mtf',
+    'sf': 'sf/idst', 'idst': 'sf/idst',
+    'htf': 'htf/gnf', 'gnf': 'htf/gnf',
+    'fpmm': 'fpmm/etf/gumf', 'etf': 'fpmm/etf/gumf', 'gumf': 'fpmm/etf/gumf',
+  };
+
+  let groupKey = answerKey;
+  if (!groupKey.includes('/')) {
+    groupKey = branchToGroup[groupKey] || null;
+  }
+
+  const groupToIndex = {
+    'fpmm/etf/gumf': 0,
+    'akf/mtf': 1,
+    'sf/idst': 2,
+    'htf/gnf': 3,
+  };
+
+  const targetIndex = groupKey ? groupToIndex[groupKey] : -1;
+
+  for (let i = 0; i < flags.length; i++) {
+    flags[i] = false;
+  }
+
+  if (targetIndex >= 0 && targetIndex < flags.length) {
+    flags[targetIndex] = true;
+  }
+
+  return flags;
+}
