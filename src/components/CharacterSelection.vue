@@ -361,12 +361,7 @@ export default {
   .neon-title {
     font-size: 2rem;
     padding-top: 10px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 9999;
   }
-  
   .content {
     padding: 0;
   }
@@ -385,9 +380,6 @@ export default {
     height: var(--full-height);
     overflow-y: auto;
     height: fit-content;
-  }
-  .character-card:nth-child(1){
-    margin-top: 85px;
   }
   .character-card {
     min-height: 120px;

@@ -1,60 +1,5 @@
 <template>
   <div class="test-game">
-    <div class="background" :style="{ 
-      backgroundImage: `url(${currentBackground})`, 
-      width: `${this.backgroundHeight * 1.5}px`, 
-      height: `${this.backgroundHeight}px`,
-      marginLeft: this.backgroundHeight * 1.5 > this.windowWidth ? `${(this.windowWidth - this.backgroundHeight * 1.5) / 2}px` : `auto`
-    }">
-      <div v-if="currentStageData?.type === 'character_replica'" class="dynamicObject politeh" :style="{ backgroundImage: `url(./media/img/backgrounds/main.png)` }"></div>
-
-      <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="bookshelf" :style="{ backgroundImage: `url(./media/img/dynamic/bookshelf.png)` }"></div>
-      <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="dynamicObject book" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/book.png)`,
-          top: `${ -0.91 * this.backgroundHeight}px`,
-          left: `${ 1.228 * this.backgroundHeight}px`
-        }"></div>
-
-        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/maneken1.png)` ,
-          left: `${this.backgroundHeight * 0.5}px`,
-          top: `${ 0.55 * this.backgroundHeight}px`,
-          width: `${this.backgroundHeight / 11.52}px`,
-          height: `${this.backgroundHeight / 5.76}px`
-        }"></div>
-        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/maneken2.png)` ,
-          left: `${this.backgroundHeight * 0.65}px`,
-          top: `${ 0.55 * this.backgroundHeight-100}px`,
-          width: `${this.backgroundHeight / 11.52}px`,
-          height: `${this.backgroundHeight / 5.76}px`
-        }"></div>
-        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/maneken3.png)` ,
-          left: `${this.backgroundHeight * 0.8}px`,
-          top: `${ 0.55 * this.backgroundHeight-200}px`,
-          width: `${this.backgroundHeight / 11.52}px`,
-          height: `${this.backgroundHeight / 5.76}px`
-        }"></div>
-        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/maneken4.png)` ,
-          left: `${this.backgroundHeight * 0.95}px`,
-          top: `${ 0.55 * this.backgroundHeight-300}px`,
-          width: `${this.backgroundHeight / 11.52}px`,
-          height: `${this.backgroundHeight / 5.76}px`
-        }"></div>
-
-    </div>
-    <div 
-      class="character-field"
-      :class="characterAnimationClasses"
-      :style="characterStyles"
-    >
-      <div 
-        class="character-image"
-        :style="{ backgroundImage: `url(${characterImage})` }"
-      ></div>
-    </div>
     <div class="user-field">
       <div v-if="currentStageData?.type === 'character_replica'" class="character-replica">
         <div class="character-message">
@@ -123,6 +68,61 @@
         <p class="loading-text">Загрузка...</p>
       </div>
     </div>
+
+    <div class="background" :style="{ 
+      backgroundImage: `url(${currentBackground})`, 
+      width: `${console.log(this.backgroundWidth) ? 0 : this.backgroundWidth}px`, 
+      height: `${this.backgroundWidth}px`
+    }">
+      <!-- <div v-if="currentStageData?.type === 'character_replica'" class="dynamicObject politeh" :style="{ backgroundImage: `url(./media/img/backgrounds/main.png)` }"></div>
+
+      <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="bookshelf" :style="{ backgroundImage: `url(./media/img/dynamic/bookshelf.png)` }"></div>
+      <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="dynamicObject book" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/book.png)`,
+          top: `${ -0.91 * this.backgroundWidth}px`,
+          left: `${ 1.228 * this.backgroundWidth}px`
+        }"></div>
+
+        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/maneken1.png)` ,
+          left: `${this.backgroundWidth * 0.5}px`,
+          top: `${ 0.55 * this.backgroundWidth}px`,
+          width: `${this.backgroundWidth / 11.52}px`,
+          height: `${this.backgroundWidth / 5.76}px`
+        }"></div>
+        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/maneken2.png)` ,
+          left: `${this.backgroundWidth * 0.65}px`,
+          top: `${ 0.55 * this.backgroundWidth-100}px`,
+          width: `${this.backgroundWidth / 11.52}px`,
+          height: `${this.backgroundWidth / 5.76}px`
+        }"></div>
+        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/maneken3.png)` ,
+          left: `${this.backgroundWidth * 0.8}px`,
+          top: `${ 0.55 * this.backgroundWidth-200}px`,
+          width: `${this.backgroundWidth / 11.52}px`,
+          height: `${this.backgroundWidth / 5.76}px`
+        }"></div>
+        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
+          backgroundImage: `url(./media/img/dynamic/maneken4.png)` ,
+          left: `${this.backgroundWidth * 0.95}px`,
+          top: `${ 0.55 * this.backgroundWidth-300}px`,
+          width: `${this.backgroundWidth / 11.52}px`,
+          height: `${this.backgroundWidth / 5.76}px`
+        }"></div> -->
+
+    </div>
+    <div 
+      class="character-field"
+      :class="characterAnimationClasses"
+      :style="characterStyles"
+    >
+      <div 
+        class="character-image"
+        :style="{ backgroundImage: `url(${characterImage})` }"
+      ></div>
+    </div>
     <div 
       v-if="false"
       class="transition-overlay"
@@ -147,7 +147,7 @@ export default {
       selectedAnswer: null,
       characterExitSide: null,
       characterEnterSide: null,
-      backgroundHeight: 703,
+      backgroundWidth: 375,
       fallbackCharacter: {
         image: './media/img/characters/empty.png',
         name: '',
@@ -196,8 +196,8 @@ export default {
     characterStyles() {
       const styles = {}
       styles.top = ``
-      styles.height = `${this.backgroundHeight+20}px`
-      styles.width = `${(this.backgroundHeight+20)/1.5}px`
+      styles.height = `${this.backgroundWidth+20}px`
+      styles.width = `${(this.backgroundWidth+20)/1.5}px`
       return styles
     }
   },
@@ -385,47 +385,36 @@ export default {
     handleContinueToResults() {
       this.$emit('game-completed', this.currentStageData.result.totalAnswered || 0)
     },
-    
-    getFacultyName(branchGroup) {
-      const facultyNames = {
-        'akf/mtf': 'Авиационный и машиностроительный факультет',
-        'sf/idst': 'Строительный факультет / Институт дорожного строительства и транспорта',
-        'fpmm/etf/gumf': 'Факультет прикладной математики и механики / Электротехнический факультет / Гуманитарный факультет',
-        'htf/gnf': 'Химико-технологический факультет / Геологический факультет'
-      }
-      
-      return facultyNames[branchGroup] || branchGroup
-    },
 
     calcHeight(){
-      this.backgroundHeight = document.getElementsByTagName("body")[0].offsetHeight - document.getElementsByClassName("user-field")[0].offsetHeight
+      this.backgroundWidth = document.getElementsByTagName("body")[0].offsetWidth
     },
     
     async animateCurrentQuestion(){
       return new Promise((resolve)=>{
         let question = {
-          tag: "politeh",
-          time: 5000
+          time: 0,
+          postProcess: false
         }
-        let postProcess = true;
-        
-        if(this.currentStageData?.type === 'character_replica'){
-          question = {
-            tag: "politeh",
-            time: 5000
-          }
-        }else{
-          switch(this.gameManager.getCurrentQuestionNumber()){
+        if(this.currentStageData?.type !== 'character_response'){
+          if(this.currentStageData?.type === 'character_replica'){
+            question = {
+              tag: "politeh",
+              time: 5000,
+              postProcess: true
+            }
+          }else{
+            switch(this.gameManager.getCurrentQuestionNumber()){
             case 1:
               question.tag = "book"
-              question.time = 5000
+              question.time = 0//5000
               document.getElementsByClassName("book")[0].style.top = "-50%"
               document.getElementsByClassName("book")[0].style.left = "50%"
               document.getElementsByClassName("book")[0].style.zIndex = 3
               break;
             case 2:
               question.tag = "maneken"
-              question.time = 3000
+              question.time = 0//3000
               let manekens = document.getElementsByClassName("maneken")
               for(let i = 0; i<4; i++){
                 manekens[i].classList.remove("animated")
@@ -433,7 +422,7 @@ export default {
                   manekens[i].classList.add("animated")
                 }
               }
-              postProcess = false;
+              question.postProcess = false;
               break;
             case 3:
               question.tag = ""
@@ -457,11 +446,12 @@ export default {
               break;
             default:
               question.tag = "politeh"
-              question.time = 5000
+              question.time = 0// 5000
               break;
           }
+          }
         }
-        if(postProcess){
+        if(question.postProcess){
           const targetEl = document.getElementsByClassName(question.tag)[0]
           if (!targetEl) {
             resolve();
@@ -483,11 +473,12 @@ export default {
 .test-game {
   width: 100vw;
   height: var(--full-height);
+  /* height: 100vh; */
   overflow: hidden;
   position: relative;
   background-color: #00023b;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   background-size: cover;
   -webkit-overflow-scrolling: touch;
   -webkit-user-select: none;
@@ -550,13 +541,9 @@ export default {
 }
 
 .user-field {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   width: 100vw;
   min-height: 250px;
-  background: black;
+  background: #00023b;
   text-align: center;
   flex: 0 0 auto;
   z-index: 15;
@@ -564,6 +551,7 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  border-top: black 5px solid;
 }
 
 .character-replica,
@@ -787,148 +775,42 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-@media (max-width: 900px) {
-  .test-game {
-    height: 100vh;
-    overflow: hidden;
-  }
-  
-  .character-image {
-    background-size: contain;
-    background-position: bottom center;
-  }
-  
-  .user-field {
-    min-height: 200px;
-    padding: 15px;
-  }
-  
-  .question-content {
-    width: 90%;
-    max-width: 600px;
-    padding: 20px 15px;
-  }
-  
-  .question-text {
-    margin-bottom: 15px;
-  }
-  
-  .answers-grid {
-    grid-template-columns: 1fr;
-    margin-bottom: 0px;
-    gap: 12px;
-  }
-  
+@media (max-width: 380px){
 
-  .message-text{
-    font-size: 18px;
-  }
-  
-  .answer-btn {
-    padding: 12px 20px;
-    font-size: 14px;
-    min-height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .character-name {
-    font-size: 24px;
-    margin-bottom: 10px;
-  }
-  
-  .continue-btn {
-    padding: 12px 30px;
-    min-height: 45px;
-  }
-  
-  .result-info {
-    padding: 15px;
-    margin: 15px 0;
-  }
-}
-
-@media (max-width: 600px) {
-  
   .user-field {
-    min-height: 180px;
-    padding: 15px 8px;
-  }
-  
-  .question-content {
-    width: 95%;
-    padding: 15px 10px;
-  }
-  
-  .question-text {
-    margin-bottom: 12px;
-  }
-  
-  .answers-grid {
-    margin-bottom: 0px;
-    gap: 10px;
-  }
-  
-  .answer-btn {
-    text-align: center;
-    padding: 10px 15px;
-    min-height: 45px;
-    border-radius: 20px;
-  }
-  
-  .character-name {
-    margin-bottom: 8px;
-  }
-  
-  .continue-btn {
-    padding: 10px 25px;
-    min-height: 40px;
-  }
-  
-  .result-info {
-    padding: 12px;
-    margin: 12px 0;
-  }
-  
-  .loading-spinner {
-    width: 40px;
-    height: 40px;
-    margin-bottom: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  
-  .user-field {
-    min-height: 160px;
+    height: 40%;
     padding: 5px;
+    justify-content: start;
   }
   
   .question-content {
     width: 98%;
     padding: 12px 8px;
+    height: 100%;
   }
   
   .question-text {
     margin-bottom: 10px;
+    font-size: 16px;
   }
   
   .answers-grid {
     margin-bottom: 0px;
-    gap: 8px;
+    height: 85%;
+    grid-template-rows: repeat(4, 1fr);
   }
   
   .answer-btn {
     padding: 8px 12px;
-    min-height: 40px;
+    min-height: 35px;
+    height: 100%;
     border-radius: 18px;
+    font-size: 14px;
   }
-  
   .character-name {
     margin-bottom: 6px;
   }
-  
+
   .continue-btn {
     padding: 8px 20px;
     min-height: 35px;
@@ -946,46 +828,29 @@ export default {
   }
 }
 
-@media (max-width: 360px) {
-  
+@media (max-width: 431px){
   .user-field {
-    min-height: 140px;
+    height: 40%;
     padding: 5px;
+    justify-content: start;
   }
   
-  .question-content {
+  .character-field{
+    top: 150px; 
+    left: -50px
+  }
+  .question-content{
     width: 100%;
-    padding: 10px 6px;
-  }
-  
-  .question-text {
-    margin-bottom: 8px;
-  }
-  
-  .answer-btn {
-    padding: 6px 10px;
-    min-height: 35px;
-    border-radius: 15px;
   }
 
   .answers-grid{
-    margin-bottom: 0px;
-  }
-  
-  .character-name {
-    margin-bottom: 5px;
-  }
-  
-  .continue-btn {
-    padding: 6px 16px;
-    min-height: 30px;
-  }
-  
-  .result-info {
-    padding: 8px;
-    margin: 8px 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    height: 100%;
+    width: 100%;
   }
 }
+
 
 @media (hover: none) and (pointer: coarse) {
   .answer-btn {
