@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import * as Script from "@/assets/scripts.js"
+import * as Script from '@/assets/Script.js'
 export default {
   name: 'CongratulationsScreen',
   props: {

@@ -42,8 +42,7 @@
 </template>
 
 <script>
-import * as Script from "@/assets/scripts.js"
-import { CharacterFactory } from '@/assets/newScript.js'
+import * as Script from '@/assets/Script.js'
 
 export default {
   name: 'CharacterSelection',
@@ -56,7 +55,7 @@ export default {
   },
   mounted() {
     // Initialize characters from CharacterFactory
-    this.characters = CharacterFactory.getAllCharacters().map(character => ({
+    this.characters = Script.CharacterFactory.getAllCharacters().map(character => ({
       id: character.id,
       name: character.name,
       description: character.description,
@@ -93,7 +92,7 @@ export default {
     confirmSelection() {
       if (this.selectedCharacter) {
         // Get the full character object from CharacterFactory
-        const fullCharacter = CharacterFactory.getCharacterById(this.selectedCharacter.id)
+        const fullCharacter = Script.CharacterFactory.getCharacterById(this.selectedCharacter.id)
         
         if (fullCharacter) {
           // Save to Script using the full character object

@@ -5,7 +5,7 @@
 </template>
 <script>
 import "regenerator-runtime/runtime"
-import * as Script from "@/assets/scripts.js"
+import * as Script from '@/assets/Script.js'
 
 export default {
   name: "DebugView",

@@ -74,43 +74,7 @@
       width: `${console.log(this.backgroundWidth) ? 0 : this.backgroundWidth}px`, 
       height: `${this.backgroundWidth}px`
     }">
-      <!-- <div v-if="currentStageData?.type === 'character_replica'" class="dynamicObject politeh" :style="{ backgroundImage: `url(./media/img/backgrounds/main.png)` }"></div>
 
-      <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="bookshelf" :style="{ backgroundImage: `url(./media/img/dynamic/bookshelf.png)` }"></div>
-      <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 1" class="dynamicObject book" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/book.png)`,
-          top: `${ -0.91 * this.backgroundWidth}px`,
-          left: `${ 1.228 * this.backgroundWidth}px`
-        }"></div>
-
-        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/maneken1.png)` ,
-          left: `${this.backgroundWidth * 0.5}px`,
-          top: `${ 0.55 * this.backgroundWidth}px`,
-          width: `${this.backgroundWidth / 11.52}px`,
-          height: `${this.backgroundWidth / 5.76}px`
-        }"></div>
-        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/maneken2.png)` ,
-          left: `${this.backgroundWidth * 0.65}px`,
-          top: `${ 0.55 * this.backgroundWidth-100}px`,
-          width: `${this.backgroundWidth / 11.52}px`,
-          height: `${this.backgroundWidth / 5.76}px`
-        }"></div>
-        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/maneken3.png)` ,
-          left: `${this.backgroundWidth * 0.8}px`,
-          top: `${ 0.55 * this.backgroundWidth-200}px`,
-          width: `${this.backgroundWidth / 11.52}px`,
-          height: `${this.backgroundWidth / 5.76}px`
-        }"></div>
-        <div v-if="isQuestionStage && this.gameManager.getCurrentQuestionNumber() === 2" class="dynamicObject maneken" :style="{ 
-          backgroundImage: `url(./media/img/dynamic/maneken4.png)` ,
-          left: `${this.backgroundWidth * 0.95}px`,
-          top: `${ 0.55 * this.backgroundWidth-300}px`,
-          width: `${this.backgroundWidth / 11.52}px`,
-          height: `${this.backgroundWidth / 5.76}px`
-        }"></div> -->
 
     </div>
     <div 
@@ -132,9 +96,7 @@
 </template>
 
 <script>
-import { GameStateManager } from '@/assets/logic.js'
-import { CharacterFactory } from '@/assets/newScript.js'
-import { LocalStorage } from '@/assets/scripts.js'
+import { GameCore, LocalStorage, CharacterFactory } from '@/assets/Script.js'
 
 export default {
   name: 'TestGame',
@@ -155,16 +117,37 @@ export default {
       },
       windowWidth: window.innerWidth,
       manekens: [true, true, true, true],
-      exposition: [true, true, true, true]
+      exposition: [true, true, true, true],
+      dynamicObject: null,
+      dynamicObjectIsPlaying: false
     }
   },
   computed: {
     currentBackground() {
-      if(this.currentStageData?.type === 'game_completed' || this.currentStageData?.type === 'character_response'){
-        return this.currentStageData?.character?.backgroundImage
-      }else{
-        return this.currentStageData?.background || './media/img/backgrounds/main.png'
+      let background = './media/img/backgrounds/main.png';
+
+      if (this.currentStageData) {
+        if (this.currentStageData.type === 'character_replica' && this.currentStageData.stage === 'greeting') {
+          background = this.gameManager?.questionsData?.idleBackgrounds?.greetingsStatic || background; 
+        }
+        else if (this.currentStageData.type === 'general_question' && this.currentStageData.questionNumber === 1 && this.currentStageData.staticBackground) {
+          background = this.currentStageData.staticBackground || background; 
+        }
+        else if (this.isQuestionStage) {
+          if (this.selectedAnswer && this.currentStageData.dynamicBackground && this.currentStageData.dynamicBackground[this.selectedAnswer]) {
+            background = this.currentStageData.dynamicBackground[this.selectedAnswer];
+          } else if (this.currentStageData.staticBackground) {
+            background = this.currentStageData.staticBackground;
+          }
+        }
+        else if (this.currentStageData.type === 'game_completed' || this.currentStageData.type === 'character_response') {
+          background = this.currentStageData.character?.backgroundImage || background;
+        }
+        else if (this.currentStageData.staticBackground) { 
+          background = this.currentStageData.staticBackground;
+        }
       }
+      return background;
     },
     characterImage() {
       if (this.currentStageData?.character?.image) {
@@ -174,7 +157,8 @@ export default {
     },
     isQuestionStage() {
       return this.currentStageData?.type === 'general_question' || 
-             this.currentStageData?.type === 'special_question'
+             this.currentStageData?.type === 'special_question' ||
+             this.currentStageData?.type === 'question' 
     },
     characterAnimationClasses() {
       const classes = ['character-field']
@@ -208,12 +192,26 @@ export default {
     async initializeGame() {
       try {
         this.loading = true
-        this.gameManager = new GameStateManager()
-        await this.gameManager.initialize()
+        this.gameManager = new GameCore()
+        await this.gameManager.initGame()
         const savedProgress = LocalStorage.get('gameProgress')
         const savedCharacter = LocalStorage.get('selectedCharacter')
         if (savedProgress && savedCharacter) {
           this.restoreProgressFromLocalStorage()
+          const characterData = JSON.parse(savedCharacter)
+          const character = CharacterFactory.getCharacterById(characterData.id)
+          if (character) {
+            this.gameManager.setCharacter(character.getFullInfo())
+          }
+          this.currentStageData = this.gameManager.getCurrentQuestionData()
+          if (!this.currentStageData || this.currentStageData.type === 'replica') {
+            this.currentStageData = {
+              type: 'character_replica',
+              character: character.getFullInfo(),
+              message: character.getGreeting(),
+              stage: 'greeting'
+            }
+          }
         } else if (savedCharacter) {
           const characterData = JSON.parse(savedCharacter)
           const character = CharacterFactory.getCharacterById(characterData.id)
@@ -236,37 +234,64 @@ export default {
     },
 
     restoreProgressFromLocalStorage() {
-      let data = this.gameManager.getCurrentData()
-      if (data?.type === 'character_replica' || !data) {
-        if (this.gameManager && this.gameManager.testingLogic && typeof this.gameManager.testingLogic.getCharacterReplicaData === 'function') {
-          data = this.gameManager.testingLogic.getCharacterReplicaData()
+      let data = this.gameManager.getCurrentQuestionData()
+      if (!data) {
+        const savedCharacter = LocalStorage.get('selectedCharacter')
+        if (savedCharacter) {
+          const charData = JSON.parse(savedCharacter)
+          const character = CharacterFactory.getCharacterById(charData.id)
+          if (character) {
+            data = {
+              type: 'character_replica',
+              character: character.getFullInfo(),
+              message: character.getGreeting(),
+              stage: 'greeting'
+            }
+          }
         }
       }
       this.currentStageData = data
-      this.gameManager.currentData = data
+      // No need to set gameManager.currentData directly as GameCore manages its own state
       const savedCharacter = LocalStorage.get('selectedCharacter')
       if (savedCharacter && this.currentStageData) {
         const charData = JSON.parse(savedCharacter)
         const character = CharacterFactory.getCharacterById(charData.id)
-        if (character && (!this.currentStageData.character || this.currentStageData.character.id !== character.id)) {
-          this.currentStageData.character = character.getFullInfo()
+        if (character) {
+          if (!this.currentStageData.character || this.currentStageData.character.id !== character.id) {
+            this.currentStageData.character = character.getFullInfo()
+          } else if (this.currentStageData.type === 'character_replica' && !this.currentStageData.message) {
+            this.currentStageData.message = character.getGreeting()
+          }
         }
       }
     },
     
     async startGame(character) {
       try {
+        this.gameManager.setCharacter(character.getFullInfo())
+        LocalStorage.set('selectedCharacter', JSON.stringify(character.getFullInfo()))
         const savedProgress = LocalStorage.get('gameProgress')
         if (savedProgress) {
-          this.currentStageData = this.gameManager.getCurrentData()
-          if (!this.currentStageData?.character?.image) {
-            this.currentStageData.character = character.getFullInfo()
+          // If there's saved progress, gameManager should already be in the correct state
+          this.currentStageData = this.gameManager.getCurrentQuestionData()
+          if (!this.currentStageData || this.currentStageData.type === 'replica') {
+            this.currentStageData = {
+              type: 'character_replica',
+              character: character.getFullInfo(),
+              message: character.getGreeting(),
+              stage: 'greeting'
+            }
           }
         } else {
-          this.currentStageData = await this.gameManager.startGame(character)
-        }
-        if (this.currentStageData && this.currentStageData.character && this.currentStageData.character.id !== character.id) {
-          this.currentStageData.character = character.getFullInfo()
+          // For a new game, get the first question which is a replica stage
+          const firstQuestion = this.gameManager.questions.next().value;
+          this.currentStageData = {
+            type: 'character_replica',
+            character: character.getFullInfo(),
+            message: firstQuestion.text,
+            stage: 'greeting'
+          }
+          LocalStorage.set('gameProgress', JSON.stringify({ currentQuestionIndex: 0 }));
         }
         this.animateCharacterEnter()
       } catch (error) {
@@ -279,18 +304,49 @@ export default {
       this.selectedAnswer = answerKey;
       this.isTransitioning = true;
       try {
-        if (this.gameManager && this.gameManager.getCurrentQuestionNumber() === 2) {
-          const { updateGroupFlags } = await import('@/assets/logic.js')
-          updateGroupFlags(this.manekens, answerKey)
-        }
+        // Assuming updateGroupFlags is no longer needed or integrated within GameCore logic
+        // if (this.gameManager && this.gameManager.getCurrentQuestionNumber() === 2) {
+        //   const { updateGroupFlags } = await import('@/assets/Script.js')
+        //   updateGroupFlags(this.manekens, answerKey)
+        // }
+
         await this.animateCharacterExit();
         await this.animateCurrentQuestion();
-        if (this.dynamicObject) {
-          await this.showDynamicObject();
-        }
         this.calcHeight()
         // Process answer
-        const nextData = await this.gameManager.processAction('answer', answerKey);
+        this.gameManager.answerQuestion(answerKey);
+        let nextData = this.gameManager.getCurrentQuestionData();
+
+        // If the game is completed, nextData will be null, and we need to get the final result
+        if (!nextData) {
+          const finalFaculty = this.gameManager.getFinalResult();
+          const character = this.gameManager.character;
+          if (character && finalFaculty) {
+            nextData = {
+              type: 'game_completed',
+              character: character,
+              message: character.getFinalLine(),
+              result: { finalFaculty: finalFaculty, totalAnswered: this.gameManager.currentQuestionIndex }
+            };
+          }
+        } else if (nextData.type === 'replica') {
+          const character = this.gameManager.character;
+          if (character) {
+            nextData = {
+              type: 'character_response',
+              character: character,
+              message: character.getFacultyResponse(answerKey),
+              // Use the actual faculty group for the message
+            };
+          }
+        } else {
+          nextData.type = 'general_question'; // Or special_question if applicable
+          nextData.question = nextData.question;
+          nextData.answers = Object.entries(nextData.variants).map(([key, text]) => ({ key, text }));
+          nextData.staticBackground = nextData.background;
+          nextData.dynamicBackground = this.gameManager.getCurrentQuestion()?.dynamicBackground; // Fetch dynamic backgrounds if available
+        }
+
         // Always patch character to selected one if missing or wrong
         const savedCharacter = LocalStorage.get('selectedCharacter');
         let selectedChar = null;
@@ -301,10 +357,15 @@ export default {
         if (selectedChar && (!nextData.character || nextData.character.id !== selectedChar.id)) {
           nextData.character = selectedChar.getFullInfo();
         }
+
         this.currentStageData = nextData;
         this.selectedAnswer = null;
+        LocalStorage.set('gameProgress', JSON.stringify({ currentQuestionIndex: this.gameManager.currentQuestionIndex, currentStage: this.gameManager.currentStage }));
         await this.animateCharacterEnter();
         this.isTransitioning = false;
+        // Reset dynamic object state after transition
+        this.dynamicObject = null;
+        this.dynamicObjectIsPlaying = false;
         if (nextData.type === 'game_completed') {
           this.handleGameComplete();
         }
@@ -317,32 +378,65 @@ export default {
     
     async handleProceed() {
       if (this.isTransitioning) return;
-      // Если после восстановления currentData вдруг null, выставим его вручную
-      if (!this.gameManager.currentData && this.currentStageData) {
-        this.gameManager.currentData = this.currentStageData;
-      }
       this.isTransitioning = true;
       try {
         await this.animateCharacterExit();
+
+        const nextStage = this.gameManager.questions.next();
+        if (!nextStage.done) {
+          const data = nextStage.value;
+          let processedData = {};
+
+          if (data.type === 'replica') {
+            processedData = {
+              type: 'character_replica',
+              character: this.gameManager.character,
+              message: data.text,
+              staticBackground: data.static,
+              dynamicBackground: data.dynamic
+            };
+          } else if (data.type === 'question') {
+            processedData = {
+              type: 'general_question',
+              question: data.question,
+              answers: Object.entries(data.variants).map(([key, text]) => ({ key, text })),
+              staticBackground: data.static,
+              dynamicBackground: data.dynamic
+            };
+          }
+          this.currentStageData = processedData;
+        } else {
+          // Game completed
+          const finalFaculty = this.gameManager.getFinalResult();
+          const character = this.gameManager.character;
+          if (character && finalFaculty) {
+            this.currentStageData = {
+              type: 'game_completed',
+              character: character,
+              message: character.getFinalLine(),
+              result: { finalFaculty: finalFaculty, totalAnswered: this.gameManager.currentQuestionIndex }
+            };
+          }
+        }
+
         await this.animateCurrentQuestion();
-        const nextData = await this.gameManager.processAction('proceed');
-        // Always patch character to selected one if missing or wrong
+
         const savedCharacter = LocalStorage.get('selectedCharacter');
         let selectedChar = null;
         if (savedCharacter) {
           const charData = JSON.parse(savedCharacter);
           selectedChar = CharacterFactory.getCharacterById(charData.id);
         }
-        if (selectedChar && (!nextData.character || nextData.character.id !== selectedChar.id)) {
-          nextData.character = selectedChar.getFullInfo();
+        if (selectedChar && (!this.currentStageData.character || this.currentStageData.character.id !== selectedChar.id)) {
+          this.currentStageData.character = selectedChar.getFullInfo();
         }
-        this.currentStageData = nextData;
-        if (this.gameManager && this.gameManager.testingLogic) {
-          this.gameManager.testingLogic.saveGameProgress();
-        }
+
+        LocalStorage.set('gameProgress', JSON.stringify({ currentQuestionIndex: this.gameManager.currentQuestionIndex, currentStage: this.gameManager.currentStage }));
         await this.animateCharacterEnter();
         this.isTransitioning = false;
-        if (nextData.type === 'game_completed') {
+        this.dynamicObject = null;
+        this.dynamicObjectIsPlaying = false;
+        if (this.currentStageData.type === 'game_completed') {
           this.handleGameComplete();
         }
       } catch (error) {
@@ -354,7 +448,7 @@ export default {
     
     async animateCharacterExit() {
       return new Promise((resolve) => {
-        const sides = ['left']; //'right'
+        const sides = ['left'];
         this.characterExitSide = sides[Math.floor(Math.random() * sides.length)];
         setTimeout(() => {
           resolve();
@@ -390,80 +484,80 @@ export default {
       this.backgroundWidth = document.getElementsByTagName("body")[0].offsetWidth
     },
     
-    async animateCurrentQuestion(){
-      return new Promise((resolve)=>{
-        let question = {
-          time: 0,
-          postProcess: false
+    async animateCurrentQuestion() {
+      return new Promise(async (resolve) => {
+        let questionAnimationTime = 0;
+
+        const currentQuestion = this.gameManager?.getCurrentQuestion();
+        const currentStageType = this.currentStageData?.type;
+        const currentStageQuestionNumber = this.gameManager?.currentQuestionIndex + 1;
+
+        // No dynamic object for character replica or the first general question if greetingsDynamic was just played
+        if (currentStageType === 'character_replica' || (currentStageType === 'general_question' && currentStageQuestionNumber === 1 && this.currentStageData.staticBackground === this.gameManager?.questionsData?.idleBackgrounds?.greetingsDynamic)) {
+          this.dynamicObject = null;
+        } else if (this.isQuestionStage && this.currentStageData?.dynamicBackground) {
+          // Questions with dynamic backgrounds based on answers
+          if (this.selectedAnswer && this.currentStageData.dynamicBackground[this.selectedAnswer]) {
+            this.dynamicObject = this.currentStageData.dynamicBackground[this.selectedAnswer];
+            questionAnimationTime = 3000; // Placeholder, actual time from video/gif
+            await this.showDynamicObject();
+          } else {
+            this.dynamicObject = null;
+            questionAnimationTime = 0;
+          }
+        } else {
+          // Other stages, no specific dynamic object or animation time
+          this.dynamicObject = null;
+          questionAnimationTime = 0;
         }
-        if(this.currentStageData?.type !== 'character_response'){
-          if(this.currentStageData?.type === 'character_replica'){
-            question = {
-              tag: "politeh",
-              time: 5000,
-              postProcess: true
-            }
-          }else{
-            switch(this.gameManager.getCurrentQuestionNumber()){
+
+        // Original switch logic for specific question animations (like book, maneken)
+        // This logic should run regardless of dynamic backgrounds playing
+        if (currentStageType !== 'character_response' && currentStageType !== 'character_replica' && currentStageQuestionNumber) {
+          switch (currentStageQuestionNumber) {
             case 1:
-              question.tag = "book"
-              question.time = 0//5000
-              document.getElementsByClassName("book")[0].style.top = "-50%"
-              document.getElementsByClassName("book")[0].style.left = "50%"
-              document.getElementsByClassName("book")[0].style.zIndex = 3
+              if (document.getElementsByClassName("book")[0]) {
+                document.getElementsByClassName("book")[0].style.top = "-50%";
+                document.getElementsByClassName("book")[0].style.left = "50%";
+                document.getElementsByClassName("book")[0].style.zIndex = 3;
+              }
               break;
             case 2:
-              question.tag = "maneken"
-              question.time = 0//3000
-              let manekens = document.getElementsByClassName("maneken")
-              for(let i = 0; i<4; i++){
-                manekens[i].classList.remove("animated")
-                if(!this.manekens[i]){
-                  manekens[i].classList.add("animated")
+              let manekens = document.getElementsByClassName("maneken");
+              for (let i = 0; i < 4; i++) {
+                if (manekens[i]) {
+                  manekens[i].classList.remove("animated");
+                  if (!this.manekens[i]) {
+                    manekens[i].classList.add("animated");
+                  }
                 }
               }
-              question.postProcess = false;
               break;
-            case 3:
-              question.tag = ""
-              question.time = 0
-              break;
-            case 4:
-              question.tag = ""
-              question.time = 0
-              break;
-            case 5:
-              question.tag = ""
-              question.time = 0
-              break;
-            case 6:
-              question.tag = ""
-              question.time = 0
-              break;
-            case 7:
-              question.tag = ""
-              question.time = 0
-              break;
-            default:
-              question.tag = "politeh"
-              question.time = 0// 5000
-              break;
-          }
           }
         }
-        if(question.postProcess){
-          const targetEl = document.getElementsByClassName(question.tag)[0]
-          if (!targetEl) {
-            resolve();
-            return;
-          }
-          targetEl.classList.remove("animated")
-          targetEl.classList.add("animated")
-        }
+
         setTimeout(() => {
           resolve();
-        }, question.time)
-      })
+        }, questionAnimationTime);
+      });
+    },
+
+    async showDynamicObject() {
+      if (!this.dynamicObject) return;
+      this.dynamicObjectIsPlaying = true;
+
+      return new Promise((resolve) => {
+        // In a real scenario, you'd load and play the video/gif here.
+        // For a GIF, you might just display it, and it plays automatically.
+        // For a video, you'd create a <video> element, set its src, play it,
+        // and listen for the 'ended' event to resolve the promise.
+        
+        // For demonstration, we'll use a setTimeout.
+        setTimeout(() => {
+          this.dynamicObjectIsPlaying = false;
+          resolve();
+        }, 3000); // Assuming a 3-second animation for dynamic objects
+      });
     }
   }
 }
@@ -939,6 +1033,27 @@ export default {
   background-repeat: no-repeat;
   background-position: center;
 }
+
+.dynamic-object-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  background-color: #00023b; /* Ensure it covers the main background */
+}
+
+.dynamic-gif,
+.dynamic-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .bookshelf{
   position: sticky;
   width: 100%;

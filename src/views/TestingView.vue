@@ -22,7 +22,7 @@
 import CharacterSelection from '@/components/CharacterSelection.vue'
 import TestGame from '@/components/TestGame.vue'
 import CongratulationsScreen from '@/components/Congratulations.vue'
-import * as Script from "@/assets/scripts.js"
+import * as Script from '@/assets/Script.js'
 
 export default {
   name: 'App',

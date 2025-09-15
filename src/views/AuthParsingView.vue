@@ -1,6 +1,6 @@
 <script setup>
 import "regenerator-runtime/runtime"
-import * as Script from "@/assets/scripts.js"
+import * as Script from '@/assets/Script.js'
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 const route = useRoute(); 
