@@ -1,7 +1,7 @@
 {
     "idleBackgrounds":{
         "greetingsStatic": "./media/img/backgrounds/main.png",
-        "greetingsDynamic": "./media/vids/main/dynamic.gif",
+        "greetingsDynamic": "./media/vids/main/dynamic_web.mp4",
         "dasha": "./media/vids/main/dasha.png",
         "max": "./media/vids/main/max.png",
         "cat": "./media/vids/main/cat.png",
@@ -18,10 +18,10 @@
             },
             "staticBackground":"./media/img/backgrounds/mainTest/1.png",
             "dynamicBackground":{
-                "akf/mtf":"./media/vids/1/result.gif",
-                "sf/idst":"./media/vids/1/result.gif",
-                "fpmm/etf/gumf":"./media/vids/1/result.gif",
-                "htf/gnf":"./media/vids/1/result.gif"
+                "akf/mtf":"./media/vids/1/result_web.mp4",
+                "sf/idst":"./media/vids/1/result_web.mp4",
+                "fpmm/etf/gumf":"./media/vids/1/result_web.mp4",
+                "htf/gnf":"./media/vids/1/result_web.mp4"
             }
         },
         {
@@ -32,12 +32,12 @@
                 "fpmm/etf/gumf":"гений критического мышления",
                 "htf/gnf":"любитель экстрима"
             },
-            "staticBackground":"./media/vids/2/static.gif",
+            "staticBackground":"./media/vids/2/static_web.mp4",
             "dynamicBackground":{
-                "akf/mtf":"./media/vids/2/1.gif",
-                "sf/idst":"./media/vids/2/2.gif",
-                "fpmm/etf/gumf":"./media/vids/2/3.gif",
-                "htf/gnf":"./media/vids/2/4.gif"
+                "akf/mtf":"./media/vids/2/1_web.mp4",
+                "sf/idst":"./media/vids/2/2_web.mp4",
+                "fpmm/etf/gumf":"./media/vids/2/3_web.mp4",
+                "htf/gnf":"./media/vids/2/4_web.mp4"
             }
         },
         {
@@ -82,10 +82,10 @@
             },
             "staticBackground":"./media/img/backgrounds/mainTest/5.png",
             "dynamicBackground":{
-                "akf/mtf":"./media/vids/5/rocket.gif",
-                "sf/idst":"./media/vids/5/stroitel.gif",
-                "fpmm/etf/gumf":"./media/vids/5/peoples.gif",
-                "htf/gnf":"./media/vids/5/zavod.gif"
+                "akf/mtf":"./media/vids/5/5_rocket_web.mp4",
+                "sf/idst":"./media/vids/5/5_stroitel_web.mp4",
+                "fpmm/etf/gumf":"./media/vids/5/5_peoples_web.mp4",
+                "htf/gnf":"./media/vids/5/5_zavod_web.mp4"
             }
         },
         {
@@ -98,10 +98,10 @@
             },
             "staticBackground":"./media/img/backgrounds/mainTest/6.png",
             "dynamicBackground":{
-                "akf/mtf":"./media/vids/5/rocket.gif",
-                "sf/idst":"./media/vids/5/stroitel.gif",
-                "fpmm/etf/gumf":"./media/vids/5/peoples.gif",
-                "htf/gnf":"./media/vids/5/zavod.gif"
+                "akf/mtf":"./media/vids/5/5_rocket_web.mp4",
+                "sf/idst":"./media/vids/5/5_stroitel_web.mp4",
+                "fpmm/etf/gumf":"./media/vids/5/5_robots_peoples_web.mp4",
+                "htf/gnf":"./media/vids/5/5_zavod_web.mp4"
             }
         }
     ],
@@ -115,10 +115,10 @@
         },
         "staticBackground":"./media/img/backgrounds/mainTest/7.png",
         "dynamicBackground":{
-            "akf/mtf":"./media/vids/7/static.gif",
-            "sf/idst":"./media/vids/7/static.gif",
-            "fpmm/etf/gumf":"./media/vids/7/static.gif",
-            "htf/gnf":"./media/vids/7/static.gif"
+            "akf/mtf":"./media/vids/7/static_web.mp4",
+            "sf/idst":"./media/vids/7/static_web.mp4",
+            "fpmm/etf/gumf":"./media/vids/7/static_web.mp4",
+            "htf/gnf":"./media/vids/7/static_web.mp4"
         }
     },
     "groups":{

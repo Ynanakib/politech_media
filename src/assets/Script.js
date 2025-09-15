@@ -35,7 +35,7 @@ class GameCore {
             }
         }
         
-        for(el in this.questionsData.root){
+        for(let el in this.questionsData.root){
             let answer = yield {
                 type: "question",
                 question: el.question,
@@ -47,12 +47,12 @@ class GameCore {
             console.log(this.facultyGroupScores)
         }
         let max = this.facultyGroupScores["akf/mtf"]
-        for(key in this.facultyGroupScores){
+        for(let key in this.facultyGroupScores){
             max = this.facultyGroupScores[key] > max ? this.facultyGroupScores[key] : max
         }
         let iterator = 0
         let names = []
-        for(key in this.facultyGroupScores){
+        for(let key in this.facultyGroupScores){
             if(this.facultyGroupScores[key] == max){
                 iterator++;
                 names.append(key)
@@ -83,7 +83,7 @@ class GameCore {
             dynamic: this.questionsData.idleBackgrounds[this.character.name]
         }
         
-        for(el in this.questionsData.groups[max]){
+        for(let el in this.questionsData.groups[max]){
             let answer = yield {
                 type: "question",
                 question: el.question,
@@ -106,7 +106,7 @@ class GameCore {
     async loadQuestions() {
         if (!questionsData) {
             try {
-                const response = await fetch('./media/questions.json');
+                const response = await fetch('/media/questions.json');
                 questionsData = await response.json();
                 this.initializeScores();
             } catch (error) {

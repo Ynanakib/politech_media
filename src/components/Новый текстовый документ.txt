@@ -68,53 +68,6 @@
         <p class="loading-text">Загрузка...</p>
       </div>
     </div>
-    <!-- Статичная заставка перед вопросом -->
-    <div 
-      v-if="staticIntroIsPlaying"
-      class="static-intro-overlay"
-    >
-      <video 
-        v-if="isStaticIntroVideo"
-        ref="staticIntroVideo"
-        :src="staticIntroMedia"
-        autoplay
-        muted
-        playsinline
-        disablepictureinpicture
-        controlslist="nodownload noplaybackrate noremoteplayback noaudio"
-        class="static-intro-video"
-      ></video>
-      <img 
-        v-else
-        :src="staticIntroMedia"
-        alt="static intro"
-        class="static-intro-image"
-      />
-    </div>
-
-    <!-- Динамическое видео после ответа -->
-    <div 
-      v-if="dynamicObjectIsPlaying"
-      class="dynamic-object-overlay"
-    >
-      <video 
-        v-if="isDynamicVideo"
-        ref="dynamicVideo"
-        :src="dynamicObject"
-        autoplay
-        muted
-        playsinline
-        disablepictureinpicture
-        controlslist="nodownload noplaybackrate noremoteplayback noaudio"
-        class="dynamic-video"
-      ></video>
-      <img 
-        v-else
-        :src="dynamicObject"
-        alt="dynamic"
-        class="dynamic-gif"
-      />
-    </div>
 
     <div class="background" :style="{ 
       backgroundImage: `url(${currentBackground})`, 
@@ -166,11 +119,7 @@ export default {
       manekens: [true, true, true, true],
       exposition: [true, true, true, true],
       dynamicObject: null,
-      dynamicObjectIsPlaying: false,
-      isDynamicVideo: false,
-      staticIntroMedia: null,
-      staticIntroIsPlaying: false,
-      isStaticIntroVideo: false
+      dynamicObjectIsPlaying: false
     }
   },
   computed: {
@@ -181,12 +130,18 @@ export default {
         if (this.currentStageData.type === 'character_replica' && this.currentStageData.stage === 'greeting') {
           background = this.gameManager?.questionsData?.idleBackgrounds?.greetingsStatic || background; 
         }
+        else if (this.currentStageData.type === 'general_question' && this.currentStageData.questionNumber === 1 && this.currentStageData.staticBackground) {
+          background = this.currentStageData.staticBackground || background; 
+        }
+        else if (this.isQuestionStage) {
+          if (this.selectedAnswer && this.currentStageData.dynamicBackground && this.currentStageData.dynamicBackground[this.selectedAnswer]) {
+            background = this.currentStageData.dynamicBackground[this.selectedAnswer];
+          } else if (this.currentStageData.staticBackground) {
+            background = this.currentStageData.staticBackground;
+          }
+        }
         else if (this.currentStageData.type === 'game_completed' || this.currentStageData.type === 'character_response') {
           background = this.currentStageData.character?.backgroundImage || background;
-        }
-        else if (this.isQuestionStage && this.currentStageData.staticBackground) {
-          // Для вопросов используем статичный фон, оверлеи показываются отдельно
-          background = this.currentStageData.staticBackground;
         }
         else if (this.currentStageData.staticBackground) { 
           background = this.currentStageData.staticBackground;
@@ -355,13 +310,6 @@ export default {
         // }
 
         await this.animateCharacterExit();
-        
-        // Воспроизводим динамическое видео после выбора ответа (если есть)
-        if (this.currentStageData?.dynamicBackground && this.currentStageData.dynamicBackground[answerKey]) {
-          this.dynamicObject = this.currentStageData.dynamicBackground[answerKey];
-          await this.showDynamicObject();
-        }
-        
         await this.animateCurrentQuestion();
         this.calcHeight()
         // Process answer
@@ -373,12 +321,6 @@ export default {
           const finalFaculty = this.gameManager.getFinalResult();
           const character = this.gameManager.character;
           if (character && finalFaculty) {
-            const savedCharacter = LocalStorage.get('selectedCharacter');
-            let characterInstance = null;
-            if (savedCharacter) {
-              const charData = JSON.parse(savedCharacter);
-              characterInstance = CharacterFactory.getCharacterById(charData.id);
-            }
             nextData = {
               type: 'game_completed',
               character: character,
@@ -386,63 +328,23 @@ export default {
               result: { finalFaculty: finalFaculty, totalAnswered: this.gameManager.currentQuestionIndex }
             };
           }
-        } else if (nextData.question && nextData.variants) {
-          // Обычный вопрос
-          nextData.type = 'general_question'; 
+        } else if (nextData.type === 'replica') {
+          const character = this.gameManager.character;
+          if (character) {
+            nextData = {
+              type: 'character_response',
+              character: character,
+              message: character.getFacultyResponse(answerKey),
+              // Use the actual faculty group for the message
+            };
+          }
+        } else {
+          nextData.type = 'general_question'; // Or special_question if applicable
           const qText = typeof nextData.question === 'string' ? nextData.question : (nextData.question?.question || '');
           nextData.question = qText;
           nextData.answers = Object.entries(nextData.variants || {}).map(([key, text]) => ({ key, text }));
-          nextData.staticBackground = this.gameManager.getCurrentQuestion()?.staticBackground;
-          nextData.dynamicBackground = this.gameManager.getCurrentQuestion()?.dynamicBackground;
-        } else {
-          // Если это не вопрос и не завершение, проверяем через генератор
-          const generatorResult = this.gameManager.questions.next();
-          if (!generatorResult.done && generatorResult.value) {
-            const value = generatorResult.value;
-            if (value.type === 'replica') {
-              // Финальная реплика персонажа
-              const savedCharacter = LocalStorage.get('selectedCharacter');
-              let characterInstance = null;
-              if (savedCharacter) {
-                const charData = JSON.parse(savedCharacter);
-                characterInstance = CharacterFactory.getCharacterById(charData.id);
-              }
-              nextData = {
-                type: 'character_response',
-                character: this.gameManager.character,
-                message: value.text || characterInstance.getFacultyResponse(answerKey),
-                staticBackground: value.static,
-                dynamicBackground: value.dynamic
-              };
-            } else if (value.type === 'question') {
-              // Следующий вопрос
-              nextData = {
-                type: 'general_question',
-                question: value.question,
-                answers: Object.entries(value.variants || {}).map(([key, text]) => ({ key, text })),
-                staticBackground: value.staticBackground,
-                dynamicBackground: value.dynamicBackground
-              };
-            }
-          } else {
-            // Генератор закончился - игра завершена
-            const finalFaculty = this.gameManager.getFinalResult();
-            const character = this.gameManager.character;
-            if (character && finalFaculty) {
-              const savedCharacter = LocalStorage.get('selectedCharacter');
-              let characterInstance = null;
-              if (savedCharacter) {
-                const charData = JSON.parse(savedCharacter);
-                characterInstance = CharacterFactory.getCharacterById(charData.id);
-              }
-              nextData = {
-                type: 'game_completed',
-                character: character,
-                message: characterInstance.getFinalLine(),
-                result: { finalFaculty: finalFaculty, totalAnswered: this.gameManager.currentQuestionIndex }
-              };
-            }
-          }
+          nextData.staticBackground = nextData.background;
+          nextData.dynamicBackground = this.gameManager.getCurrentQuestion()?.dynamicBackground; // Fetch dynamic backgrounds if available
         }
 
         // Always patch character to selected one if missing or wrong
@@ -464,8 +366,6 @@ export default {
         // Reset dynamic object state after transition
         this.dynamicObject = null;
         this.dynamicObjectIsPlaying = false;
-        this.staticIntroMedia = null;
-        this.staticIntroIsPlaying = false;
         if (nextData.type === 'game_completed') {
           this.handleGameComplete();
         }
@@ -489,7 +389,7 @@ export default {
             type: 'general_question',
             question: (typeof data.question === 'string') ? data.question : (data.question?.question || ''),
             answers: Object.entries((data.variants) || {}).map(([key, text]) => ({ key, text })),
-            staticBackground: this.gameManager.getCurrentQuestion()?.staticBackground,
+            staticBackground: data.background,
             dynamicBackground: this.gameManager.getCurrentQuestion()?.dynamicBackground
           }
         } else {
@@ -497,16 +397,10 @@ export default {
           const finalFaculty = this.gameManager.getFinalResult();
           const character = this.gameManager.character;
           if (character && finalFaculty) {
-            const savedCharacter = LocalStorage.get('selectedCharacter');
-            let characterInstance = null;
-            if (savedCharacter) {
-              const charData = JSON.parse(savedCharacter);
-              characterInstance = CharacterFactory.getCharacterById(charData.id);
-            }
             this.currentStageData = {
               type: 'game_completed',
               character: character,
-              message: characterInstance.getFinalLine(),
+              message: character.getFinalLine(),
               result: { finalFaculty: finalFaculty, totalAnswered: this.gameManager.currentQuestionIndex }
             };
           }
@@ -529,8 +423,6 @@ export default {
         this.isTransitioning = false;
         this.dynamicObject = null;
         this.dynamicObjectIsPlaying = false;
-        this.staticIntroMedia = null;
-        this.staticIntroIsPlaying = false;
         if (this.currentStageData.type === 'game_completed') {
           this.handleGameComplete();
         }
@@ -587,12 +479,27 @@ export default {
         const currentStageType = this.currentStageData?.type;
         const currentStageQuestionNumber = this.gameManager?.currentQuestionIndex + 1;
 
-        // Показываем статичную заставку перед вопросом (если есть staticBackground)
-        if (this.isQuestionStage && this.currentStageData?.staticBackground) {
-          await this.showStaticIntro(this.currentStageData.staticBackground);
+        // No dynamic object for character replica or the first general question if greetingsDynamic was just played
+        if (currentStageType === 'character_replica' || (currentStageType === 'general_question' && currentStageQuestionNumber === 1 && this.currentStageData.staticBackground === this.gameManager?.questionsData?.idleBackgrounds?.greetingsDynamic)) {
+          this.dynamicObject = null;
+        } else if (this.isQuestionStage && this.currentStageData?.dynamicBackground) {
+          // Questions with dynamic backgrounds based on answers
+          if (this.selectedAnswer && this.currentStageData.dynamicBackground[this.selectedAnswer]) {
+            this.dynamicObject = this.currentStageData.dynamicBackground[this.selectedAnswer];
+            questionAnimationTime = 3000; // Placeholder, actual time from video/gif
+            await this.showDynamicObject();
+          } else {
+            this.dynamicObject = null;
+            questionAnimationTime = 0;
+          }
+        } else {
+          // Other stages, no specific dynamic object or animation time
+          this.dynamicObject = null;
+          questionAnimationTime = 0;
         }
 
         // Original switch logic for specific question animations (like book, maneken)
+        // This logic should run regardless of dynamic backgrounds playing
         if (currentStageType !== 'character_response' && currentStageType !== 'character_replica' && currentStageQuestionNumber) {
           switch (currentStageQuestionNumber) {
             case 1:
@@ -622,85 +529,21 @@ export default {
       });
     },
 
-    async showStaticIntro(mediaPath) {
-      if (!mediaPath) return;
-      this.staticIntroMedia = mediaPath;
-      this.staticIntroIsPlaying = true;
-      this.isStaticIntroVideo = typeof mediaPath === 'string' && mediaPath.endsWith('.mp4');
-
-      return new Promise((resolve) => {
-        // Если статичное видео — дождаться события ended, иначе — таймаут для картинки
-        if (this.isStaticIntroVideo) {
-          this.$nextTick(() => {
-            const video = this.$refs.staticIntroVideo;
-            if (video) {
-              const onEnd = () => {
-                video.removeEventListener('ended', onEnd);
-                this.staticIntroIsPlaying = false;
-                resolve();
-              };
-              video.addEventListener('ended', onEnd, { once: true });
-              // Фолбэк-таймаут
-              const fallback = setTimeout(() => {
-                this.staticIntroIsPlaying = false;
-                resolve();
-              }, 6000);
-              video.addEventListener('ended', () => clearTimeout(fallback), { once: true });
-            } else {
-              // Если refs нет, закрываем через таймаут
-              setTimeout(() => {
-                this.staticIntroIsPlaying = false;
-                resolve();
-              }, 6000);
-            }
-          });
-        } else {
-          // Для картинки показываем 2 секунды
-          setTimeout(() => {
-            this.staticIntroIsPlaying = false;
-            resolve();
-          }, 2000);
-        }
-      });
-    },
-
     async showDynamicObject() {
       if (!this.dynamicObject) return;
       this.dynamicObjectIsPlaying = true;
-      this.isDynamicVideo = typeof this.dynamicObject === 'string' && this.dynamicObject.endsWith('.mp4');
 
       return new Promise((resolve) => {
-        // Если видео — дождаться события ended, иначе — таймаут
-        if (this.isDynamicVideo) {
-          this.$nextTick(() => {
-            const video = this.$refs.dynamicVideo;
-            if (video) {
-              const onEnd = () => {
-                video.removeEventListener('ended', onEnd);
-                this.dynamicObjectIsPlaying = false;
-                resolve();
-              };
-              video.addEventListener('ended', onEnd, { once: true });
-              // Фолбэк-таймаут на случай проблем с событием
-              const fallback = setTimeout(() => {
-                this.dynamicObjectIsPlaying = false;
-                resolve();
-              }, 8000);
-              video.addEventListener('ended', () => clearTimeout(fallback), { once: true });
-            } else {
-              // Если refs нет, закрываем через таймаут
-              setTimeout(() => {
-                this.dynamicObjectIsPlaying = false;
-                resolve();
-              }, 8000);
-            }
-          });
-        } else {
-          setTimeout(() => {
-            this.dynamicObjectIsPlaying = false;
-            resolve();
-          }, 3000);
-        }
+        // In a real scenario, you'd load and play the video/gif here.
+        // For a GIF, you might just display it, and it plays automatically.
+        // For a video, you'd create a <video> element, set its src, play it,
+        // and listen for the 'ended' event to resolve the promise.
+        
+        // For demonstration, we'll use a setTimeout.
+        setTimeout(() => {
+          this.dynamicObjectIsPlaying = false;
+          resolve();
+        }, 3000); // Assuming a 3-second animation for dynamic objects
       });
     }
   }
@@ -1178,7 +1021,6 @@ export default {
   background-position: center;
 }
 
-.static-intro-overlay,
 .dynamic-object-overlay {
   position: absolute;
   top: 0;
@@ -1190,30 +1032,14 @@ export default {
   justify-content: center;
   z-index: 5;
   background-color: #00023b; /* Ensure it covers the main background */
-  pointer-events: none; /* блокируем взаимодействие с UI под оверлеем */
 }
 
-.static-intro-image,
-.static-intro-video,
 .dynamic-gif,
 .dynamic-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  pointer-events: none;
 }
-
-/* Скрыть любые системные контролы на видео */
-.static-intro-video::-webkit-media-controls-enclosure,
-.dynamic-video::-webkit-media-controls-enclosure { display: none !important; }
-.static-intro-video::-webkit-media-controls,
-.dynamic-video::-webkit-media-controls { display: none !important; }
-.static-intro-video::-webkit-media-controls-panel,
-.dynamic-video::-webkit-media-controls-panel { display: none !important; }
-.static-intro-video::-webkit-media-controls-play-button,
-.dynamic-video::-webkit-media-controls-play-button { display: none !important; }
-.static-intro-video::-webkit-media-controls-overlay-play-button,
-.dynamic-video::-webkit-media-controls-overlay-play-button { display: none !important; }
 
 .bookshelf{
   position: sticky;
