@@ -113,7 +113,7 @@ export default {
   computed: {
     filteredCities() {
       const q = this.cityInput.toLowerCase()
-      return this.cities.filter(city => city.title.toLowerCase().includes(q))
+      return this.cities.filter(city => city.title.toLowerCase().startsWith(q))
     },
     filteredSchools() {
       const q = this.schoolInput.toLowerCase()

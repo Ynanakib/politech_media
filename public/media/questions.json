@@ -1,7 +1,7 @@
 {
     "idleBackgrounds":{
         "greetingsStatic": "./media/img/backgrounds/main.png",
-        "greetingsDynamic": "./media/vids/main/dynamic.gif",
+        "greetingsDynamic": "./media/vids/main/dynamic_web.mp4",
         "dasha": "./media/vids/main/dasha.png",
         "max": "./media/vids/main/max.png",
         "cat": "./media/vids/main/cat.png",
@@ -18,10 +18,10 @@
             },
             "staticBackground":"./media/img/backgrounds/mainTest/1.png",
             "dynamicBackground":{
-                "akf/mtf":"./media/vids/1/result.gif",
-                "sf/idst":"./media/vids/1/result.gif",
-                "fpmm/etf/gumf":"./media/vids/1/result.gif",
-                "htf/gnf":"./media/vids/1/result.gif"
+                "akf/mtf":"./media/vids/1/result_web.mp4",
+                "sf/idst":"./media/vids/1/result_web.mp4",
+                "fpmm/etf/gumf":"./media/vids/1/result_web.mp4",
+                "htf/gnf":"./media/vids/1/result_web.mp4"
             }
         },
         {
@@ -32,12 +32,12 @@
                 "fpmm/etf/gumf":"гений критического мышления",
                 "htf/gnf":"любитель экстрима"
             },
-            "staticBackground":"./media/vids/2/static.gif",
+            "staticBackground":"./media/vids/2/aktoviy.png",
             "dynamicBackground":{
-                "akf/mtf":"./media/vids/2/1.gif",
-                "sf/idst":"./media/vids/2/2.gif",
-                "fpmm/etf/gumf":"./media/vids/2/3.gif",
-                "htf/gnf":"./media/vids/2/4.gif"
+                "akf/mtf":"./media/vids/2/2_web.mp4",
+                "sf/idst":"./media/vids/2/3_web.mp4",
+                "fpmm/etf/gumf":"./media/vids/2/1_web.mp4",
+                "htf/gnf":"./media/vids/2/4_web.mp4"
             }
         },
         {
@@ -50,10 +50,10 @@
             },
             "staticBackground":"./media/img/backgrounds/mainTest/3.png",
             "dynamicBackground":{
-                "akf/mtf":"./media/img/backgrounds/mainTest/3.png",
-                "sf/idst":"./media/img/backgrounds/mainTest/3.png",
-                "fpmm/etf/gumf":"./media/img/backgrounds/mainTest/3.png",
-                "htf/gnf":"./media/img/backgrounds/mainTest/3.png"
+                "akf/mtf":"./media/vids/3/akf_mtf_web.mp4",
+                "sf/idst":"./media/vids/3/sf_idst_web.mp4",
+                "fpmm/etf/gumf":"./media/vids/3/gum_etf_fpmm_web.mp4",
+                "htf/gnf":"./media/vids/3/htf_gnf_web.mp4"
             }
         },
         {
@@ -64,13 +64,8 @@
                 "fpmm/etf/gumf":"супер-скрипт",
                 "htf/gnf":"супер-энергия"
             },
-            "staticBackground":"./media/img/backgrounds/mainTest/4.png",
-            "dynamicBackground":{
-                "akf/mtf":"./media/img/backgrounds/mainTest/4.png",
-                "sf/idst":"./media/img/backgrounds/mainTest/4.png",
-                "fpmm/etf/gumf":"./media/img/backgrounds/mainTest/4.png",
-                "htf/gnf":"./media/img/backgrounds/mainTest/4.png"
-            }
+            "staticBackground":"./media/vids/4/laba_destroying_web.mp4",
+            "dynamicBackground":{}
         },
         {
             "question":"Ты хорошо учился в школе. Осталось несколько шагов, чтобы сбылась твоя мечта:",
@@ -82,10 +77,10 @@
             },
             "staticBackground":"./media/img/backgrounds/mainTest/5.png",
             "dynamicBackground":{
-                "akf/mtf":"./media/vids/5/rocket.gif",
-                "sf/idst":"./media/vids/5/stroitel.gif",
-                "fpmm/etf/gumf":"./media/vids/5/peoples.gif",
-                "htf/gnf":"./media/vids/5/zavod.gif"
+                "akf/mtf":"./media/vids/5/5_rocket_web.mp4",
+                "sf/idst":"./media/vids/5/5_stroitel_web.mp4",
+                "fpmm/etf/gumf":"./media/vids/5/5_robots_peoples_web.mp4",
+                "htf/gnf":"./media/vids/5/5_zavod_web.mp4"
             }
         },
         {
@@ -98,10 +93,10 @@
             },
             "staticBackground":"./media/img/backgrounds/mainTest/6.png",
             "dynamicBackground":{
-                "akf/mtf":"./media/vids/5/rocket.gif",
-                "sf/idst":"./media/vids/5/stroitel.gif",
-                "fpmm/etf/gumf":"./media/vids/5/peoples.gif",
-                "htf/gnf":"./media/vids/5/zavod.gif"
+                "akf/mtf":"./media/vids/6/6_akf_mtf_web.mp4",
+                "sf/idst":"./media/vids/6/6_sf_idst_web.mp4",
+                "fpmm/etf/gumf":"./media/vids/6/6_fpmm_etf_gumf_web.mp4",
+                "htf/gnf":"./media/vids/6/6_htf_gnf_web.mp4"
             }
         }
     ],
@@ -115,10 +110,10 @@
         },
         "staticBackground":"./media/img/backgrounds/mainTest/7.png",
         "dynamicBackground":{
-            "akf/mtf":"./media/vids/7/static.gif",
-            "sf/idst":"./media/vids/7/static.gif",
-            "fpmm/etf/gumf":"./media/vids/7/static.gif",
-            "htf/gnf":"./media/vids/7/static.gif"
+            "akf/mtf":"./media/vids/7/static_web.mp4",
+            "sf/idst":"./media/vids/7/static_web.mp4",
+            "fpmm/etf/gumf":"./media/vids/7/static_web.mp4",
+            "htf/gnf":"./media/vids/7/static_web.mp4"
         }
     },
     "groups":{
@@ -129,7 +124,11 @@
                     "akf":"буду делать эскизы летательных аппаратов будущего",
                     "mtf":"начну собирать механическую руку-манипулятор для робота"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/mtf_akf.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/mtf_akf.png",
+                "dynamicBackground":{
+                    "akf":"./media/vids/facultatesTest/akf_mtf_web.mp4",
+                    "mtf":"./media/vids/facultatesTest/akf_mtf_web.mp4"
+                }
             },
             {
                 "question":"Какую подработку ты выберешь, если будет такая возможность?",
@@ -137,7 +136,11 @@
                     "akf":"создание прототипов деталей ракетных двигателей",
                     "mtf":"лазерная печать металлических изделий на основе 3D-модели"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/mtf_akf.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/mtf_akf.png",
+                "dynamicBackground":{
+                    "akf":"./media/vids/facultatesTest/akf_mtf_web.mp4",
+                    "mtf":"./media/vids/facultatesTest/akf_mtf_web.mp4"
+                }
             },
             {
                 "question":"Где ты видишь себя после окончания Политеха?",
@@ -145,17 +148,25 @@
                     "akf":"предприятия авиастроения и космической отрасли",
                     "mtf":"предприятия металлургической отрасли и машиностроения"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/mtf_akf.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/mtf_akf.png",
+                "dynamicBackground":{
+                    "akf":"./media/vids/facultatesTest/akf_mtf_web.mp4",
+                    "mtf":"./media/vids/facultatesTest/akf_mtf_web.mp4"
+                }
             }
         ],
         "sf/idst":[
             {
-                "question":"Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?",
-                "variants":{
-                    "sf":"смастерю макет своего дома мечты",
-                    "idst":"соберу модель легендарной Chevrolet Camaro"
+                "question": "Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?",
+                "variants": {
+                    "sf": "смастерю макет своего дома мечты",
+                    "idst": "соберу модель легендарной Chevrolet Camaro"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/sf_idst.png"
+                "staticBackground": "./media/img/backgrounds/facultatesTest/sf_idst.png",
+                "dynamicBackground": {
+                    "sf": "./media/vids/facultatesTest/sf_idst_web.mp4",
+                    "idst": "./media/vids/facultatesTest/sf_idst_web.mp4"
+                }
             },
             {
                 "question":"Какую подработку ты выберешь, если будет такая возможность?",
@@ -163,7 +174,11 @@
                     "sf":"цифровое моделирование зданий под заказ",
                     "idst":"разработка автомобиля на альтернативной энергии"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/sf_idst.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/sf_idst.png",
+                "dynamicBackground": {
+                    "sf": "./media/vids/facultatesTest/sf_idst_web.mp4",
+                    "idst": "./media/vids/facultatesTest/sf_idst_web.mp4"
+                }
             },
             {
                 "question":"Где ты видишь себя после окончания Политеха?",
@@ -171,7 +186,11 @@
                     "sf":"предприятия и компании в индустрии строительства",
                     "idst":"предприятия транспортной отрасли"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/sf_idst.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/sf_idst.png",
+                "dynamicBackground": {
+                    "sf": "./media/vids/facultatesTest/sf_idst_web.mp4",
+                    "idst": "./media/vids/facultatesTest/sf_idst_web.mp4"
+                }
             }
         ],
         "htf/gnf":[
@@ -181,7 +200,11 @@
                     "htf":"проведу химические опыты из подручных средств",
                     "gnf":"составлю каталог своей коллекции минералов"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/gnf_htf.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/gnf_htf.png",
+                "dynamicBackground":{
+                    "htf":"./media/vids/facultatesTest/gnf_htf_web.mp4",
+                    "gnf":"./media/vids/facultatesTest/gnf_htf_web.mp4"
+                }
             },
             {
                 "question":"Какую подработку ты выберешь, если будет такая возможность?",
@@ -189,7 +212,11 @@
                     "htf":"лаборант в лаборатории инновационной фармацевтики",
                     "gnf":"отправлюсь в исследовательскую экспедицию с геологами"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/gnf_htf.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/gnf_htf.png",
+                "dynamicBackground":{
+                    "htf":"./media/vids/facultatesTest/gnf_htf_web.mp4",
+                    "gnf":"./media/vids/facultatesTest/gnf_htf_web.mp4"
+                }
             },
             {
                 "question":"Где ты видишь себя после окончания Политеха?",
@@ -197,7 +224,11 @@
                     "htf":"компании, выпускающие химическую продукцию",
                     "gnf":"компании нефтегазовой отрасли"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/gnf_htf.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/gnf_htf.png",
+                "dynamicBackground":{
+                    "htf":"./media/vids/facultatesTest/gnf_htf_web.mp4",
+                    "gnf":"./media/vids/facultatesTest/gnf_htf_web.mp4"
+                }
             }
         ],
         "fpmm/etf/gumf":[
@@ -208,7 +239,12 @@
                     "gumf":"изучу тренды в соцсетях для продвижения своего блога",
                     "fpmm":"помогу друзьям решить сложные задачки по математике"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/gumf_etf_fpmm.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/fpmm_gumf_etf.png",
+                "dynamicBackground": {
+                    "fpmm": "./media/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
+                    "etf": "./media/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
+                    "gumf": "./media/vids/facultatesTest/fpmm_gumf_etf_web.mp4"
+                }
             },
             {
                 "question":"Какую подработку ты выберешь, если будет такая возможность?",
@@ -217,7 +253,12 @@
                     "gumf":"работа над проектом по развитию городской среды",
                     "fpmm":"обучение нейросетей"
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/gumf_etf_fpmm.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/fpmm_gumf_etf.png",
+                "dynamicBackground": {
+                    "fpmm": "./media/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
+                    "etf": "./media/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
+                    "gumf": "./media/vids/facultatesTest/fpmm_gumf_etf_web.mp4"
+                }
             },
             {
                 "question":"Где ты видишь себя после окончания Политеха?",
@@ -226,7 +267,12 @@
                     "gumf":"консалтинговые фирмы, государственные структуры и бизнесы",
                     "fpmm":"компании, выпускающие электронику, технологии с оптоволокном и пр."
                 },
-                "staticBackground":"./media/img/backgrounds/facultatesTest/gumf_etf_fpmm.png"
+                "staticBackground":"./media/img/backgrounds/facultatesTest/fpmm_gumf_etf.png",
+                "dynamicBackground": {
+                    "fpmm": "./media/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
+                    "etf": "./media/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
+                    "gumf": "./media/vids/facultatesTest/fpmm_gumf_etf_web.mp4"
+                }
             }
         ]
     }

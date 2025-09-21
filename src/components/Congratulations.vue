@@ -11,7 +11,7 @@
 
         <div class="result-showcase" v-if="gameResult">
           <p class="result-description">Для вас лучше всего подойдет</p>
-          <b class="result-description"> {{ this.facultate }}</b>
+          <b class="result-description"> {{ facultate }}</b>
         </div>
         <div id="video">
           <img src="@/assets/img/loading.gif" class="loader">
@@ -44,7 +44,7 @@ export default {
   },
   computed:{
     facultate(){
-      return this.getFacultate(this.gameResult.branch)
+      return this.getFacultate(this.gameResult.finalFaculty)
     },
     gameResult(){
       return JSON.parse(Script.LocalStorage.get('gameResult'))
@@ -52,6 +52,10 @@ export default {
   },
   mounted(){
     fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/videos")
+    .then(el => {
+      console.log(el)
+      return el;
+    })
     .then( result => result.json())
     .then( ( array = [] ) => {
         let res = this.gameResult.branch

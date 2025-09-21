@@ -83,7 +83,18 @@ export default {
     
     onGameCompleted(answeredQuestions) {
       this.totalQuestions = answeredQuestions
-      // Game result is already saved by TestGame component
+      console.log(answeredQuestions);
+      fetch(process.env.VUE_APP_BASE_URL + "/api/v1/test-results", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type' : 'application/json',
+                        'Connection' : 'keep-alive'
+                    },
+                    body: JSON.stringify({ 
+                      token : Script.LocalStorage.get("token"), 
+                      result : answeredQuestions 
+                    })    
+                })
       this.currentView = 'congratulations'
     },
     

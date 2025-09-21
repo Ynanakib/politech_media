@@ -1,97 +1,102 @@
 <template>
   <div class="test-game">
-    <div class="user-field">
-      <div v-if="currentStageData?.type === 'character_replica'" class="character-replica">
+    <!-- Основной фон -->
+    <div class="background-container">
+      <!-- Статичный фон -->
+      <div
+          class="background static-background"
+          :style="{ backgroundImage: `url(${currentBackground})` }"
+      ></div>
+
+      <!-- Видео фон -->
+      <video
+          v-if="currentVideoBackground"
+          ref="backgroundVideo"
+          class="background video-background"
+          :src="currentVideoBackground"
+          autoplay
+          muted
+          playsinline
+          @ended="onVideoEnded"
+      ></video>
+    </div>
+
+    <!-- Интерфейс пользователя -->
+    <div ref="userField" class="user-field">
+      <!-- Приветствие персонажа (первый экран) -->
+      <div v-if="currentStageData?.type === 'replica'" class="character-replica">
         <div class="character-message">
-          <h2 class="character-name">{{ currentStageData.character.name }}</h2>
-          <p class="message-text">{{ currentStageData.message }}</p>
+          <h2 class="character-name">{{ currentCharacter.name }}</h2>
+          <p class="message-text">{{ currentStageData.text }}</p>
         </div>
-        <button 
-          @click="handleProceed"
-          @pointerup="handleProceed"
-          type="button"
-          class="continue-btn neon-button"
-          :disabled="isTransitioning"
+        <button
+            @click="handleProceed"
+            type="button"
+            class="continue-btn neon-button"
+            :disabled="isTransitioning"
         >
           Продолжить
         </button>
       </div>
-      <div v-else-if="currentStageData?.type === 'character_response'" class="character-response">
-        <div class="character-message">
-          <h2 class="character-name">{{ currentStageData.character.name }}</h2>
-          <p class="message-text">{{ currentStageData.message }}</p>
-        </div>
-        <button 
-          @click="handleProceed"
-          @pointerup="handleProceed"
-          type="button"
-          class="continue-btn neon-button"
-          :disabled="isTransitioning"
-        >
-          Продолжить
-        </button>
-      </div>
-      <div v-else-if="isQuestionStage" class="question-section">
+
+      <!-- Вопросы теста -->
+      <div v-else-if="currentStageData?.type === 'question'" class="question-section">
         <div class="question-content">
           <h3 class="question-text">{{ currentStageData.question }}</h3>
           <div class="answers-grid">
-            <button 
-              v-for="answer in currentStageData.answers" 
-              :key="answer.key"
-              @click="handleAnswer(answer.key)"
-              @pointerup="handleAnswer(answer.key)"
-              type="button"
-              class="answer-btn neon-button"
-              :class="{ 'selected': selectedAnswer === answer.key }"
-              :disabled="isTransitioning || selectedAnswer !== null"
+            <button
+                v-for="(text, key) in currentStageData.variants"
+                :key="key"
+                @click="handleAnswer(key)"
+                type="button"
+                class="answer-btn neon-button"
+                :class="{ 'selected': selectedAnswer === key }"
+                :disabled="isTransitioning || selectedAnswer !== null"
             >
-              {{ answer.text }}
+              {{ text }}
             </button>
           </div>
         </div>
       </div>
+
+      <!-- Завершение игры -->
       <div v-else-if="currentStageData?.type === 'game_completed'" class="game-completed">
         <div class="character-message">
-          <h2 class="character-name">{{ currentStageData.character.name }}</h2>
+          <h2 class="character-name">{{ currentCharacter.name }}</h2>
           <p class="message-text">{{ currentStageData.message }}</p>
         </div>
-        <button 
-          @click="handleContinueToResults"
-          class="continue-btn neon-button"
-          :disabled="isTransitioning"
+        <button
+            @click="handleContinueToResults"
+            class="continue-btn neon-button"
+            :disabled="isTransitioning"
         >
-          Продолжить
+          Узнать результат
         </button>
       </div>
+
+      <!-- Состояние загрузки -->
       <div v-else-if="loading" class="loading-state">
         <div class="loading-spinner"></div>
         <p class="loading-text">Загрузка...</p>
       </div>
+
+      <!-- Debug информация (удалить в продакшене) -->
+      <div v-else class="debug-info" style="color: white; padding: 20px;">
+        <p>Debug: currentStageData = {{ JSON.stringify(currentStageData, null, 2) }}</p>
+      </div>
     </div>
 
-    <div class="background" :style="{ 
-      backgroundImage: `url(${currentBackground})`, 
-      width: `${console.log(this.backgroundWidth) ? 0 : this.backgroundWidth}px`, 
-      height: `${this.backgroundWidth}px`
-    }">
-
-
-    </div>
-    <div 
-      class="character-field"
-      :class="characterAnimationClasses"
-      :style="characterStyles"
+    <!-- Персонаж -->
+    <div
+        class="character-field"
+        :class="characterAnimationClasses"
+        :style="characterStyles"
     >
-      <div 
-        class="character-image"
-        :style="{ backgroundImage: `url(${characterImage})` }"
+      <div
+          class="character-image"
+          :style="{ backgroundImage: `url(${characterImage})` }"
       ></div>
     </div>
-    <div 
-      v-if="false"
-      class="transition-overlay"
-      :class="transitionClasses"
-    ></div>
   </div>
 </template>
 
@@ -104,428 +109,461 @@ export default {
     return {
       gameManager: null,
       currentStageData: null,
+      currentCharacter: null,
       loading: true,
       isTransitioning: false,
       selectedAnswer: null,
       characterExitSide: null,
       characterEnterSide: null,
+      characterPosition: 'left',
+      characterVisible: true,
       backgroundWidth: 375,
+      currentVideoBackground: null,
+      isVideoPlaying: false,
+      userFieldHeight: 0,
+      lastValidBackground: null,
       fallbackCharacter: {
         image: './media/img/characters/empty.png',
         name: '',
-        backgroundImage: ''
-      },
-      windowWidth: window.innerWidth,
-      manekens: [true, true, true, true],
-      exposition: [true, true, true, true],
-      dynamicObject: null,
-      dynamicObjectIsPlaying: false
+        backgroundImage: '',
+        offsetPercentage: -0.075
+      }
     }
   },
-  computed: {
-    currentBackground() {
-      let background = './media/img/backgrounds/main.png';
 
-      if (this.currentStageData) {
-        if (this.currentStageData.type === 'character_replica' && this.currentStageData.stage === 'greeting') {
-          background = this.gameManager?.questionsData?.idleBackgrounds?.greetingsStatic || background; 
-        }
-        else if (this.currentStageData.type === 'general_question' && this.currentStageData.questionNumber === 1 && this.currentStageData.staticBackground) {
-          background = this.currentStageData.staticBackground || background; 
-        }
-        else if (this.isQuestionStage) {
-          if (this.selectedAnswer && this.currentStageData.dynamicBackground && this.currentStageData.dynamicBackground[this.selectedAnswer]) {
-            background = this.currentStageData.dynamicBackground[this.selectedAnswer];
-          } else if (this.currentStageData.staticBackground) {
-            background = this.currentStageData.staticBackground;
-          }
-        }
-        else if (this.currentStageData.type === 'game_completed' || this.currentStageData.type === 'character_response') {
-          background = this.currentStageData.character?.backgroundImage || background;
-        }
-        else if (this.currentStageData.staticBackground) { 
-          background = this.currentStageData.staticBackground;
+  computed: {
+    // В TestGame.vue, замените computed свойство currentBackground:
+
+    currentBackground() {
+      // Сохраняем предыдущий фон, чтобы избежать мерцания
+      if (!this.currentStageData) {
+        return this.lastValidBackground || './media/img/backgrounds/main.png';
+      }
+
+      let background = null;
+
+      // Проверяем динамический фон при выборе ответа
+      if (this.selectedAnswer && this.currentStageData.dynamic) {
+        const dynamicBg = this.currentStageData.dynamic[this.selectedAnswer];
+        if (dynamicBg && !this.isVideoFile(dynamicBg)) {
+          background = dynamicBg;
         }
       }
-      return background;
+
+      // Для реплик персонажа после выбора группы факультетов используем его персональный фон
+      if (!background && this.currentStageData.type === 'replica' && this.currentStageData.isGroupResponse) {
+        background = this.currentCharacter?.backgroundImage;
+      }
+
+      // Статический фон
+      if (!background && this.currentStageData.static && !this.isVideoFile(this.currentStageData.static)) {
+        background = this.currentStageData.static;
+      }
+
+      // Если фон найден, сохраняем его как последний валидный
+      if (background) {
+        this.lastValidBackground = background;
+        return background;
+      }
+
+      // Возвращаем последний валидный фон или дефолтный
+      return this.lastValidBackground || './media/img/backgrounds/main.png';
     },
+
     characterImage() {
-      if (this.currentStageData?.character?.image) {
-        return this.currentStageData.character.image
+      if (this.currentCharacter?.image) {
+        return this.currentCharacter.image;
       }
-      return this.fallbackCharacter.image
+      return this.fallbackCharacter.image;
     },
-    isQuestionStage() {
-      return this.currentStageData?.type === 'general_question' || 
-             this.currentStageData?.type === 'special_question' ||
-             this.currentStageData?.type === 'question' 
-    },
+
     characterAnimationClasses() {
-      const classes = ['character-field']
-      
+      const classes = [];
       if (this.isTransitioning) {
         if (this.characterExitSide) {
-          classes.push(`character-exit-${this.characterExitSide}`)
+          classes.push(`character-exit-${this.characterExitSide}`);
         }
         if (this.characterEnterSide) {
-          classes.push(`character-enter-${this.characterEnterSide}`)
+          classes.push(`character-enter-${this.characterEnterSide}`);
         }
       }
-      
-      return classes
+      return classes;
     },
-    transitionClasses() {
-      return ['transition-overlay']
-    },
+
     characterStyles() {
-      const styles = {}
-      styles.top = ``
-      styles.height = `${this.backgroundWidth+20}px`
-      styles.width = `${(this.backgroundWidth+20)/1.5}px`
-      return styles
+      const baseStyles = {
+        height: `${this.backgroundWidth * 0.9}px`,
+        width: `${(this.backgroundWidth * 0.9) / 1.5}px`,
+        opacity: this.characterVisible ? 1 : 0,
+        pointerEvents: 'none',
+        transition: 'all 0.5s ease-in-out'
+      };
+
+      const offsetPercentage = this.currentCharacter?.offsetPercentage || -0.075;
+      const viewportHeight = window.innerHeight;
+      const userFieldHeight = this.userFieldHeight || (viewportHeight * 0.35);
+      const dynamicBottom = userFieldHeight + (viewportHeight * offsetPercentage);
+
+      switch(this.characterPosition) {
+        case 'left':
+          return {
+            ...baseStyles,
+            left: '-10%',
+            transform: 'translateX(0)',
+            bottom: `${dynamicBottom}px`
+          };
+        case 'right':
+          return {
+            ...baseStyles,
+            right: '-10%',
+            left: 'auto',
+            transform: 'translateX(0)',
+            bottom: `${dynamicBottom}px`
+          };
+        case 'center':
+          return {
+            ...baseStyles,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            bottom: `${dynamicBottom}px`
+          };
+        case 'hidden':
+          return {
+            ...baseStyles,
+            display: 'none'
+          };
+        default:
+          return baseStyles;
+      }
     }
   },
-  beforeMount() {
-    this.initializeGame();    
+
+  watch: {
+    currentStageData: {
+      handler() {
+        this.$nextTick(() => {
+          this.updateUserFieldHeight();
+        });
+      },
+      deep: true
+    }
   },
+
+  mounted() {
+    this.initializeGame();
+    this.calcHeight();
+    window.addEventListener('resize', this.calcHeight);
+  },
+
+  beforeDestroy() {
+    window.removeEventListener('resize', this.calcHeight);
+    this.cleanupVideo();
+  },
+
   methods: {
     async initializeGame() {
       try {
-        this.loading = true
-        const savedCharacter = LocalStorage.get('selectedCharacter')
-        this.gameManager = new GameCore()
-        await this.gameManager.initGame()
+        this.loading = true;
+
+        this.gameManager = new GameCore({ offsetPercentage: -0.075 });
+        await this.gameManager.initGame();
+
+        const savedCharacter = LocalStorage.get('selectedCharacter');
+
         if (savedCharacter) {
-          const characterData = JSON.parse(savedCharacter)
-          const character = CharacterFactory.getCharacterById(characterData.id)
+          const characterData = JSON.parse(savedCharacter);
+          const character = CharacterFactory.getCharacterById(characterData.id);
+
           if (character) {
-            await this.startGame(character)
+            this.currentCharacter = character.getFullInfo();
+
+            // Устанавливаем персонажа в GameCore
+            this.gameManager.setCharacter(this.currentCharacter);
+
+            // Получаем первый стейдж (приветствие)
+            const firstStage = this.gameManager.getNextStage();
+
+            if (firstStage) {
+              this.currentStageData = firstStage;
+              this.updateCharacterPosition();
+            } else {
+              console.error('No first stage received');
+            }
           } else {
-            this.$emit('no-character')
+            console.error('Character not found in factory');
+            this.$emit('no-character');
           }
         } else {
-          this.$emit('no-character')
+          console.error('No saved character');
+          this.$emit('no-character');
         }
-        this.loading = false
 
+        this.loading = false;
       } catch (error) {
-        console.error('Failed to initialize game:', error)
-        this.loading = false
-        this.$emit('no-character')
+        console.error('Failed to initialize game:', error);
+        this.loading = false;
+        this.$emit('no-character');
       }
-      this.calcHeight()
     },
 
-    restoreProgressFromLocalStorage() {
-      let data = this.gameManager.getCurrentQuestionData()
-      if (!data) {
-        const savedCharacter = LocalStorage.get('selectedCharacter')
-        if (savedCharacter) {
-          const charData = JSON.parse(savedCharacter)
-          const character = CharacterFactory.getCharacterById(charData.id)
-          if (character) {
-            data = {
-              type: 'character_replica',
-              character: character.getFullInfo(),
-              message: character.getGreeting(),
-              stage: 'greeting'
-            }
-          }
-        }
-      }
-      this.currentStageData = data
-      const savedCharacter = LocalStorage.get('selectedCharacter')
-      if (savedCharacter && this.currentStageData) {
-        const charData = JSON.parse(savedCharacter)
-        const character = CharacterFactory.getCharacterById(charData.id)
-        if (character) {
-          if (!this.currentStageData.character || this.currentStageData.character.id !== character.id) {
-            this.currentStageData.character = character.getFullInfo()
-          } else if (this.currentStageData.type === 'character_replica' && !this.currentStageData.message) {
-            this.currentStageData.message = character.getGreeting()
-          }
-        }
-      }
-    },
-    
-    async startGame(character) {
-      try {
-        this.gameManager.setCharacter(character.getFullInfo())
-        LocalStorage.set('selectedCharacter', JSON.stringify(character.getFullInfo()))
-        const savedProgress = LocalStorage.get('gameProgress')
-        if (savedProgress) {
-          // If there's saved progress, gameManager should already be in the correct state
-          this.currentStageData = this.gameManager.getCurrentQuestionData()
-          if (!this.currentStageData || this.currentStageData.type === 'replica') {
-            this.currentStageData = {
-              type: 'character_replica',
-              character: character.getFullInfo(),
-              message: character.getGreeting(),
-              stage: 'greeting'
-            }
-          }
-        } else {
-          // Новый запуск: показываем приветствие персонажа
-          this.currentStageData = {
-            type: 'character_replica',
-            character: character.getFullInfo(),
-            message: character.getGreeting(),
-            stage: 'greeting'
-          }
-          LocalStorage.set('gameProgress', JSON.stringify({ currentQuestionIndex: 0 }));
-        }
-        this.animateCharacterEnter()
-      } catch (error) {
-        console.error('Failed to start game:', error)
-      }
-    },
-    
     async handleAnswer(answerKey) {
       if (this.isTransitioning) return;
+
       this.selectedAnswer = answerKey;
       this.isTransitioning = true;
+
       try {
-        // Assuming updateGroupFlags is no longer needed or integrated within GameCore logic
-        // if (this.gameManager && this.gameManager.getCurrentQuestionNumber() === 2) {
-        //   const { updateGroupFlags } = await import('@/assets/Script.js')
-        //   updateGroupFlags(this.manekens, answerKey)
-        // }
+        // Обновляем фон при выборе ответа
+        await this.updateBackgroundMedia();
+
+        // Ждем окончания видео если оно играет
+        if (this.isVideoPlaying) {
+          await this.waitForVideoEnd();
+        }
 
         await this.animateCharacterExit();
-        await this.animateCurrentQuestion();
-        this.calcHeight()
-        // Process answer
-        this.gameManager.answerQuestion(answerKey);
-        let nextData = this.gameManager.getCurrentQuestionData();
 
-        // If the game is completed, nextData will be null, and we need to get the final result
-        if (!nextData) {
+        // Получаем следующий стейдж
+        const nextStage = this.gameManager.processAnswer(answerKey);
+
+        if (!nextStage) {
+          // Игра завершена
           const finalFaculty = this.gameManager.getFinalResult();
-          const character = this.gameManager.character;
-          if (character && finalFaculty) {
-            nextData = {
+
+          if (this.currentCharacter && finalFaculty) {
+            this.currentStageData = {
               type: 'game_completed',
-              character: character,
-              message: character.getFinalLine(),
-              result: { finalFaculty: finalFaculty, totalAnswered: this.gameManager.currentQuestionIndex }
+              message: this.currentCharacter.finalLine || "Поздравляем! Вы прошли тест!",
+              result: {
+                finalFaculty: finalFaculty,
+                totalAnswered: this.gameManager.rootQuestionsLength
+              }
             };
-          }
-        } else if (nextData.type === 'replica') {
-          const character = this.gameManager.character;
-          if (character) {
-            nextData = {
-              type: 'character_response',
-              character: character,
-              message: character.getFacultyResponse(answerKey),
-              // Use the actual faculty group for the message
-            };
+            this.updateCharacterPosition();
+            this.handleGameComplete();
           }
         } else {
-          nextData.type = 'general_question'; // Or special_question if applicable
-          const qText = typeof nextData.question === 'string' ? nextData.question : (nextData.question?.question || '');
-          nextData.question = qText;
-          nextData.answers = Object.entries(nextData.variants || {}).map(([key, text]) => ({ key, text }));
-          nextData.staticBackground = nextData.background;
-          nextData.dynamicBackground = this.gameManager.getCurrentQuestion()?.dynamicBackground; // Fetch dynamic backgrounds if available
+          this.currentStageData = nextStage;
+          this.updateCharacterPosition();
         }
 
-        // Always patch character to selected one if missing or wrong
-        const savedCharacter = LocalStorage.get('selectedCharacter');
-        let selectedChar = null;
-        if (savedCharacter) {
-          const charData = JSON.parse(savedCharacter);
-          selectedChar = CharacterFactory.getCharacterById(charData.id);
-        }
-        if (selectedChar && (!nextData.character || nextData.character.id !== selectedChar.id)) {
-          nextData.character = selectedChar.getFullInfo();
-        }
-
-        this.currentStageData = nextData;
         this.selectedAnswer = null;
-        LocalStorage.set('gameProgress', JSON.stringify({ currentQuestionIndex: this.gameManager.currentQuestionIndex, currentStage: this.gameManager.currentStage }));
+        await this.updateBackgroundMedia();
         await this.animateCharacterEnter();
         this.isTransitioning = false;
-        // Reset dynamic object state after transition
-        this.dynamicObject = null;
-        this.dynamicObjectIsPlaying = false;
-        if (nextData.type === 'game_completed') {
-          this.handleGameComplete();
-        }
+
       } catch (error) {
         console.error('Failed to process answer:', error);
         this.isTransitioning = false;
       }
-      this.calcHeight()
     },
-    
+
     async handleProceed() {
       if (this.isTransitioning) return;
+
+      // Проверяем, нужно ли запустить приветственное видео
+      if (this.currentStageData?.type === 'replica' && this.currentStageData?.dynamic) {
+        this.currentVideoBackground = this.currentStageData.dynamic;
+        this.isVideoPlaying = true;
+        await this.$nextTick();
+
+        if (this.$refs.backgroundVideo) {
+          try {
+            await this.$refs.backgroundVideo.play();
+            await this.waitForVideoEnd();
+          } catch (error) {
+            console.error('Failed to play greeting video:', error);
+          }
+        }
+      }
+
       this.isTransitioning = true;
+
       try {
         await this.animateCharacterExit();
 
-        // После реплики показываем текущий вопрос из GameCore
-        const data = this.gameManager.getCurrentQuestionData();
-        if (data && data.question) {
-          this.currentStageData = {
-            type: 'general_question',
-            question: (typeof data.question === 'string') ? data.question : (data.question?.question || ''),
-            answers: Object.entries((data.variants) || {}).map(([key, text]) => ({ key, text })),
-            staticBackground: data.background,
-            dynamicBackground: this.gameManager.getCurrentQuestion()?.dynamicBackground
-          }
-        } else {
-          // Игра завершена
+        const nextStage = this.gameManager.getNextStage();
+
+        if (!nextStage) {
           const finalFaculty = this.gameManager.getFinalResult();
-          const character = this.gameManager.character;
-          if (character && finalFaculty) {
+
+          if (this.currentCharacter && finalFaculty) {
             this.currentStageData = {
               type: 'game_completed',
-              character: character,
-              message: character.getFinalLine(),
-              result: { finalFaculty: finalFaculty, totalAnswered: this.gameManager.currentQuestionIndex }
+              message: this.currentCharacter.finalLine || "Поздравляем! Вы прошли тест!",
+              result: {
+                finalFaculty: finalFaculty,
+                totalAnswered: this.gameManager.rootQuestionsLength
+              }
             };
+            this.updateCharacterPosition();
+            this.handleGameComplete();
           }
+        } else {
+          this.currentStageData = nextStage;
+          this.updateCharacterPosition();
         }
 
-        await this.animateCurrentQuestion();
-
-        const savedCharacter = LocalStorage.get('selectedCharacter');
-        let selectedChar = null;
-        if (savedCharacter) {
-          const charData = JSON.parse(savedCharacter);
-          selectedChar = CharacterFactory.getCharacterById(charData.id);
-        }
-        if (selectedChar && (!this.currentStageData.character || this.currentStageData.character.id !== selectedChar.id)) {
-          this.currentStageData.character = selectedChar.getFullInfo();
-        }
-
-        LocalStorage.set('gameProgress', JSON.stringify({ currentQuestionIndex: this.gameManager.currentQuestionIndex, currentStage: this.gameManager.currentStage }));
+        await this.updateBackgroundMedia();
         await this.animateCharacterEnter();
         this.isTransitioning = false;
-        this.dynamicObject = null;
-        this.dynamicObjectIsPlaying = false;
-        if (this.currentStageData.type === 'game_completed') {
-          this.handleGameComplete();
-        }
+
       } catch (error) {
         console.error('Failed to process proceed action:', error);
         this.isTransitioning = false;
       }
-      this.calcHeight()
     },
-    
-    async animateCharacterExit() {
-      return new Promise((resolve) => {
-        const sides = ['left'];
-        this.characterExitSide = sides[Math.floor(Math.random() * sides.length)];
-        setTimeout(() => {
-          resolve();
-        }, 800);
-      });
+
+    // Методы для работы с видео
+    isVideoFile(url) {
+      if (!url) return false;
+      const videoExtensions = ['.mp4', '.webm', '.ogg'];
+      return videoExtensions.some(ext => url.toLowerCase().includes(ext));
     },
-    
-    async animateCharacterEnter() {
-      return new Promise((resolve) => {
-        // Character must return from the same side it left
-        this.characterEnterSide = this.characterExitSide;
-        
-        // Animate enter
-        setTimeout(() => {
-          this.characterExitSide = null;
-          this.characterEnterSide = null;
-          resolve();
-        }, 800);
-      });
-    },
-    
-    handleGameComplete() {
-      if (this.currentStageData?.result) {
-        LocalStorage.set('gameResult', JSON.stringify(this.currentStageData.result))
+
+    async updateBackgroundMedia() {
+      let mediaUrl = null;
+
+      // Определяем какой медиа-файл использовать
+      if (this.selectedAnswer && this.currentStageData?.dynamic) {
+        mediaUrl = this.currentStageData.dynamic[this.selectedAnswer];
+      } else if (this.currentStageData?.static) {
+        mediaUrl = this.currentStageData.static;
+      }
+
+      if(mediaUrl == this.currentBackground){
+        return
+      }
+
+      this.cleanupVideo();
+
+      // Если это видео, устанавливаем его
+      if (mediaUrl && this.isVideoFile(mediaUrl)) {
+        this.currentVideoBackground = mediaUrl;
+        this.isVideoPlaying = true;
+
+        await this.$nextTick();
+
+        if (this.$refs.backgroundVideo) {
+          try {
+            await this.$refs.backgroundVideo.play();
+          } catch (error) {
+            console.error('Failed to play video:', error);
+            this.isVideoPlaying = false;
+          }
+        }
+      } else {
+        this.currentVideoBackground = null;
+        this.isVideoPlaying = false;
       }
     },
-    
-    handleContinueToResults() {
-      this.$emit('game-completed', this.currentStageData.result.totalAnswered || 0)
+
+    onVideoEnded() {
+      this.isVideoPlaying = false;
+      if (this.currentStageData?.static && !this.isVideoFile(this.currentStageData.static)) {
+        this.currentVideoBackground = null;
+      }
     },
 
-    calcHeight(){
-      this.backgroundWidth = document.getElementsByTagName("body")[0].offsetWidth
-    },
-    
-    async animateCurrentQuestion() {
-      return new Promise(async (resolve) => {
-        let questionAnimationTime = 0;
+    async waitForVideoEnd() {
+      if (!this.$refs.backgroundVideo || !this.isVideoPlaying) return;
 
-        const currentQuestion = this.gameManager?.getCurrentQuestion();
-        const currentStageType = this.currentStageData?.type;
-        const currentStageQuestionNumber = this.gameManager?.currentQuestionIndex + 1;
+      return new Promise((resolve) => {
+        const video = this.$refs.backgroundVideo;
 
-        // No dynamic object for character replica or the first general question if greetingsDynamic was just played
-        if (currentStageType === 'character_replica' || (currentStageType === 'general_question' && currentStageQuestionNumber === 1 && this.currentStageData.staticBackground === this.gameManager?.questionsData?.idleBackgrounds?.greetingsDynamic)) {
-          this.dynamicObject = null;
-        } else if (this.isQuestionStage && this.currentStageData?.dynamicBackground) {
-          // Questions with dynamic backgrounds based on answers
-          if (this.selectedAnswer && this.currentStageData.dynamicBackground[this.selectedAnswer]) {
-            this.dynamicObject = this.currentStageData.dynamicBackground[this.selectedAnswer];
-            questionAnimationTime = 3000; // Placeholder, actual time from video/gif
-            await this.showDynamicObject();
-          } else {
-            this.dynamicObject = null;
-            questionAnimationTime = 0;
-          }
-        } else {
-          // Other stages, no specific dynamic object or animation time
-          this.dynamicObject = null;
-          questionAnimationTime = 0;
-        }
-
-        // Original switch logic for specific question animations (like book, maneken)
-        // This logic should run regardless of dynamic backgrounds playing
-        if (currentStageType !== 'character_response' && currentStageType !== 'character_replica' && currentStageQuestionNumber) {
-          switch (currentStageQuestionNumber) {
-            case 1:
-              if (document.getElementsByClassName("book")[0]) {
-                document.getElementsByClassName("book")[0].style.top = "-50%";
-                document.getElementsByClassName("book")[0].style.left = "50%";
-                document.getElementsByClassName("book")[0].style.zIndex = 3;
-              }
-              break;
-            case 2:
-              let manekens = document.getElementsByClassName("maneken");
-              for (let i = 0; i < 4; i++) {
-                if (manekens[i]) {
-                  manekens[i].classList.remove("animated");
-                  if (!this.manekens[i]) {
-                    manekens[i].classList.add("animated");
-                  }
-                }
-              }
-              break;
-          }
-        }
-
-        setTimeout(() => {
+        const handleEnd = () => {
+          video.removeEventListener('ended', handleEnd);
           resolve();
-        }, questionAnimationTime);
+        };
+
+        if (video.ended) {
+          resolve();
+          return;
+        }
+
+        video.addEventListener('ended', handleEnd);
+
+        // Таймаут на случай если видео зависло
+        setTimeout(() => {
+          video.removeEventListener('ended', handleEnd);
+          resolve();
+        }, 5000);
       });
     },
 
-    async showDynamicObject() {
-      if (!this.dynamicObject) return;
-      this.dynamicObjectIsPlaying = true;
+    cleanupVideo() {
+      if (this.$refs.backgroundVideo) {
+        this.$refs.backgroundVideo.pause();
+        this.$refs.backgroundVideo.src = '';
+      }
+      this.currentVideoBackground = null;
+      this.isVideoPlaying = false;
+    },
 
-      return new Promise((resolve) => {
-        // In a real scenario, you'd load and play the video/gif here.
-        // For a GIF, you might just display it, and it plays automatically.
-        // For a video, you'd create a <video> element, set its src, play it,
-        // and listen for the 'ended' event to resolve the promise.
-        
-        // For demonstration, we'll use a setTimeout.
-        setTimeout(() => {
-          this.dynamicObjectIsPlaying = false;
-          resolve();
-        }, 3000); // Assuming a 3-second animation for dynamic objects
+    // Анимации персонажа
+    async animateCharacterExit() {
+      return Promise.resolve();
+    },
+
+    async animateCharacterEnter() {
+      return Promise.resolve();
+    },
+
+    updateCharacterPosition() {
+      const stage = this.currentStageData?.type;
+      const stageInfo = this.currentStageData?.stageInfo;
+
+      // Расширенная карта позиций
+      const positionMap = {
+        // Реплики персонажа
+        'replica': 'left',
+        'game_completed': 'center',
+
+        // Вопросы
+        'question': (() => {
+          if (!stageInfo) return 'left';
+
+          if (stageInfo.stage === 'root') {
+            const positions = ['left', 'hidden', 'hidden', 'hidden', 'right', 'hidden'];
+            return positions[stageInfo.index] || 'left';
+          } else if (stageInfo.stage === 'appended') {
+            return 'left';
+          } else if (stageInfo.stage === 'groups') {
+            return 'hidden';
+          }
+
+          return 'left';
+        })()
+      };
+
+      this.characterPosition = positionMap[stage] || 'left';
+      this.characterVisible = this.characterPosition !== 'hidden';
+    },
+
+    handleGameComplete() {
+      if (this.currentStageData?.result) {
+        LocalStorage.set('gameResult', JSON.stringify(this.currentStageData.result));
+      }
+    },
+
+    handleContinueToResults() {
+      this.$emit('game-completed', this.gameManager.finalFaculty);
+    },
+
+    calcHeight() {
+      this.backgroundWidth = document.body.offsetWidth;
+      this.updateUserFieldHeight();
+    },
+
+    updateUserFieldHeight() {
+      this.$nextTick(() => {
+        if (this.$refs.userField) {
+          const newHeight = this.$refs.userField.offsetHeight;
+          if (newHeight !== this.userFieldHeight) {
+            this.userFieldHeight = newHeight;
+            this.$forceUpdate();
+          }
+        }
       });
     }
   }
@@ -535,233 +573,195 @@ export default {
 <style scoped>
 .test-game {
   width: 100vw;
-  height: var(--full-height);
-  /* height: 100vh; */
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   position: relative;
   background-color: #00023b;
   display: flex;
-  flex-direction: column-reverse;
-  background-size: cover;
+  flex-direction: column;
   -webkit-overflow-scrolling: touch;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 
-.background{
-  margin: 0 auto;
+.background-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vw;
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
 }
 
+.video-background {
+  width: 100vw;
+  height: 100vw;
+  object-fit: cover;
+}
+
 .character-field {
   position: absolute;
-  left: 0;
-  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   z-index: 10;
-  transition: all 0.8s ease-in-out;
-  background: transparent;
+  transition: all 0.5s ease-in-out;
 }
 
 .character-image {
   width: 100%;
   height: 100%;
-  position: relative;
   background-size: contain;
   background-repeat: no-repeat;
-  background-position: bottom;
+  background-position: bottom center;
   opacity: 1;
   transition: all 0.8s ease-in-out;
-  animation: character-idle 4s ease-in-out infinite;
+  animation: character-idle 6s ease-in-out infinite;
   animation-delay: 1.5s;
-  will-change: transform;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-}
-
-.character-exit-left {
-  animation: characterExitLeft 0.5s ease-in-out forwards;
-}
-
-.character-exit-right {
-  animation: characterExitRight 0.5s ease-in-out forwards;
-}
-
-.character-enter-left {
-  animation: characterEnterLeft 0.5s ease-in-out forwards;
-}
-
-.character-enter-right {
-  animation: characterEnterRight 0.5s ease-in-out forwards;
 }
 
 .user-field {
-  width: 100vw;
-  min-height: 250px;
-  background: #00023b;
-  text-align: center;
-  flex: 0 0 auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  min-height: calc(100vh - 100vw);
+  height: fit-content;
+  background: linear-gradient(to top,
+  rgba(0, 2, 59, 0.98) 0%,
+  rgba(0, 2, 59, 0.95) 70%,
+  rgba(0, 2, 59, 0.85) 100%);
+  backdrop-filter: blur(10px);
   z-index: 15;
-  padding: 30px;
+  padding: clamp(15px, 3vh, 30px);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border-top: black 5px solid;
+  border-top: 2px solid rgba(0, 255, 255, 0.3);
+  overflow-y: auto;
 }
 
 .character-replica,
-.character-response,
 .question-section,
 .game-completed {
   text-align: center;
   color: white;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .character-message {
-  margin-bottom: 30px;
+  margin-bottom: clamp(15px, 3vh, 30px);
 }
 
 .character-name {
-  font-size: 2rem;
-  margin-bottom: 15px;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  margin-bottom: clamp(8px, 2vh, 15px);
   color: #0ff;
   text-shadow: 0 0 10px #0ff;
 }
 
 .message-text {
   color: white;
-  font-size: 1.2rem;
-  line-height: 1.6;
-  margin-bottom: 20px;
+  font-size: clamp(0.95rem, 3.5vw, 1.2rem);
+  line-height: 1.5;
+  margin-bottom: clamp(15px, 3vh, 20px);
+  padding: 0 10px;
 }
 
 .question-content {
-  display: inline-block;
+  width: 100%;
   padding: 0;
   color: white;
-  margin: 0;
-  border-radius: 20px;
-  width: 50vw;
-  align-self: center;
-  z-index: 10;
-  position: relative;
-  max-width: 800px;
 }
 
 .question-text {
   color: #fff;
-  font-size: 20px;
-  margin-bottom: 20px;
+  font-size: clamp(1rem, 3.2vw, 1.3rem);
+  margin-bottom: clamp(15px, 2.5vh, 25px);
+  padding: 0 10px;
+  line-height: 1.4;
 }
 
 .answers-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  margin-bottom: 20px;
+  gap: clamp(8px, 1.5vh, 15px);
+  padding: 0 clamp(10px, 2vw, 20px);
+  margin-bottom: clamp(10px, 2vh, 20px);
 }
 
 .answer-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: 15px 25px;
-  border-radius: 25px;
-  font-size: 16px;
+  padding: clamp(8px, 1.8vh, 20px) clamp(10px, 2.2vw, 25px);
+  border-radius: clamp(15px, 3vw, 25px);
+  font-size: clamp(0.9rem, 3.2vw, 1.1rem);
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Arial', sans-serif;
-  text-align: left;
+  text-align: center;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 20px #667eea;
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.3;
 }
 
-.answer-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 
-    0 0 30px #667eea,
-    0 0 50px #667eea;
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-}
-
-.answer-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.answer-btn:active {
+  transform: scale(0.98);
 }
 
 .answer-btn.selected {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  transform: scale(1.05);
-  box-shadow: 
-    0 0 30px #f093fb,
-    0 0 50px #f093fb;
+  transform: scale(1.02);
+  box-shadow: 0 0 30px rgba(240, 147, 251, 0.7);
 }
 
+.answer-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
-.continue-btn,
-.finish-btn {
-  padding: 15px 40px;
-  font-size: 1.2rem;
+.continue-btn {
+  padding: clamp(12px, 2.5vh, 18px) clamp(30px, 8vw, 50px);
+  font-size: clamp(1rem, 3.5vw, 1.2rem);
   font-weight: bold;
   background: linear-gradient(45deg, #f0f, #ff00ff);
   color: white;
   border: none;
-  border-radius: 25px;
+  border-radius: clamp(20px, 4vw, 30px);
   cursor: pointer;
   transition: all 0.3s ease;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-  box-shadow: 0 0 20px #f0f;
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+  min-height: 48px;
+  margin: 0 auto;
 }
 
-.continue-btn:hover:not(:disabled),
-.finish-btn:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 0 30px #f0f;
-}
-
-.continue-btn:disabled,
-.finish-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.result-info {
-  margin: 20px 0;
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  border: 1px solid #0ff;
-}
-
-.result-text {
-  font-size: 1.3rem;
-  color: #0ff;
-  margin-bottom: 10px;
-}
-
-.result-detail {
-  font-size: 1.1rem;
-  color: #fff;
+.continue-btn:active {
+  transform: scale(0.98);
 }
 
 .loading-state {
@@ -770,11 +770,12 @@ export default {
   align-items: center;
   justify-content: center;
   color: white;
+  padding: 20px;
 }
 
 .loading-spinner {
-  width: 50px;
-  height: 50px;
+  width: clamp(40px, 10vw, 60px);
+  height: clamp(40px, 10vw, 60px);
   border: 3px solid #0ff;
   border-top: 3px solid transparent;
   border-radius: 50%;
@@ -783,54 +784,40 @@ export default {
 }
 
 .loading-text {
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 3.5vw, 1.2rem);
   color: #0ff;
 }
 
-.transition-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 25;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.debug-info {
+  font-size: 0.8rem;
+  background: rgba(255, 0, 0, 0.2);
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
-.transition-answer {
-  opacity: 1;
+/* Анимации */
+.character-exit-left {
+  animation: characterExitLeft 0.5s ease-in-out forwards;
 }
 
-.transition-proceed {
-  opacity: 1;
+.character-enter-left {
+  animation: characterEnterLeft 0.5s ease-in-out forwards;
 }
 
 @keyframes characterExitLeft {
-  0% { transform: translateX(0); opacity: 1; }
-  100% { transform: translateX(-100%); opacity: 0; }
-}
-
-@keyframes characterExitRight {
-  0% { transform: translateX(0); opacity: 1; }
-  100% { transform: translateX(100%); opacity: 0; }
+  0% { transform: translateX(-50%); opacity: 1; }
+  100% { transform: translateX(-150%); opacity: 0; }
 }
 
 @keyframes characterEnterLeft {
-  0% { transform: translateX(-100%); opacity: 0; }
-  100% { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes characterEnterRight {
-  0% { transform: translateX(100%); opacity: 0; }
-  100% { transform: translateX(0); opacity: 1; }
+  0% { transform: translateX(-150%); opacity: 0; }
+  100% { transform: translateX(-50%); opacity: 1; }
 }
 
 @keyframes character-idle {
-  0% { transform: translateY(0) translateZ(0); }
-  50% { transform: translateY(-12px) translateZ(0); }
-  100% { transform: translateY(0) translateZ(0); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }
 
 @keyframes spin {
@@ -838,229 +825,27 @@ export default {
   100% { transform: rotate(360deg); }
 }
 
-@media (max-width: 380px){
-
-  .user-field {
-    height: 40%;
-    padding: 5px;
-    justify-content: start;
-  }
-  
-  .question-content {
-    width: 98%;
-    padding: 12px 8px;
-    height: 100%;
-  }
-  
-  .question-text {
-    margin-bottom: 10px;
-    font-size: 16px;
-  }
-  
+/* Мобильная адаптация */
+@media (max-width: 480px) {
   .answers-grid {
-    margin-bottom: 0px;
-    height: 85%;
-    grid-template-rows: repeat(4, 1fr);
-  }
-  
-  .answer-btn {
-    padding: 8px 12px;
-    min-height: 35px;
-    height: 100%;
-    border-radius: 18px;
-    font-size: 14px;
-  }
-  .character-name {
-    margin-bottom: 6px;
-  }
-
-  .continue-btn {
-    padding: 8px 20px;
-    min-height: 35px;
-  }
-  
-  .result-info {
-    padding: 10px;
-    margin: 10px 0;
-  }
-  
-  .loading-spinner {
-    width: 35px;
-    height: 35px;
-    margin-bottom: 12px;
-  }
-}
-
-@media (max-width: 431px){
-  .user-field {
-    height: 40%;
-    padding: 5px;
-    justify-content: start;
-  }
-  
-  .character-field{
-    top: 150px; 
-    left: -50px
-  }
-  .question-content{
-    width: 100%;
-  }
-
-  .answers-grid{
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(4, 1fr);
-    height: 100%;
-    width: 100%;
+  }
+
+  .character-field {
+    width: 60vw;
+    height: 40vh;
   }
 }
 
-
-@media (hover: none) and (pointer: coarse) {
-  .answer-btn {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  
-  .answer-btn:active {
-    transform: scale(0.98);
-    transition: transform 0.06s ease;
-  }
-  
-  .continue-btn {
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  
-  .continue-btn:active {
-    transform: scale(0.98);
-    transition: transform 0.06s ease;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .character-image {
-    animation: none;
-  }
-  
-  .character-field,
-  .character-image,
-  .dynamic-object {
-    transition: none;
-  }
-  
-  .answer-btn,
-  .continue-btn {
-    transition: none;
-  }
-  
-  .answer-btn:hover:not(:disabled),
-  .continue-btn:hover:not(:disabled) {
-    transform: none;
-  }
-}
-
-@media (max-width: 900px) and (orientation: landscape) {
-  
+@media (max-height: 500px) and (orientation: landscape) {
   .user-field {
-    min-height: 120px;
-    padding: 5px;
+    min-height: 50vh;
+    max-height: 100vh;
   }
-  
-  .question-content {
-    padding: 10px 15px;
-  }
-  
-  .question-text {
-    margin-bottom: 8px;
-  }
-  
+
   .answers-grid {
     grid-template-columns: repeat(2, 1fr);
-    margin-bottom: 0px;
-    gap: 8px;
+    grid-template-rows: repeat(2, 1fr);
   }
-  
-  .answer-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-    min-height: 35px;
-  }
-  
-  .character-name {
-    margin-bottom: 5px;
-  }
-  
-  .continue-btn {
-    padding: 8px 20px;
-    min-height: 30px;
-  }
-}
-
-.dynamicObject{
-  position: relative;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-}
-
-.dynamic-object-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-  background-color: #00023b; /* Ensure it covers the main background */
-}
-
-.dynamic-gif,
-.dynamic-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.bookshelf{
-  position: sticky;
-  width: 100%;
-  height: 100%;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: 50%;
-  z-index: 3;
-}
-.book{  
-  z-index: 1;
-  transition: all;
-  transition-duration: 3s;
-  rotate: 64grad;
-  width: 200px;
-  height: 140px;
-}
-.book.animated{
-  rotate: 0grad;
-  left: 50%;
-  top: -50%
-}
-.politeh.animated{
-  width: 600%;
-  margin-left: -250%;
-  background-position: 50% 80%;
-}
-.politeh{
-  transition: all;
-  transition-duration: 5s;
-  width: 100%;
-  height: 100%;
-}
-.maneken{
-  transition: all;
-  transition-duration: 2s;
-}
-.maneken.animated{
-  opacity: 0;
 }
 </style>

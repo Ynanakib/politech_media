@@ -3,112 +3,159 @@ import CryptoJS from "crypto-js";
 let questionsData = null;
 
 class GameCore {
-    constructor(currentCharacter) {
-        this.character = currentCharacter;
+    constructor() {
+        this.currentQuestionIndex = 0;
+        this.groupQuestionIndex = 0; // Новое поле для отслеживания вопросов в группах
         this.facultyGroupScores = {};
         this.facultyScores = {};
+        this.currentStage = "root"; // "root", "appended", "groups"
+        this.tiedGroups = [];
+        this.activeGroupQuestions = [];
+        this.activeGroupIndex = 0;
         this.finalFaculty = null;
         this.lastSelectedAnswer = null;
+        this.character = null;
+        this.questionsGenerator = null;
+        this.isGeneratorComplete = false
     }
 
     setCharacter(character) {
         this.character = character;
+        // Инициализируем генератор после установки персонажа
+        this.questionsGenerator = this.generateQuestions();
     }
 
-    *generateQuestions(){
+    *generateQuestions() {
+        this.initializeScores();
+
+        // Приветствие
         yield {
             type: "replica",
-            text: "greeting",
-            static: questionsData.idleBackgrounds.greetingsStatic,
-            dynamic: {
-                "akf/mtf": questionsData.idleBackgrounds.greetingsDynamic,
-                "sf/idst": questionsData.idleBackgrounds.greetingsDynamic,
-                "fpmm/etf/gumf":questionsData.idleBackgrounds.greetingsDynamic,
-                "htf/gnf": questionsData.idleBackgrounds.greetingsDynamic
+            text: this.character.greeting,
+            static: this.questionsData?.idleBackgrounds?.greetingsStatic,
+            dynamic: this.questionsData?.idleBackgrounds?.greetingsDynamic
+        };
+
+        // Основные вопросы (root)
+        this.currentStage = "root";
+        this.currentQuestionIndex = 0;
+
+        if (this.questionsData && this.questionsData.root) {
+            for (let el of this.questionsData.root) {
+                let answer = yield {
+                    type: "question",
+                    question: el.question,
+                    variants: el.variants,
+                    static: el.staticBackground,
+                    dynamic: el.dynamicBackground,
+                    stageInfo: {
+                        stage: 'root',
+                        index: this.currentQuestionIndex
+                    }
+                };
+
+                if (answer && this.facultyGroupScores.hasOwnProperty(answer)) {
+                    this.facultyGroupScores[answer] += 1;
+                }
+                this.currentQuestionIndex++;
             }
-        }
-        
-        for(el in questionsData.root){
-            let answer = yield {
-                type: "question",
-                question: el.question,
-                variants: el.variants,
-                static: el.staticBackground,
-                dynamic: el.dynamicBackground
-            }
-            this.facultyGroupScores[answer] += 1
-            console.log(this.facultyGroupScores)
-        }
-        let max = this.facultyGroupScores["akf/mtf"]
-        for(key in this.facultyGroupScores){
-            max = this.facultyGroupScores[key] > max ? this.facultyGroupScores[key] : max
-        }
-        let iterator = 0
-        let names = []
-        for(key in this.facultyGroupScores){
-            if(this.facultyGroupScores[key] == max){
-                iterator++;
-                names.append(key)
-            } 
-        }
-        if(iterator>1){
-            let vars = {}
-            vars[names[0]] = questionsData.appended_question.variants[names[0]]
-            vars[names[1]] = questionsData.appended_question.variants[names[1]]
-            let answer = yield {
-                type: "question",
-                question: questionsData.appended_question.question,
-                variants: vars,
-                static: questionsData.appended_question.staticBackground,
-                dynamic: questionsData.appended_question.dynamicBackground
-            }
-            this.facultyGroupScores[answer] += 1
-        }
-        max = "akf/mtf"
-        for(key in this.facultyGroupScores){
-            max = this.facultyGroupScores[key] > this.facultyGroupScores[max] ? key : max
         }
 
-        yield {
-            type: "replica",
-            text: ["facultyResponses", max],
-            static: questionsData.idleBackgrounds[this.character.name],
-            dynamic: questionsData.idleBackgrounds[this.character.name]
-        }
-        
-        for(el in questionsData.groups[max]){
+        // Дополнительный вопрос при ничьей
+        let maxScore = Math.max(...Object.values(this.facultyGroupScores));
+        let tiedGroups = Object.keys(this.facultyGroupScores).filter(
+            key => this.facultyGroupScores[key] === maxScore
+        );
+
+        if (tiedGroups.length > 1 && this.questionsData.appended_question) {
+            this.currentStage = "appended";
+
+            let filteredVariants = {};
+            for (let groupKey of tiedGroups) {
+                if (this.questionsData.appended_question.variants[groupKey]) {
+                    filteredVariants[groupKey] = this.questionsData.appended_question.variants[groupKey];
+                }
+            }
+
             let answer = yield {
                 type: "question",
-                question: el.question,
-                variants: el.variants,
-                static: el.staticBackground,
-                dynamic: el.dynamicBackground
+                question: this.questionsData.appended_question.question,
+                variants: filteredVariants,
+                static: this.questionsData.appended_question.staticBackground,
+                dynamic: this.questionsData.appended_question.dynamicBackground,
+                stageInfo: {
+                    stage: 'appended',
+                    index: 0
+                }
+            };
+
+            if (answer && this.facultyGroupScores.hasOwnProperty(answer)) {
+                this.facultyGroupScores[answer] += 1;
             }
-            this.facultyScores[answer] += 1
-            console.log(this.facultyScores)
-        }
-        
-        max = "fpmm"
-        for(key in this.facultyGroupScores){
-            max = this.facultyGroupScores[key] > this.facultyGroupScores[max] ? key : max
         }
 
-        return max;
+        // Определяем победившую группу
+        maxScore = Math.max(...Object.values(this.facultyGroupScores));
+        let winningGroup = Object.keys(this.facultyGroupScores).find(
+            key => this.facultyGroupScores[key] === maxScore
+        );
+
+        // Реплика персонажа
+        if (this.character && this.character.facultyResponses) {
+            yield {
+                type: "replica",
+                text: this.character.facultyResponses[winningGroup] || "Отличный выбор! Продолжаем?",
+                static: this.character.backgroundImage || this.questionsData?.idleBackgrounds?.[this.character.name],
+                dynamic: null,
+                isGroupResponse: true
+            };
+        }
+
+        // Вопросы по конкретной группе факультетов
+        this.currentStage = "groups";
+        this.activeGroupIndex = 0;
+
+        if (winningGroup && this.questionsData.groups && this.questionsData.groups[winningGroup]) {
+            for (let el of this.questionsData.groups[winningGroup]) {
+                let answer = yield {
+                    type: "question",
+                    question: el.question,
+                    variants: el.variants,
+                    static: el.staticBackground,
+                    dynamic: el.dynamicBackground,
+                    stageInfo: {
+                        stage: 'groups',
+                        index: this.activeGroupIndex
+                    }
+                };
+
+                if (answer && this.facultyScores.hasOwnProperty(answer)) {
+                    this.facultyScores[answer] += 1;
+                }
+                this.activeGroupIndex++;
+            }
+        }
+
+        // Определяем финальный факультет
+        let finalMaxScore = Math.max(...Object.values(this.facultyScores));
+        this.finalFaculty = Object.keys(this.facultyScores).find(
+            key => this.facultyScores[key] === finalMaxScore
+        );
+
+        this.isGeneratorComplete = true;
+        return this.finalFaculty;
     }
 
     async loadQuestions() {
-        this.loading = true
         if (!questionsData) {
             try {
-                const response = await fetch('/media/questions.json');
+                const response = await fetch('./media/questions.json');
                 questionsData = await response.json();
-                console.log(questionsData)
-                this.initializeScores()
+                this.initializeScores();
             } catch (error) {
                 console.error("Error loading questions.json:", error);
             }
         }
-        this.loading = false
     }
 
     get questionsData() {
@@ -122,13 +169,38 @@ class GameCore {
             "fpmm/etf/gumf": 0,
             "htf/gnf": 0,
         };
+
         this.facultyScores = {};
-        for (const groupKey in questionsData.groups) {
-            const faculties = groupKey.split('/');
-            faculties.forEach(faculty => {
-                this.facultyScores[faculty] = 0;
-            });
+        if (questionsData && questionsData.groups) {
+            for (const groupKey in questionsData.groups) {
+                const faculties = groupKey.split('/');
+                faculties.forEach(faculty => {
+                    this.facultyScores[faculty] = 0;
+                });
+            }
         }
+    }
+
+    // Новый метод для получения следующего вопроса через генератор
+    getNextStage(answer = null) {
+        if (!this.questionsGenerator) {
+            console.error('Generator not initialized. Set character first.');
+            return null;
+        }
+
+        if (this.isGeneratorComplete) {
+            return null;
+        }
+
+        const result = this.questionsGenerator.next(answer);
+
+        if (result.done) {
+            this.isGeneratorComplete = true;
+            this.finalFaculty = result.value;
+            return null;
+        }
+
+        return result.value;
     }
 
     getCurrentQuestion() {
@@ -148,11 +220,10 @@ class GameCore {
 
     getCurrentBackground() {
         const question = this.getCurrentQuestion();
-        if (!question) return questionsData.idleBackgrounds.greetingsStatic;
+        if (!question) return questionsData?.idleBackgrounds?.greetingsStatic;
 
-        // Prioritize dynamic background if available for the current answer
         if (question.dynamicBackground) {
-            const selectedFacultyOrGroup = this.lastSelectedAnswer; // Use lastSelectedAnswer
+            const selectedFacultyOrGroup = this.lastSelectedAnswer;
             if (selectedFacultyOrGroup && question.dynamicBackground[selectedFacultyOrGroup]) {
                 return question.dynamicBackground[selectedFacultyOrGroup];
             } else if (typeof question.dynamicBackground === 'string') {
@@ -162,11 +233,7 @@ class GameCore {
         if (question.staticBackground) {
             return question.staticBackground;
         }
-        return questionsData.idleBackgrounds.greetingsStatic;
-    }
-    getMostRecentAnswer() {
-        // This is no longer a placeholder, returns the last selected answer.
-        return this.lastSelectedAnswer;
+        return questionsData?.idleBackgrounds?.greetingsStatic;
     }
 
     getCurrentVariants() {
@@ -174,94 +241,10 @@ class GameCore {
         return question ? question.variants : {};
     }
 
-    answerQuestion(selectedKey) {
-        this.lastSelectedAnswer = selectedKey; // Store the last selected answer
-        if (this.currentStage === "root") {
-            this.updateGroupScores(selectedKey);
-            this.currentQuestionIndex++;
-            if (this.currentQuestionIndex >= questionsData.root.length) {
-                this.transitionToNextStage();
-            }
-        } else if (this.currentStage === "appended") {
-            this.updateGroupScores(selectedKey);
-            this.transitionToNextStage();
-        } else if (this.currentStage === "groups") {
-            this.updateFacultyScores(selectedKey);
-            this.activeGroupIndex++;
-            if (this.activeGroupIndex >= this.activeGroupQuestions.length) {
-                this.transitionToNextStage();
-            }
-        }
-    }
-
-    updateGroupScores(selectedKey) {
-        const groups = selectedKey.split('/');
-        groups.forEach(group => {
-            // Find the actual group key in facultyGroupScores that matches or contains the selected group
-            for (const key in this.facultyGroupScores) {
-                if (key.includes(group)) {
-                    this.facultyGroupScores[key]++;
-                    return;
-                }
-            }
-        });
-    }
-
-    updateFacultyScores(selectedFaculty) {
-        if (this.facultyScores.hasOwnProperty(selectedFaculty)) {
-            this.facultyScores[selectedFaculty]++;
-        }
-    }
-
-    transitionToNextStage() {
-        if (this.currentStage === "root") {
-            const maxScore = Math.max(...Object.values(this.facultyGroupScores));
-            const groupsWithMaxScore = Object.keys(this.facultyGroupScores).filter(
-                (key) => this.facultyGroupScores[key] === maxScore
-            );
-
-            if (groupsWithMaxScore.length > 1) {
-                this.currentStage = "appended";
-                this.tiedGroups = groupsWithMaxScore.flatMap(group => group.split('/'));
-                // Filter variants for appended question to only include tied groups
-                const appendedVariants = questionsData.appended_question.variants;
-                const filteredVariants = {};
-                for (const key in appendedVariants) {
-                    const facultiesInVariant = key.split('/');
-                    if (facultiesInVariant.some(faculty => this.tiedGroups.includes(faculty))) {
-                        filteredVariants[key] = appendedVariants[key];
-                    }
-                }
-                questionsData.appended_question.variants = filteredVariants;
-            } else {
-                this.currentStage = "groups";
-                this.activeGroupQuestions = questionsData.groups[groupsWithMaxScore[0]];
-                this.activeGroupIndex = 0;
-            }
-        } else if (this.currentStage === "appended") {
-            const maxScore = Math.max(...Object.values(this.facultyGroupScores));
-            const winningGroup = Object.keys(this.facultyGroupScores).filter(
-                (key) => this.facultyGroupScores[key] === maxScore
-            )[0]; // There should be only one winner after appended question
-            
-            this.currentStage = "groups";
-            this.activeGroupQuestions = questionsData.groups[winningGroup];
-            this.activeGroupIndex = 0;
-        } else if (this.currentStage === "groups") {
-            this.finalFaculty = this.calculateFinalFaculty();
-        }
-    }
-
-    calculateFinalFaculty() {
-        let maxScore = -1;
-        let finalFaculty = null;
-        for (const faculty in this.facultyScores) {
-            if (this.facultyScores[faculty] > maxScore) {
-                maxScore = this.facultyScores[faculty];
-                finalFaculty = faculty;
-            }
-        }
-        return finalFaculty;
+    // Упрощенный метод для работы с генератором
+    processAnswer(selectedKey) {
+        this.lastSelectedAnswer = selectedKey;
+        return this.getNextStage(selectedKey);
     }
 
     getFinalResult() {
@@ -277,25 +260,33 @@ class GameCore {
         this.activeGroupQuestions = [];
         this.activeGroupIndex = 0;
         this.finalFaculty = null;
-        this.lastSelectedAnswer = null; // Reset last selected answer
+        this.lastSelectedAnswer = null;
+        this.questionsGenerator = null;
+        this.isGeneratorComplete = false;
         this.initializeScores();
+
+        // Пересоздаем генератор если есть персонаж
+        if (this.character) {
+            this.questionsGenerator = this.generateQuestions();
+        }
     }
 
-    // Methods from GameManager
     async initGame() {
         await this.loadQuestions();
     }
 
     getCurrentQuestionData() {
+        // Этот метод теперь должен использовать getNextStage
+        // или возвращать текущее состояние для совместимости
         const question = this.getCurrentQuestion();
         const variants = this.getCurrentVariants();
         const background = this.getCurrentBackground();
         return { question, variants, background };
     }
-    
+
     get rootQuestionsLength() {
         if (!this.questionsData) return 0;
-        return questionsData.root.length;
+        return this.questionsData.root.length;
     }
 }
 
@@ -427,7 +418,8 @@ constructor(config) {
     this.greeting = config.greeting;
     this.facultyResponses = config.facultyResponses;
     this.finalLine = config.finalLine;
-    this.backgroundImage = config.backgroundImage
+    this.backgroundImage = config.backgroundImage;
+    this.offsetPercentage = config.offsetPercentage || 0.0;
 }
 
 /**
@@ -451,15 +443,16 @@ getMobileInfo() {
  */
 getFullInfo() {
     return {
-    id: this.id,
-    name: this.name,
-    class: this.class,
-    description: this.description,
-    image: this.image,
-    greeting: this.greeting,
-    facultyResponses: this.facultyResponses,
-    finalLine: this.finalLine,
-    backgroundImage: this.backgroundImage
+        id: this.id,
+        name: this.name,
+        class: this.class,
+        description: this.description,
+        image: this.image,
+        greeting: this.greeting,
+        facultyResponses: this.facultyResponses,
+        finalLine: this.finalLine,
+        backgroundImage: this.backgroundImage,
+        offsetPercentage: this.offsetPercentage
     };
 }
 
@@ -498,16 +491,17 @@ getBackgroundImage(){
  */
 toJSON() {
     return {
-    id: this.id,
-    name: this.name,
-    class: this.class,
-    description: this.description,
-    mobileDescription: this.mobileDescription,
-    image: this.image,
-    greeting: this.greeting,
-    facultyResponses: this.facultyResponses,
-    finalLine: this.finalLine,
-    backgroundImage: this.backgroundImage
+        id: this.id,
+        name: this.name,
+        class: this.class,
+        description: this.description,
+        mobileDescription: this.mobileDescription,
+        image: this.image,
+        greeting: this.greeting,
+        facultyResponses: this.facultyResponses,
+        finalLine: this.finalLine,
+        backgroundImage: this.backgroundImage,
+        offsetPercentage: this.offsetPercentage
     };
 }
 
@@ -542,6 +536,7 @@ static createDasha() {
     },
     finalLine: "По моим подсчетам, ты справился со всеми заданиями, а значит, заработал автомат по дисциплине “самоопределение”! Давай посмотрим, на какой факультет тебя привели твои способности.",
     backgroundImage: "/media/img/backgrounds/mainTest/7.png",
+    offsetPercentage: -0.01, // Индивидуальный отступ для Даши
     });
 }
 
@@ -562,6 +557,7 @@ static createMax() {
     },
     finalLine: "Вау-у, ты здорово потрудился! Думаю, поступив к нам, ты точно зажжешь на студвесне, а в составе какого факультета – давай узнаем!",
     backgroundImage: "/media/img/backgrounds/mainTest/2.png",
+    offsetPercentage: -0.01, // Индивидуальный отступ для Макса
     });
 }
 
@@ -582,6 +578,7 @@ static createVadim() {
     },
     finalLine: "Коллега, у вас отлично развиты когнитивные навыки! Давайте посмотрим какой из факультетов стал счастливчиком, обретя такого талантливого абитуриента!",
     backgroundImage: "/media/img/backgrounds/mainTest/5.png",
+    offsetPercentage: -0.06, // Индивидуальный отступ для Вадима
     });
 }
 
@@ -602,6 +599,7 @@ static createBarsik() {
     },
     finalLine: "Ты просто зааамурчательно прошел игру! Я был счастлив провести с тобой время, давай посмотрим, какой факультет подходит тебе больше всего!",
     backgroundImage: "/media/img/backgrounds/mainTest/1.png",
+    offsetPercentage: -0.01, // Индивидуальный отступ для Барсика
     });
 }
 
