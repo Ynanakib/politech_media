@@ -78,7 +78,7 @@ nav a.router-link-exact-active {
 
 /* Корректная высота на всех устройствах */
 .full-height {
-  height: 100vh;
+  height: var(--full-height);
   height: calc(var(--vh, 1vh) * 100);
   height: 100dvh; /* Динамическая высота для современных браузеров */
 }
@@ -114,7 +114,7 @@ nav a.router-link-exact-active {
 
 /* Стили при открытой клавиатуре */
 .keyboard-open .test-game {
-  height: 100vh; /* Фиксированная высота при открытой клавиатуре */
+  height: var(--full-height); /* Фиксированная высота при открытой клавиатуре */
 }
 
 .keyboard-open .user-field {

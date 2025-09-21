@@ -573,7 +573,7 @@ export default {
 <style scoped>
 .test-game {
   width: 100vw;
-  height: 100vh;
+  height: var(--full-height);
   height: 100dvh;
   overflow: hidden;
   position: relative;
@@ -639,7 +639,7 @@ export default {
   left: 0;
   right: 0;
   width: 100%;
-  min-height: calc(100vh - 100vw);
+  min-height: calc(1var(--full-height) - 100vw);
   height: fit-content;
   background: linear-gradient(to top,
   rgba(0, 2, 59, 0.98) 0%,
@@ -840,7 +840,7 @@ export default {
 @media (max-height: 500px) and (orientation: landscape) {
   .user-field {
     min-height: 50vh;
-    max-height: 100vh;
+    max-height: var(--full-height);
   }
 
   .answers-grid {

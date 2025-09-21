@@ -141,7 +141,7 @@ export default{
 .test-container{
     position: relative;
     width:100%; 
-    height: 100vh;
+    height: var(--full-height);
     overflow: hidden;
     background: #000;
 }
