@@ -192,27 +192,10 @@ export default {
     async initializeGame() {
       try {
         this.loading = true
+        const savedCharacter = LocalStorage.get('selectedCharacter')
         this.gameManager = new GameCore()
         await this.gameManager.initGame()
-        const savedProgress = LocalStorage.get('gameProgress')
-        const savedCharacter = LocalStorage.get('selectedCharacter')
-        if (savedProgress && savedCharacter) {
-          this.restoreProgressFromLocalStorage()
-          const characterData = JSON.parse(savedCharacter)
-          const character = CharacterFactory.getCharacterById(characterData.id)
-          if (character) {
-            this.gameManager.setCharacter(character.getFullInfo())
-          }
-          this.currentStageData = this.gameManager.getCurrentQuestionData()
-          if (!this.currentStageData || this.currentStageData.type === 'replica') {
-            this.currentStageData = {
-              type: 'character_replica',
-              character: character.getFullInfo(),
-              message: character.getGreeting(),
-              stage: 'greeting'
-            }
-          }
-        } else if (savedCharacter) {
+        if (savedCharacter) {
           const characterData = JSON.parse(savedCharacter)
           const character = CharacterFactory.getCharacterById(characterData.id)
           if (character) {
@@ -251,7 +234,6 @@ export default {
         }
       }
       this.currentStageData = data
-      // No need to set gameManager.currentData directly as GameCore manages its own state
       const savedCharacter = LocalStorage.get('selectedCharacter')
       if (savedCharacter && this.currentStageData) {
         const charData = JSON.parse(savedCharacter)
@@ -283,12 +265,11 @@ export default {
             }
           }
         } else {
-          // For a new game, get the first question which is a replica stage
-          const firstQuestion = this.gameManager.questions.next().value;
+          // Новый запуск: показываем приветствие персонажа
           this.currentStageData = {
             type: 'character_replica',
             character: character.getFullInfo(),
-            message: firstQuestion.text,
+            message: character.getGreeting(),
             stage: 'greeting'
           }
           LocalStorage.set('gameProgress', JSON.stringify({ currentQuestionIndex: 0 }));
@@ -341,8 +322,9 @@ export default {
           }
         } else {
           nextData.type = 'general_question'; // Or special_question if applicable
-          nextData.question = nextData.question;
-          nextData.answers = Object.entries(nextData.variants).map(([key, text]) => ({ key, text }));
+          const qText = typeof nextData.question === 'string' ? nextData.question : (nextData.question?.question || '');
+          nextData.question = qText;
+          nextData.answers = Object.entries(nextData.variants || {}).map(([key, text]) => ({ key, text }));
           nextData.staticBackground = nextData.background;
           nextData.dynamicBackground = this.gameManager.getCurrentQuestion()?.dynamicBackground; // Fetch dynamic backgrounds if available
         }
@@ -382,31 +364,18 @@ export default {
       try {
         await this.animateCharacterExit();
 
-        const nextStage = this.gameManager.questions.next();
-        if (!nextStage.done) {
-          const data = nextStage.value;
-          let processedData = {};
-
-          if (data.type === 'replica') {
-            processedData = {
-              type: 'character_replica',
-              character: this.gameManager.character,
-              message: data.text,
-              staticBackground: data.static,
-              dynamicBackground: data.dynamic
-            };
-          } else if (data.type === 'question') {
-            processedData = {
-              type: 'general_question',
-              question: data.question,
-              answers: Object.entries(data.variants).map(([key, text]) => ({ key, text })),
-              staticBackground: data.static,
-              dynamicBackground: data.dynamic
-            };
+        // После реплики показываем текущий вопрос из GameCore
+        const data = this.gameManager.getCurrentQuestionData();
+        if (data && data.question) {
+          this.currentStageData = {
+            type: 'general_question',
+            question: (typeof data.question === 'string') ? data.question : (data.question?.question || ''),
+            answers: Object.entries((data.variants) || {}).map(([key, text]) => ({ key, text })),
+            staticBackground: data.background,
+            dynamicBackground: this.gameManager.getCurrentQuestion()?.dynamicBackground
           }
-          this.currentStageData = processedData;
         } else {
-          // Game completed
+          // Игра завершена
           const finalFaculty = this.gameManager.getFinalResult();
           const character = this.gameManager.character;
           if (character && finalFaculty) {

@@ -3,19 +3,12 @@ import CryptoJS from "crypto-js";
 let questionsData = null;
 
 class GameCore {
-    constructor() {
-        this.currentQuestionIndex = 0;
+    constructor(currentCharacter) {
+        this.character = currentCharacter;
         this.facultyGroupScores = {};
         this.facultyScores = {};
-        this.currentStage = "root"; // "root", "appended", "groups"
-        this.tiedGroups = [];
-        this.activeGroupQuestions = [];
-        this.activeGroupIndex = 0;
         this.finalFaculty = null;
-        this.lastSelectedAnswer = null; // Initialize lastSelectedAnswer
-        this.loadQuestions();
-        this.questions = this.generateQuestions();
-        this.character = null;
+        this.lastSelectedAnswer = null;
     }
 
     setCharacter(character) {
@@ -25,17 +18,17 @@ class GameCore {
     *generateQuestions(){
         yield {
             type: "replica",
-            text: this.character.greetings,
-            static: this.questionsData.idleBackgrounds.greetingsStatic,
+            text: "greeting",
+            static: questionsData.idleBackgrounds.greetingsStatic,
             dynamic: {
-                "akf/mtf": this.questionsData.idleBackgrounds.greetingsStatic,
-                "sf/idst": this.questionsData.idleBackgrounds.greetingsStatic,
-                "fpmm/etf/gumf":this.questionsData.idleBackgrounds.greetingsStatic,
-                "htf/gnf": this.questionsData.idleBackgrounds.greetingsStatic
+                "akf/mtf": questionsData.idleBackgrounds.greetingsDynamic,
+                "sf/idst": questionsData.idleBackgrounds.greetingsDynamic,
+                "fpmm/etf/gumf":questionsData.idleBackgrounds.greetingsDynamic,
+                "htf/gnf": questionsData.idleBackgrounds.greetingsDynamic
             }
         }
         
-        for(el in this.questionsData.root){
+        for(el in questionsData.root){
             let answer = yield {
                 type: "question",
                 question: el.question,
@@ -60,14 +53,14 @@ class GameCore {
         }
         if(iterator>1){
             let vars = {}
-            vars[names[0]] = this.questionsData.appended_question.variants[names[0]]
-            vars[names[1]] = this.questionsData.appended_question.variants[names[1]]
+            vars[names[0]] = questionsData.appended_question.variants[names[0]]
+            vars[names[1]] = questionsData.appended_question.variants[names[1]]
             let answer = yield {
                 type: "question",
-                question: this.questionsData.appended_question.question,
+                question: questionsData.appended_question.question,
                 variants: vars,
-                static: this.questionsData.appended_question.staticBackground,
-                dynamic: this.questionsData.appended_question.dynamicBackground
+                static: questionsData.appended_question.staticBackground,
+                dynamic: questionsData.appended_question.dynamicBackground
             }
             this.facultyGroupScores[answer] += 1
         }
@@ -78,12 +71,12 @@ class GameCore {
 
         yield {
             type: "replica",
-            text: this.character.replica,
-            static: this.questionsData.idleBackgrounds[this.character.name],
-            dynamic: this.questionsData.idleBackgrounds[this.character.name]
+            text: ["facultyResponses", max],
+            static: questionsData.idleBackgrounds[this.character.name],
+            dynamic: questionsData.idleBackgrounds[this.character.name]
         }
         
-        for(el in this.questionsData.groups[max]){
+        for(el in questionsData.groups[max]){
             let answer = yield {
                 type: "question",
                 question: el.question,
@@ -104,15 +97,18 @@ class GameCore {
     }
 
     async loadQuestions() {
+        this.loading = true
         if (!questionsData) {
             try {
-                const response = await fetch('./media/questions.json');
+                const response = await fetch('/media/questions.json');
                 questionsData = await response.json();
-                this.initializeScores();
+                console.log(questionsData)
+                this.initializeScores()
             } catch (error) {
                 console.error("Error loading questions.json:", error);
             }
         }
+        this.loading = false
     }
 
     get questionsData() {
@@ -299,7 +295,7 @@ class GameCore {
     
     get rootQuestionsLength() {
         if (!this.questionsData) return 0;
-        return this.questionsData.root.length;
+        return questionsData.root.length;
     }
 }
 

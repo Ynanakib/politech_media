@@ -174,7 +174,7 @@
                 "staticBackground":"./media/img/backgrounds/facultatesTest/sf_idst.png"
             }
         ],
-        "fpmm/etf/gumf":[
+        "htf/gnf":[
             {
                 "question":"Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома?",
                 "variants":{
@@ -200,7 +200,7 @@
                 "staticBackground":"./media/img/backgrounds/facultatesTest/gnf_htf.png"
             }
         ],
-        "htf/gnf":[
+        "fpmm/etf/gumf":[
             {
                 "question":"Чему посвятишь своё свободное время, когда плохая погода и не хочется выходить из дома? ",
                 "variants":{
