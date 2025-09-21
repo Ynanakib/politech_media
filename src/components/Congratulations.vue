@@ -53,12 +53,11 @@ export default {
   mounted(){
     fetch(process.env.VUE_APP_BASE_URL + "/api/v1/media/videos")
     .then(el => {
-      console.log(el)
       return el;
     })
     .then( result => result.json())
     .then( ( array = [] ) => {
-        let res = this.gameResult.branch
+        let res = JSON.parse(Script.LocalStorage.get("gameResult")).finalFaculty
         for (let i = 0; i < array.length; i++) {
             const el = array[i];
             if(el.title == res) return el
