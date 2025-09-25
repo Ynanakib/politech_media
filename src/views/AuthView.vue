@@ -130,8 +130,8 @@ export default {
     }
   },
   mounted(){
-    fetch("/media/cities.json").then(req => req.json()).then(req => this.cities = req)
-    fetch("/media/schools.json").then(req => req.json()).then(req => this.schools = req)
+    fetch("/data/cities.json").then(req => req.json()).then(req => this.cities = req)
+    fetch("/data/schools.json").then(req => req.json()).then(req => this.schools = req)
     // Only initialize VK ID if the app ID is available
     if (process.env.VUE_APP_VKAPP_ID) {
       VKID.Config.init({
@@ -157,7 +157,7 @@ export default {
       this.schoolInput = this.registraton.school
     }
 
-    fetch('/media/useragreement.htm')
+    fetch('/data/useragreement.htm')
       .then(res => res.text())
       .then(html => { this.agreementHtml = html; })
   },

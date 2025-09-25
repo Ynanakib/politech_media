@@ -123,7 +123,7 @@ export default {
       userFieldHeight: 0,
       lastValidBackground: null,
       fallbackCharacter: {
-        image: './media/img/characters/empty.png',
+        image: './data/img/characters/empty.png',
         name: '',
         backgroundImage: '',
         offsetPercentage: -0.075
@@ -137,7 +137,7 @@ export default {
     currentBackground() {
       // Сохраняем предыдущий фон, чтобы избежать мерцания
       if (!this.currentStageData) {
-        return this.lastValidBackground || './media/img/backgrounds/main.png';
+        return this.lastValidBackground || './data/img/backgrounds/main.png';
       }
 
       let background = null;
@@ -167,7 +167,7 @@ export default {
       }
 
       // Возвращаем последний валидный фон или дефолтный
-      return this.lastValidBackground || './media/img/backgrounds/main.png';
+      return this.lastValidBackground || './data/img/backgrounds/main.png';
     },
 
     characterImage() {
@@ -639,15 +639,14 @@ export default {
   left: 0;
   right: 0;
   width: 100%;
-  min-height: calc(1var(--full-height) - 100vw);
-  height: fit-content;
+  min-height: calc(var(--full-height) - 110vw);
   background: linear-gradient(to top,
   rgba(0, 2, 59, 0.98) 0%,
   rgba(0, 2, 59, 0.95) 70%,
   rgba(0, 2, 59, 0.85) 100%);
   backdrop-filter: blur(10px);
   z-index: 15;
-  padding: clamp(15px, 3vh, 30px);
+  padding: 10px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -693,7 +692,6 @@ export default {
 .question-text {
   color: #fff;
   font-size: clamp(1rem, 3.2vw, 1.3rem);
-  margin-bottom: clamp(15px, 2.5vh, 25px);
   padding: 0 10px;
   line-height: 1.4;
 }
@@ -701,18 +699,18 @@ export default {
 .answers-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: clamp(8px, 1.5vh, 15px);
-  padding: 0 clamp(10px, 2vw, 20px);
-  margin-bottom: clamp(10px, 2vh, 20px);
+  gap: 5px;
+  padding: 5px;
 }
 
 .answer-btn {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
-  padding: clamp(8px, 1.8vh, 20px) clamp(10px, 2.2vw, 25px);
+  padding: 2px 5px;
   border-radius: clamp(15px, 3vw, 25px);
-  font-size: clamp(0.9rem, 3.2vw, 1.1rem);
+  font-size: 14px;
+  height: 28px;
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
@@ -720,11 +718,10 @@ export default {
   box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1.3;
+  height: 35px;
 }
 
 .answer-btn:active {

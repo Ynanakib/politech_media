@@ -145,10 +145,6 @@ nav a.router-link-exact-active {
   .test-game .user-field {
     min-height: 35vh;
   }
-
-  .answer-btn {
-    min-height: 44px; /* Минимальный размер для iOS */
-  }
 }
 
 /* iPhone 12/13/14, стандартные Android (376-430px) */
@@ -354,11 +350,6 @@ nav a.router-link-exact-active {
 @media (min-width: 768px) and (max-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
   .test-game {
     font-size: 18px;
-  }
-
-  .answer-btn {
-    min-height: 60px;
-    font-size: 1.1rem;
   }
 }
 

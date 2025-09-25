@@ -21,10 +21,10 @@
 
 [GET]
 
-+	/api/v1/media/questions
++	/api/v1/data/questions
 		request  => { null }
 		response => { file }
-+	/api/v1/media/videos
++	/api/v1/data/videos
 		request  => { null }
 		response => { file }
 
