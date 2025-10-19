@@ -10,7 +10,8 @@
     </div>
     <div class="block" v-if="['auth', 'fill1','fill2'].includes(currentStep)">
       <div class="logo">
-        <img src="@/assets/img/pnipu_logo.png" />
+        <img class="priority" src="@/assets/img/priority_logo.png" />
+        <img class="politeh" src="@/assets/img/pnipu_logo.png" />
       </div>
       <div class="auth" v-if="currentStep === 'auth'">
         <p class="text">Войдите через VK ID</p>
@@ -56,7 +57,7 @@
           <option value="9">9</option>
           <option value="10">10</option>
           <option value="11">11</option>
-          <option value="12">Я после колледжа/техникума</option>
+          <option value="12">Учусь/окончил(а) колледж/техникум</option>
         </select>
 
         <div class="agreement-check">
@@ -88,7 +89,7 @@ export default {
         email : "",
         city : "",
         school : "",
-        grade : "11"
+        grade : ""
       },
       phoneInput: '',
       emailError: false,
@@ -474,12 +475,17 @@ main {
 }
 .logo {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
 }
-.logo img {
-  max-width: 170px;
+.logo img.politeh {
+  max-width: 44%;
   filter: invert();
+}
+.logo img.priority {
+  max-width: 44%;
+  height: 70%;
 }
 .auth p.text {
   margin: 30px 0;
