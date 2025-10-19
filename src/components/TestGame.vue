@@ -79,11 +79,6 @@
         <div class="loading-spinner"></div>
         <p class="loading-text">Загрузка...</p>
       </div>
-
-      <!-- Debug информация (удалить в продакшене) -->
-      <div v-else class="debug-info" style="color: white; padding: 20px;">
-        <p>Debug: currentStageData = {{ JSON.stringify(currentStageData, null, 2) }}</p>
-      </div>
     </div>
 
     <!-- Персонаж -->
@@ -191,18 +186,18 @@ export default {
     },
 
     characterStyles() {
+      const offsetPercentage = this.currentCharacter?.offsetPercentage || -0.075;
+      const viewportHeight = window.innerHeight;
+      const dynamicBottom = (viewportHeight * offsetPercentage);
+
       const baseStyles = {
         height: `${this.backgroundWidth * 0.9}px`,
         width: `${(this.backgroundWidth * 0.9) / 1.5}px`,
+        top: `${window.screen.width - this.backgroundWidth * 0.9 - dynamicBottom}px`,
         opacity: this.characterVisible ? 1 : 0,
         pointerEvents: 'none',
         transition: 'all 0.5s ease-in-out'
       };
-
-      const offsetPercentage = this.currentCharacter?.offsetPercentage || -0.075;
-      const viewportHeight = window.innerHeight;
-      const userFieldHeight = this.userFieldHeight || (viewportHeight * 0.35);
-      const dynamicBottom = userFieldHeight + (viewportHeight * offsetPercentage);
 
       switch(this.characterPosition) {
         case 'left':
@@ -573,13 +568,11 @@ export default {
 <style scoped>
 .test-game {
   width: 100vw;
-  height: var(--full-height);
-  height: 100dvh;
-  overflow: hidden;
+  height: 100vh;
   position: relative;
   background-color: #00023b;
-  display: flex;
-  flex-direction: column;
+  /* display: flex; */
+  /* flex-direction: column; */
   -webkit-overflow-scrolling: touch;
   user-select: none;
 }
@@ -635,11 +628,11 @@ export default {
 
 .user-field {
   position: absolute;
-  bottom: 0;
   left: 0;
   right: 0;
+  top: 100vw;
   width: 100%;
-  min-height: calc(var(--full-height) - 110vw);
+  min-height: calc(var(--full-height) - 100vw);
   background: linear-gradient(to top,
   rgba(0, 2, 59, 0.98) 0%,
   rgba(0, 2, 59, 0.95) 70%,
@@ -647,11 +640,9 @@ export default {
   backdrop-filter: blur(10px);
   z-index: 15;
   padding: 10px;
-  display: flex;
   flex-direction: column;
   justify-content: center;
   border-top: 2px solid rgba(0, 255, 255, 0.3);
-  overflow-y: auto;
 }
 
 .character-replica,
@@ -790,7 +781,6 @@ export default {
   background: rgba(255, 0, 0, 0.2);
   border-radius: 8px;
   max-height: 200px;
-  overflow-y: auto;
 }
 
 /* Анимации */
