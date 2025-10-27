@@ -9,17 +9,18 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@canvasjs/charts": "^3.14.5",
     "@vkid/sdk": "^2.0.0",
     "core-js": "^3.8.3",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.5.0",
+    "normalize.css": "^8.0.1",
     "pidcrypt": "^0.0.33",
     "regenerator-runtime": "^0.14.1",
+    "viewport-units-buggyfill": "^0.6.2",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
-    "vuex": "^4.0.0",
-    "normalize.css": "^8.0.1",
-    "viewport-units-buggyfill": "^0.6.2"
+    "vuex": "^4.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

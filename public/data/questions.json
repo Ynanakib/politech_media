@@ -1,7 +1,7 @@
 {
     "idleBackgrounds":{
         "greetingsStatic": "./data/img/backgrounds/main.png",
-        "greetingsDynamic": "./data/vids/main/dynamic_web.mp4",
+        "greetingsDynamic": "./data/vids/main/dynamic.mp4",
         "dasha": "./data/vids/main/dasha.png",
         "max": "./data/vids/main/max.png",
         "cat": "./data/vids/main/cat.png",
@@ -18,10 +18,10 @@
             },
             "staticBackground":"./data/img/backgrounds/mainTest/1.png",
             "dynamicBackground":{
-                "akf/mtf":"./data/vids/1/result_web.mp4",
-                "sf/idst":"./data/vids/1/result_web.mp4",
-                "fpmm/etf/gumf":"./data/vids/1/result_web.mp4",
-                "htf/gnf":"./data/vids/1/result_web.mp4"
+                "akf/mtf":"./data/vids/1/result.mp4",
+                "sf/idst":"./data/vids/1/result.mp4",
+                "fpmm/etf/gumf":"./data/vids/1/result.mp4",
+                "htf/gnf":"./data/vids/1/result.mp4"
             }
         },
         {
@@ -34,10 +34,10 @@
             },
             "staticBackground":"./data/vids/2/aktoviy.png",
             "dynamicBackground":{
-                "akf/mtf":"./data/vids/2/2_web.mp4",
-                "sf/idst":"./data/vids/2/3_web.mp4",
-                "fpmm/etf/gumf":"./data/vids/2/1_web.mp4",
-                "htf/gnf":"./data/vids/2/4_web.mp4"
+                "akf/mtf":"./data/vids/2/2.mp4",
+                "sf/idst":"./data/vids/2/3.mp4",
+                "fpmm/etf/gumf":"./data/vids/2/1.mp4",
+                "htf/gnf":"./data/vids/2/4.mp4"
             }
         },
         {
@@ -50,10 +50,10 @@
             },
             "staticBackground":"./data/img/backgrounds/mainTest/3.png",
             "dynamicBackground":{
-                "akf/mtf":"./data/vids/3/akf_mtf_web.mp4",
-                "sf/idst":"./data/vids/3/sf_idst_web.mp4",
-                "fpmm/etf/gumf":"./data/vids/3/gum_etf_fpmm_web.mp4",
-                "htf/gnf":"./data/vids/3/htf_gnf_web.mp4"
+                "akf/mtf":"./data/vids/3/akf_mtf.mp4",
+                "sf/idst":"./data/vids/3/sf_idst.mp4",
+                "fpmm/etf/gumf":"./data/vids/3/gum_etf_fpmm.mp4",
+                "htf/gnf":"./data/vids/3/htf_gnf.mp4"
             }
         },
         {
@@ -64,7 +64,7 @@
                 "fpmm/etf/gumf":"супер-скрипт",
                 "htf/gnf":"супер-энергия"
             },
-            "staticBackground":"./data/vids/4/laba_destroying_web.mp4",
+            "staticBackground":"./data/vids/4/laba_destroying.mp4",
             "dynamicBackground":{}
         },
         {
@@ -77,10 +77,10 @@
             },
             "staticBackground":"./data/img/backgrounds/mainTest/5.png",
             "dynamicBackground":{
-                "akf/mtf":"./data/vids/5/5_rocket_web.mp4",
-                "sf/idst":"./data/vids/5/5_stroitel_web.mp4",
-                "fpmm/etf/gumf":"./data/vids/5/5_robots_peoples_web.mp4",
-                "htf/gnf":"./data/vids/5/5_zavod_web.mp4"
+                "akf/mtf":"./data/vids/5/rocket.mp4",
+                "sf/idst":"./data/vids/5/stroitel.mp4",
+                "fpmm/etf/gumf":"./data/vids/5/robots_peoples.mp4",
+                "htf/gnf":"./data/vids/5/zavod.mp4"
             }
         },
         {
@@ -93,10 +93,10 @@
             },
             "staticBackground":"./data/img/backgrounds/mainTest/6.png",
             "dynamicBackground":{
-                "akf/mtf":"./data/vids/6/6_akf_mtf_web.mp4",
-                "sf/idst":"./data/vids/6/6_sf_idst_web.mp4",
-                "fpmm/etf/gumf":"./data/vids/6/6_fpmm_etf_gumf_web.mp4",
-                "htf/gnf":"./data/vids/6/6_htf_gnf_web.mp4"
+                "akf/mtf":"./data/vids/6/akf_mtf.mp4",
+                "sf/idst":"./data/vids/6/sf_idst.mp4",
+                "fpmm/etf/gumf":"./data/vids/6/fpmm_etf_gumf.mp4",
+                "htf/gnf":"./data/vids/6/htf_gnf.mp4"
             }
         }
     ],
@@ -110,10 +110,10 @@
         },
         "staticBackground":"./data/img/backgrounds/mainTest/7.png",
         "dynamicBackground":{
-            "akf/mtf":"./data/vids/7/static_web.mp4",
-            "sf/idst":"./data/vids/7/static_web.mp4",
-            "fpmm/etf/gumf":"./data/vids/7/static_web.mp4",
-            "htf/gnf":"./data/vids/7/static_web.mp4"
+            "akf/mtf":"./data/vids/7/static.mp4",
+            "sf/idst":"./data/vids/7/static.mp4",
+            "fpmm/etf/gumf":"./data/vids/7/static.mp4",
+            "htf/gnf":"./data/vids/7/static.mp4"
         }
     },
     "groups":{
@@ -126,8 +126,8 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/mtf_akf.png",
                 "dynamicBackground":{
-                    "akf":"./data/vids/facultatesTest/akf_mtf_web.mp4",
-                    "mtf":"./data/vids/facultatesTest/akf_mtf_web.mp4"
+                    "akf":"./data/vids/facultatesTest/akf_mtf.mp4",
+                    "mtf":"./data/vids/facultatesTest/akf_mtf.mp4"
                 }
             },
             {
@@ -138,8 +138,8 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/mtf_akf.png",
                 "dynamicBackground":{
-                    "akf":"./data/vids/facultatesTest/akf_mtf_web.mp4",
-                    "mtf":"./data/vids/facultatesTest/akf_mtf_web.mp4"
+                    "akf":"./data/vids/facultatesTest/akf_mtf.mp4",
+                    "mtf":"./data/vids/facultatesTest/akf_mtf.mp4"
                 }
             },
             {
@@ -150,8 +150,8 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/mtf_akf.png",
                 "dynamicBackground":{
-                    "akf":"./data/vids/facultatesTest/akf_mtf_web.mp4",
-                    "mtf":"./data/vids/facultatesTest/akf_mtf_web.mp4"
+                    "akf":"./data/vids/facultatesTest/akf_mtf.mp4",
+                    "mtf":"./data/vids/facultatesTest/akf_mtf.mp4"
                 }
             }
         ],
@@ -164,8 +164,8 @@
                 },
                 "staticBackground": "./data/img/backgrounds/facultatesTest/sf_idst.png",
                 "dynamicBackground": {
-                    "sf": "./data/vids/facultatesTest/sf_idst_web.mp4",
-                    "idst": "./data/vids/facultatesTest/sf_idst_web.mp4"
+                    "sf": "./data/vids/facultatesTest/sf_idst.mp4",
+                    "idst": "./data/vids/facultatesTest/sf_idst.mp4"
                 }
             },
             {
@@ -176,8 +176,8 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/sf_idst.png",
                 "dynamicBackground": {
-                    "sf": "./data/vids/facultatesTest/sf_idst_web.mp4",
-                    "idst": "./data/vids/facultatesTest/sf_idst_web.mp4"
+                    "sf": "./data/vids/facultatesTest/sf_idst.mp4",
+                    "idst": "./data/vids/facultatesTest/sf_idst.mp4"
                 }
             },
             {
@@ -188,8 +188,8 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/sf_idst.png",
                 "dynamicBackground": {
-                    "sf": "./data/vids/facultatesTest/sf_idst_web.mp4",
-                    "idst": "./data/vids/facultatesTest/sf_idst_web.mp4"
+                    "sf": "./data/vids/facultatesTest/sf_idst.mp4",
+                    "idst": "./data/vids/facultatesTest/sf_idst.mp4"
                 }
             }
         ],
@@ -202,8 +202,8 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/gnf_htf.png",
                 "dynamicBackground":{
-                    "htf":"./data/vids/facultatesTest/gnf_htf_web.mp4",
-                    "gnf":"./data/vids/facultatesTest/gnf_htf_web.mp4"
+                    "htf":"./data/vids/facultatesTest/gnf_htf.mp4",
+                    "gnf":"./data/vids/facultatesTest/gnf_htf.mp4"
                 }
             },
             {
@@ -214,8 +214,8 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/gnf_htf.png",
                 "dynamicBackground":{
-                    "htf":"./data/vids/facultatesTest/gnf_htf_web.mp4",
-                    "gnf":"./data/vids/facultatesTest/gnf_htf_web.mp4"
+                    "htf":"./data/vids/facultatesTest/gnf_htf.mp4",
+                    "gnf":"./data/vids/facultatesTest/gnf_htf.mp4"
                 }
             },
             {
@@ -226,8 +226,8 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/gnf_htf.png",
                 "dynamicBackground":{
-                    "htf":"./data/vids/facultatesTest/gnf_htf_web.mp4",
-                    "gnf":"./data/vids/facultatesTest/gnf_htf_web.mp4"
+                    "htf":"./data/vids/facultatesTest/gnf_htf.mp4",
+                    "gnf":"./data/vids/facultatesTest/gnf_htf.mp4"
                 }
             }
         ],
@@ -241,9 +241,9 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/fpmm_gumf_etf.png",
                 "dynamicBackground": {
-                    "fpmm": "./data/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
-                    "etf": "./data/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
-                    "gumf": "./data/vids/facultatesTest/fpmm_gumf_etf_web.mp4"
+                    "fpmm": "./data/vids/facultatesTest/fpmm_gumf_etf.mp4",
+                    "etf": "./data/vids/facultatesTest/fpmm_gumf_etf.mp4",
+                    "gumf": "./data/vids/facultatesTest/fpmm_gumf_etf.mp4"
                 }
             },
             {
@@ -255,9 +255,9 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/fpmm_gumf_etf.png",
                 "dynamicBackground": {
-                    "fpmm": "./data/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
-                    "etf": "./data/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
-                    "gumf": "./data/vids/facultatesTest/fpmm_gumf_etf_web.mp4"
+                    "fpmm": "./data/vids/facultatesTest/fpmm_gumf_etf.mp4",
+                    "etf": "./data/vids/facultatesTest/fpmm_gumf_etf.mp4",
+                    "gumf": "./data/vids/facultatesTest/fpmm_gumf_etf.mp4"
                 }
             },
             {
@@ -269,9 +269,9 @@
                 },
                 "staticBackground":"./data/img/backgrounds/facultatesTest/fpmm_gumf_etf.png",
                 "dynamicBackground": {
-                    "fpmm": "./data/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
-                    "etf": "./data/vids/facultatesTest/fpmm_gumf_etf_web.mp4",
-                    "gumf": "./data/vids/facultatesTest/fpmm_gumf_etf_web.mp4"
+                    "fpmm": "./data/vids/facultatesTest/fpmm_gumf_etf.mp4",
+                    "etf": "./data/vids/facultatesTest/fpmm_gumf_etf.mp4",
+                    "gumf": "./data/vids/facultatesTest/fpmm_gumf_etf.mp4"
                 }
             }
         ]

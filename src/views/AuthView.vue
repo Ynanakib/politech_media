@@ -10,8 +10,8 @@
     </div>
     <div class="block" v-if="['auth', 'fill1','fill2'].includes(currentStep)">
       <div class="logo">
-        <img class="priority" src="@/assets/img/priority_logo.png" />
         <img class="politeh" src="@/assets/img/pnipu_logo.png" />
+        <img class="priority" src="@/assets/img/priority_logo.png" />
       </div>
       <div class="auth" v-if="currentStep === 'auth'">
         <p class="text">Войдите через VK ID</p>
@@ -57,7 +57,7 @@
           <option value="9">9</option>
           <option value="10">10</option>
           <option value="11">11</option>
-          <option value="12">Учусь/окончил(а) колледж/техникум</option>
+          <option value="12">колледж/техникум</option>
         </select>
 
         <div class="agreement-check">
@@ -239,7 +239,7 @@ export default {
         return
       }
       
-      const re = /^[A-ZА-ЯЁ \-a-zа-яё]+$/u
+      const re = /^[A-ZА-ЯЁa-zа-яё \-]+$/u
       this.nameError[field] = !re.test(value)
     },
     onPhoneInput(e) {
@@ -476,7 +476,6 @@ main {
 .logo {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-bottom: 24px;
 }
 .logo img.politeh {
@@ -484,8 +483,9 @@ main {
   filter: invert();
 }
 .logo img.priority {
-  max-width: 44%;
-  height: 70%;
+  padding-top: 1%;
+  max-width: 36%;
+  height: 62%;
 }
 .auth p.text {
   margin: 30px 0;

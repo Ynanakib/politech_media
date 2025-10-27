@@ -62,6 +62,14 @@ const routes = [
     meta:{
       title: "DEBUG"
     }
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/AdminView.vue'),
+    meta: {
+      title: 'Admin Panel'
+    }
   }
 ]
 

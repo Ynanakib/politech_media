@@ -1,0 +1,44 @@
+# get /api/v2/debug?={{token}} //delete user from database
+# post /api/v2/db-date
+{
+  "date_start": "02-10-2025", //optional
+  "date_end":  "05-10-2025" //optional, but if date_start setted
+}
+#post /api/v2/admins/add
+{
+    "token": "{{token}}",
+    "vk_id": "{{another_user_id}}"
+}
+# post api/v2/is-admin
+{
+  "token": "{{token}}"
+}
+#post api/v2/analytics/top-schools
+{
+  "token": "{{token}}",
+  "limit": 10,
+  "date_start": "02-10-2025", //optional
+  "date_end":  "05-10-2025" //optional, but if date_start setted
+}
+#post /api/v2/analytics/top-cities
+{
+  "token": "{{token}}",
+  "limit": 10,
+  "date_start": "02-10-2025", //optional
+  "date_end":  "05-10-2025" //optional, but if date_start setted
+}
+#post /api/v2/analytics/top-classes
+{
+  "token": "{{token}}",
+  "limit": 10,
+  "date_start": "02-10-2025", //optional
+  "date_end":  "05-10-2025" //optional, but if date_start setted
+}
+#post /api/v2/analytics/top-faculties
+{
+  "token": "{{token}}",
+  "limit": 10,
+  "date_start": "02-10-2025", //optional
+  "date_end":  "05-10-2025" //optional, but if date_start setted
+}
+#get /api/v2/export/excel?token={{token}}
