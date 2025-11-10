@@ -5,6 +5,7 @@ import VkCallbackView from '@/views/VkCallbackView.vue'
 import LogoutView from '@/views/LogoutView.vue'
 import DebugView from '@/views/DebugView.vue'
 import AuthParsingView from '@/views/AuthParsingView.vue'
+import * as Script from '@/assets/Script.js'
 
 const routes = [
   {
@@ -79,7 +80,30 @@ const router = createRouter({
 })
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title; // Set title, or a default if not defined
-  next(); // Continue with navigation
+  if(to.path === "/testing" || to.path === "/admin"){
+    if (
+      // process.env.VUE_APP_VKAPP_ID && (
+        Script.LocalStorage.get("token") == undefined || 
+        Script.LocalStorage.get("token") == null || 
+        Script.LocalStorage.get("vk_tokens") == null || 
+        Script.LocalStorage.get("vk_tokens") == undefined
+      // )
+    ) {
+      next("/")
+    }else{
+      if(to.path == '/admin'){
+        if(JSON.parse(Script.LocalStorage.get('vk_tokens')).is_admin){
+          next();
+        }else{
+          next(from.path);
+        }
+      }else{
+        next();// Continue with navigation
+      }
+    }
+  }else{
+    next();
+  }
 });
 
 export default router

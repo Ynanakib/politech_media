@@ -104,26 +104,49 @@ export class MobileOptimization {
     }
 
     optimizeScrolling() {
-        // Предотвращение "резинового" скролла на iOS
-        if (this.isIOS) {
-            document.addEventListener('touchmove', (e) => {
-                const target = e.target;
-                const scrollable = target.closest('.scrollable') ||
-                    target.closest('.characters-grid') ||
-                    target.closest('.user-field');
-
-                if (!scrollable) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-        }
-
         // Momentum scrolling для scrollable элементов
         const scrollableElements = document.querySelectorAll('.scrollable, .characters-grid, .user-field');
         scrollableElements.forEach(el => {
             el.style.webkitOverflowScrolling = 'touch';
             el.style.overflowScrolling = 'touch';
         });
+
+        // Исправление для iOS Safari - делаем body и основные контейнеры прокручиваемыми
+        if (this.isIOS) {
+            // Разрешаем прокрутку для основных элементов
+            document.body.style.overflow = 'auto';
+            document.body.style.webkitOverflowScrolling = 'touch';
+            
+            // Добавляем обработчик для предотвращения резинового эффекта только в крайних позициях
+            let lastY = 0;
+            document.addEventListener('touchmove', (e) => {
+                const currentY = e.touches[0].clientY;
+                const target = e.target;
+                
+                // Проверяем, находится ли элемент в прокручиваемом контейнере
+                const isInScrollableContainer = target.closest('.agreement-full-scroll') ||
+                    target.closest('.scrollable') ||
+                    target.closest('.characters-grid') ||
+                    target.closest('.user-field');
+                
+                // Если элемент в прокручиваемом контейнере, разрешаем прокрутку
+                if (isInScrollableContainer) {
+                    return;
+                }
+                
+                // Разрешаем вертикальную прокрутку для body
+                const deltaY = currentY - lastY;
+                const scrollable = document.scrollingElement || document.documentElement || document.body;
+                
+                // Предотвращаем только горизонтальную прокрутку и резиновый эффект
+                if (Math.abs(deltaY) > 0) {
+                    // Разрешаем вертикальную прокрутку
+                    return;
+                }
+                
+                lastY = currentY;
+            }, { passive: true });
+        }
     }
 
     handleSwipeGestures() {
@@ -255,14 +278,18 @@ export class MobileOptimization {
     preventUnwantedBehaviors() {
         if (!this.isMobile) return;
 
-        // Предотвращение двойного тапа для зума
+        // Предотвращение double-tap zoom только для кнопок и интерактивных элементов
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => {
-            const now = Date.now();
-            if (now - lastTouchEnd <= 300) {
-                e.preventDefault();
+            const target = e.target;
+            // Предотвращаем двойной тап только для кнопок, а не для всех элементов
+            if (target.tagName === 'BUTTON' || target.classList.contains('clickable') || target.closest('button')) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 300) {
+                    e.preventDefault();
+                }
+                lastTouchEnd = now;
             }
-            lastTouchEnd = now;
         }, { passive: false });
 
         // Предотвращение pinch-to-zoom

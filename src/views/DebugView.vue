@@ -19,6 +19,9 @@ export default {
       value: ""
     }
   },
+  mounted(){
+    console.log(Script.LocalStorage.get('vk_tokens'))
+  },
   methods:{
     delete(){
       Script.LocalStorage.clear()

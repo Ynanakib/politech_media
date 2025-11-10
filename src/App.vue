@@ -20,6 +20,12 @@ body{
   --font-middle-size: 18px;
   --font-big-size: 20px;
   --font-large-size: 24px;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+html {
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 #app.is-safari{
   --full-height: -webkit-fill-available;
@@ -35,12 +41,14 @@ body{
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
-  height: var(--full-height);
-  overflow: hidden;
+  min-height: var(--full-height);
+  height: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #000;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 * {

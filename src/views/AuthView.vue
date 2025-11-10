@@ -326,8 +326,6 @@ export default {
         return
       }
       const vk_id = Number(JSON.parse(vkTokens).vk_id)
-      const payload = { ...this.registraton, grade: Number(this.registraton.grade) }
-      Script.LocalStorage.set("user_data", JSON.stringify(payload))
       fetch(process.env.VUE_APP_BASE_URL + "/api/v1/register", {
         method: 'POST',
         headers: {
@@ -335,7 +333,7 @@ export default {
           'Connection': 'keep-alive'
         },
         body: JSON.stringify({
-          vk_id: JSON.parse(Script.LocalStorage.get("vk_tokens")).vk_id,
+          vk_id: vk_id,
           payload: this.registraton
         })
       })

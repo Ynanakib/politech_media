@@ -38,8 +38,6 @@ onMounted(async () => {
                 vk_id: user_id
             }
 
-            Script.LocalStorage.set("vk_tokens", JSON.stringify(tokens))
-
             const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/auth', {
                 method: 'POST',
                 headers: {
@@ -62,7 +60,25 @@ onMounted(async () => {
                         token: _token
                     })    
                 })
+
                 Script.LocalStorage.set("token", result.token);
+
+                const is_admin = await fetch(process.env.VUE_APP_BASE_URL + '/api/v2/is-admin', {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        token: result.token
+                    })
+                }).then(e=>e.json()).then(e=>e.is_admin)
+                
+                tokens.is_admin = is_admin
+
+                Script.LocalStorage.set("vk_tokens", JSON.stringify(tokens))
+                
+                Script.LocalStorage.get()
+
                 window.location.href = process.env.VUE_APP_BASE_URL + '/testing';
             }else{
                 if(response.status === 201){

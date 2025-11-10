@@ -56,6 +56,12 @@
               :placeholder="field.placeholder"
               class="textarea"
             />
+            <select 
+              v-else-if="field.type === 'select'"
+              class="select"
+              v-model="formData[key]">
+              <option v-for="(option, key) in field.options" :value="option.val">{{ option.text }}</option>
+            </select>
           </div>
 
           <!-- Submit Button -->
@@ -69,7 +75,7 @@
         <!-- Response Display -->
         <div v-if="response" class="response-container">
           <!-- Tables for Top Schools, Top Schools with cities, Top Cities -->
-          <div v-if="responseType === 'table'" class="table-wrapper">
+          <div v-if="responseType.includes('table')" class="table-wrapper">
             <h3>{{ currentEndpointData.name }}</h3>
             <table class="analytics-table">
               <thead>
@@ -84,14 +90,20 @@
               </tbody>
             </table>
           </div>
+
+          <div v-if="responseType.includes('text')" class="response">
+            <pre>{{ this.response }}</pre>
+          </div>
+          <div v-if="responseType.includes('chart')" id="chartResponse" :style="this.canvasStyle"></div>
         </div>
       </div>
     </div>
-    </main>
-  </template>
+  </main>
+</template>
   
 <script>
 import * as Script from '@/assets/Script.js'
+import * as ChartJS from '@canvasjs/charts'
   
   export default {
   name: 'AdminView',
@@ -106,6 +118,10 @@ import * as Script from '@/assets/Script.js'
       tableHeaders: [],
       tableData: [],
       responseType: "text",
+      canvasStyle: {
+        width: (window.innerWidth-142)+"px",
+        height: (window.innerWidth-142)+"px"
+      },
       endpoints: [
         {
           name: 'Удалить пользователя',
@@ -116,7 +132,7 @@ import * as Script from '@/assets/Script.js'
           fields: {
             vk_id: { label: 'VK ID администратора', type: 'text', placeholder: 'VK ID в виде цифр (например: 299484198)', autofill: true, required: true }
           },
-          resultCallback: (response = {}) => {
+          resultCallback: (request= {}, response = {}) => {
             this.responseType = "text"
             this.response = response
           }
@@ -130,7 +146,7 @@ import * as Script from '@/assets/Script.js'
           fields: {
             vk_id: { label: 'VK ID администратора', type: 'text', placeholder: 'VK ID в виде цифр (например: 299484198)', required: true }
           },
-          resultCallback: (response = {}) => {
+          resultCallback: (request= {}, response = {}) => {
             this.responseType = "text"
             this.response = response?.result === true ? "Администратор добавлен" : "Ошибка при добавлении"
           }
@@ -142,7 +158,7 @@ import * as Script from '@/assets/Script.js'
         //   path: '/api/v2/is-admin',
         //   description: 'Check if user is admin',
         //   fields: {},
-        //   resultCallback: (response = {}) => {
+        //   resultCallback: (request= {}, response = {}) => {
         //     this.responseType = "text"
         //     this.response = response.is_admin ? "Вы администратор" : "Вы не являетесь администратором"
         //   }
@@ -151,13 +167,13 @@ import * as Script from '@/assets/Script.js'
           name: 'Количество пользователей',
           method: 'POST',
           type: 'execute',
-          path: '/api/v1/db-date',
+          path: '/api/v2/db-date',
           description: 'Показывет количество зарегестрированных пользователей за определенный временной промежуток (если не указаны даты - за всё время, если только дата начала - только за этот день)',
           fields: {
             date_start: { label: 'Дата начала', type: 'date', placeholder: '02-10-2025', required: false },
             date_end: { label: 'Дата конца', type: 'date', placeholder: '05-10-2025', required: false }
           },
-          resultCallback: (response = {}) => {
+          resultCallback: (request= {}, response = {}) => {
             this.responseType = "text"
             this.response = "Количество новых пользователей: " + response.count
           }
@@ -173,29 +189,42 @@ import * as Script from '@/assets/Script.js'
             date_start: { label: 'Дата начала', type: 'date', placeholder: '02-10-2025', required: false },
             date_end: { label: 'Дата конца', type: 'date', placeholder: '05-10-2025', required: false }
           },
-          resultCallback: (response = {}) => {
-            this.responseType = "table"
+          resultCallback: (request= {}, response = {}) => {
+            let r = JSON.parse(request)
             this.response = true
+            if(r.limit > 10){
+              this.responseType = "table"
+            }else{
+              this.responseType = 'table chart'
+              setTimeout(()=>{
+                let data = [];
+                response.schools.forEach(element => {
+                  data.push({label: element.school + ", г. " + element.city, y: element.count})
+                })
+                data.reverse()
+                this.renderChart("Топ школ по городам", this.generateHeader(request), data)
+              }, 20)
+            }
             this.processTableData(response.schools)
           }
         },
-        {
-          name: 'Топ школ',
-          method: 'POST',
-          type: 'execute',
-          path: '/api/v2/analytics/top-schools',
-          description: 'Топ школ по пользователям за определенный временной промежуток (если не указаны даты - за всё время, если только дата начала - только за этот день)',
-          fields: {
-            limit: { label: 'Количество', type: 'number', placeholder: '10', required: false },
-            date_start: { label: 'Дата начала', type: 'date', placeholder: '02-10-2025', required: false },
-            date_end: { label: 'Дата конца', type: 'date', placeholder: '05-10-2025', required: false }
-          },
-          resultCallback: (response = {}) => {
-            this.responseType = "table"
-            this.response = true
-            this.processTableData(response.schools)
-          }
-        },
+        // {
+        //   name: 'Топ школ',
+        //   method: 'POST',
+        //   type: 'execute',
+        //   path: '/api/v2/analytics/top-schools',
+        //   description: 'Топ школ по пользователям за определенный временной промежуток (если не указаны даты - за всё время, если только дата начала - только за этот день)',
+        //   fields: {
+        //     limit: { label: 'Количество', type: 'number', placeholder: '10', required: false },
+        //     date_start: { label: 'Дата начала', type: 'date', placeholder: '02-10-2025', required: false },
+        //     date_end: { label: 'Дата конца', type: 'date', placeholder: '05-10-2025', required: false }
+        //   },
+        //   resultCallback: (request= {}, response = {}) => {
+        //     this.responseType = "table"
+        //     this.response = true
+        //     this.processTableData(response.schools)
+        //   }
+        // },
         {
           name: 'Топ городов',
           method: 'POST',
@@ -207,9 +236,22 @@ import * as Script from '@/assets/Script.js'
             date_start: { label: 'Дата начала', type: 'date', placeholder: '02-10-2025', required: false },
             date_end: { label: 'Дата конца', type: 'date', placeholder: '05-10-2025', required: false }
           },
-          resultCallback: (response = {}) => {
-            this.responseType = "table"
+          resultCallback: (request= {}, response = {}) => {
+            let r = JSON.parse(request)
             this.response = true
+            if(r.limit > 10){
+              this.responseType = "table"
+            }else{
+              this.responseType = 'table chart'
+              setTimeout(()=>{
+                let data = [];
+                response.cities.forEach(element => {
+                  data.push({label: element.city, y: element.count})
+                })
+                data.reverse()
+                this.renderChart("Топ городов", this.generateHeader(request), data)
+              }, 20)
+            }
             this.processTableData(response.cities)
           }
         },
@@ -224,10 +266,17 @@ import * as Script from '@/assets/Script.js'
             date_start: { label: 'Дата начала', type: 'date', placeholder: '02-10-2025', required: false },
             date_end: { label: 'Дата конца', type: 'date', placeholder: '05-10-2025', required: false }
           },
-          resultCallback: (response = {}) => {
-            this.responseType = "table"
+          resultCallback: (request= {}, response = {}) => {
+            this.responseType = "chart"
             this.response = true
-            this.processTableData(response.classes)
+            setTimeout(()=>{
+              let data = [];
+              response.classes.forEach(element => {
+                data.push({label: element.grade, y: element.count})
+              })
+              data.reverse()
+              this.renderChart("Топ классов", this.generateHeader(request), data)
+            }, 20)
           }
         },
         {
@@ -241,10 +290,17 @@ import * as Script from '@/assets/Script.js'
             date_start: { label: 'Дата начала', type: 'date', placeholder: '02-10-2025', required: false },
             date_end: { label: 'Дата конца', type: 'date', placeholder: '05-10-2025', required: false }
           },
-          resultCallback: (response = {}) => {
-            this.responseType = "table"
+          resultCallback: (request= {}, response = {}) => {
+            this.responseType = "chart"
             this.response = true
-            this.processTableData(response.faculties)
+            setTimeout(()=>{
+              let data = [];
+              response.faculties.forEach(element => {
+                data.push({label: element.faculty_name, y: element.recommendation_count})
+              })
+              data.reverse()
+              this.renderChart("Топ факультетов", this.generateHeader(request), data)
+            }, 20)
           }
         },
         {
@@ -252,12 +308,24 @@ import * as Script from '@/assets/Script.js'
           method: 'GET',
           type: 'open',
           path: '/api/v2/export/excel',
-          description: 'Генерация таблицы Excel из базы данных за определенный временной промежуток (если не указаны даты - за всё время, если только дата начала - только за этот день)',
+          description: 'Генерация таблицы Excel из базы данных за определенный временной промежуток (если не указаны даты - за всё время, если только дата начала - только за этот день), класс - экспорт по кассам в которых учатся/учились люди из системы, факультет: akf, mtf, htf, gnf, sf, idst, etf, fpmm, gumf - экспорт по факультету',
           fields: {
             date_start: { label: 'Дата начала', type: 'date', placeholder: '02-10-2025', required: false },
-            date_end: { label: 'Дата конца', type: 'date', placeholder: '05-10-2025', required: false }
+            date_end: { label: 'Дата конца', type: 'date', placeholder: '05-10-2025', required: false },
+            c: { label: 'Класс для экспорта', type: 'number', placeholder: '11', required: false },
+            f: { label: 'Факультет экспорта', type: 'select', placeholder: 'gumf', required: false, options: [
+              {val: 'akf', text: 'Аэрокосмический'}, 
+              {val: 'mtf', text: 'Механико-технологический'}, 
+              {val: 'htf', text: 'Химический'}, 
+              {val: 'gnf', text: 'Горно-нефтяной'}, 
+              {val: 'idst', text: 'Автодорожный'}, 
+              {val: 'sf', text: 'Строительный'}, 
+              {val: 'fpmm', text: 'Математики и механики'}, 
+              {val: 'gumf', text: 'Гуманитарный'}, 
+              {val: 'etf', text: 'Электротехнический'} 
+            ] }
           },
-          resultCallback: (response = {}) => {
+          resultCallback: (request= {}, response = {}) => {
             this.responseType = "file"
             this.response = true
           }
@@ -271,16 +339,6 @@ import * as Script from '@/assets/Script.js'
   },
   },
   async beforeCreate(){
-    if (
-        process.env.VUE_APP_VKAPP_ID && (
-          Script.LocalStorage.get("token") == undefined || 
-          Script.LocalStorage.get("token") == null || 
-          Script.LocalStorage.get("vk_tokens") == null || 
-          Script.LocalStorage.get("vk_tokens") == undefined
-        )
-    ) {
-      this.$router.push("/")
-    }
   },
   async mounted() {
     if(!this.is_admin()){
@@ -288,9 +346,6 @@ import * as Script from '@/assets/Script.js'
     }else{
       this.initFormData()
     }
-  },
-  beforeUnmount() {
-    // Cleanup if needed
   },
   methods: {
     formatDateForApi(dateString) {
@@ -394,7 +449,7 @@ import * as Script from '@/assets/Script.js'
           
           body = JSON.stringify(postData)
 
-        } else if (endpoint.method === 'GET') {
+        } else {
           // Add query params for GET
           const params = new URLSearchParams()
           Object.keys(this.formData).forEach(key => {
@@ -417,9 +472,9 @@ import * as Script from '@/assets/Script.js'
           body: body
         })
         const responseData = await response.json()        
-        endpoint.resultCallback(responseData)
+        endpoint.resultCallback(body, responseData)
       } catch (error) {
-        this.response = { error: error.message }
+        console.log({ error: error.message })
       } finally {
         this.loading = false
       }
@@ -451,12 +506,63 @@ import * as Script from '@/assets/Script.js'
       }else{
         return false
       }
+    },
+    renderChart(title, axisY, data){
+      let chart = new ChartJS.Chart("chartResponse", {
+        theme: "light1", // "light1", "light2", "dark1", "dark2"
+        animationEnabled: true,
+        exportEnabled: true,
+        title: {
+          text: title,
+          fontSize: 25
+        },
+        axisX: {
+          margin: 10,
+          labelPlacement: "inside",
+          labelFontSize: 13,
+          tickPlacement: "inside"
+        },
+        axisY2: {
+          title: axisY,
+          titleFontSize: 14,
+          includeZero: true,
+          suffix: ""
+        },
+        data: [{
+          type: "bar",
+          fontSize: 20,
+          axisYType: "secondary",
+          indexLabel: "{y}",
+          dataPoints: data
+        }]
+      });
+      chart.render();
+    },
+    generateHeader(request){
+      let r = JSON.parse(request)
+      console.log(r)
+      if(r.date_start){
+        if(r.date_end){
+          return "C " + r.date_start + " по " + r.date_end
+        }else{
+          return "За " + r.date_start
+        }
+      }else{
+        return "За все время"
+      }
     }
   }
 }
 </script>
 
 <style scoped>
+#app{
+  overflow: auto;
+}
+main{
+  height: auto;
+  min-height: var(--full-height);
+}
 .admin-panel {
   min-height: 100vh;
   background: #f5f5f5;
@@ -581,6 +687,7 @@ import * as Script from '@/assets/Script.js'
 .content {
   margin-top: 56px;
   padding: 16px;
+  overflow-y: scroll;
 }
 
 .card {
@@ -622,7 +729,8 @@ import * as Script from '@/assets/Script.js'
 }
 
 .input,
-.textarea {
+.textarea,
+.select {
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -633,7 +741,8 @@ import * as Script from '@/assets/Script.js'
 }
 
 .input:focus,
-.textarea:focus {
+.textarea:focus,
+.select:focus {
   outline: none;
   border-color: #1565C0;
 }
