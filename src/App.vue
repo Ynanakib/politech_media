@@ -2,12 +2,12 @@
   <router-view/>
 </template>
 <script>
-import { MobileOptimization } from '@/assets/MobileOptimization.js'
+// import { MobileOptimization } from '@/assets/MobileOptimization.js'
 
 export default {
-  mounted() {
-    this.mobileOptimizer = new MobileOptimization();
-  }
+  // mounted() {
+  //   this.mobileOptimizer = new MobileOptimization();
+  // }
 }
 </script>
 <style>

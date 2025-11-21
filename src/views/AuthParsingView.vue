@@ -35,8 +35,10 @@ onMounted(async () => {
             
             let tokens = {
                 type: "link",
-                vk_id: user_id
+                vk_id: user_id,
+                is_admin: false
             }
+            Script.LocalStorage.set("vk_tokens", JSON.stringify(tokens))
 
             const response = await fetch(process.env.VUE_APP_BASE_URL + '/api/v1/auth', {
                 method: 'POST',
@@ -76,8 +78,6 @@ onMounted(async () => {
                 tokens.is_admin = is_admin
 
                 Script.LocalStorage.set("vk_tokens", JSON.stringify(tokens))
-                
-                Script.LocalStorage.get()
 
                 window.location.href = process.env.VUE_APP_BASE_URL + '/testing';
             }else{
@@ -94,6 +94,7 @@ onMounted(async () => {
                         })    
                     })
 
+                    Script.LocalStorage.set("vk_tokens", JSON.stringify(tokens))
                     Script.LocalStorage.set("state", "reg");
                     window.location.href = process.env.VUE_APP_BASE_URL + '/auth';
                 }else{
@@ -117,12 +118,6 @@ onMounted(async () => {
             Script.LocalStorage.set("state", "auth")
             window.location.href = process.env.VUE_APP_BASE_URL + '/auth';
         }
-
-        
-
-
-
-
     })()
 })
 </script>

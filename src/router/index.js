@@ -56,14 +56,14 @@ const routes = [
       title : "Абитуриент 360°"
     }
   },
-  {
-    path: "/debug",
-    name: "debug",
-    component: DebugView,
-    meta:{
-      title: "DEBUG"
-    }
-  },
+  // {
+  //   path: "/debug",
+  //   name: "debug",
+  //   component: DebugView,
+  //   meta:{
+  //     title: "DEBUG"
+  //   }
+  // },
   {
     path: '/admin',
     name: 'admin',

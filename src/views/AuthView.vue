@@ -34,7 +34,7 @@
         <label for="email">Электронная почта</label>
         <input type="email" id="email" v-model="registraton.email" @blur="validateEmail" :class="{'invalid': emailError}">
         <span v-if="emailError" class="error">Некорректный email</span>
-        <button @click="validateFill1">Продолжить →</button>
+        <button type="button" @click="validateFill1">Продолжить →</button>
       </div>
       <div class="fill2" v-if="currentStep === 'fill2'">
 
@@ -64,7 +64,7 @@
           <input type="checkbox" id="agreementCheck" v-model="agreementChecked" />
           <label for="agreementCheck">Я ознакомлен (-а) и принимаю условия <span class="agreement-link" @click="showAgreement">пользовательского соглашения</span></label>
         </div>
-        <button @click="goToTesting" :disabled="!agreementChecked">Продолжить →</button>
+        <button type="button" @click="goToTesting" :disabled="!agreementChecked" class="submit-button">Продолжить →</button>
 
       </div>
     </div>
@@ -309,6 +309,9 @@ export default {
         if (type === 'school') this.showSchoolDropdown = false
     },
     goToTesting() {
+      // Принудительно закрываем все dropdown'ы перед отправкой
+      this.showCityDropdown = false
+      this.showSchoolDropdown = false
       this.formError = ''
       if (!this.cityInput || !this.schoolInput || !this.registraton.grade) {
         this.formError = 'Заполните все обязательные поля!'
@@ -336,6 +339,10 @@ export default {
           vk_id: vk_id,
           payload: this.registraton
         })
+      })
+      .catch( (e) => {
+        alert(e)
+        this.formError = 'Произошла ошибка во время регистрации, попробуйте позже'
       })
       .then( data => data.json() )
       .then( data => Script.LocalStorage.set("token", data.token) )
@@ -511,6 +518,10 @@ main {
   font-weight: 600;
   text-decoration: none;
   text-align: center;
+  -webkit-tap-highlight-color: rgba(102, 126, 234, 0.3);
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .btn.tinted{
   background: linear-gradient(90deg, #ff5e62 0%, #ff9966 100%);
@@ -526,6 +537,14 @@ main {
   cursor: not-allowed;
   box-shadow: none;
   opacity: 0.6;
+}
+.submit-button {
+  position: relative;
+  z-index: 100;
+  pointer-events: auto !important;
+}
+.submit-button:disabled {
+  pointer-events: none;
 }
 label{
   display: block;
@@ -570,6 +589,10 @@ input:focus, select:focus {
   outline: none;
   box-shadow: 0 0 12px #f093fb99;
 }
+.input-wrapper {
+  position: relative;
+  margin-bottom: 8px;
+}
 select{
   width: 100%;
 }
@@ -584,6 +607,13 @@ select{
   margin: 0;
   padding: 0;
   box-shadow: 0 0 12px #667eea99;
+  width: calc(100% - 4px);
+  left: 0;
+  pointer-events: auto;
+}
+.dropdown.city-dropdown,
+.dropdown.school-dropdown {
+  max-width: 100%;
 }
 .dropdown li {
   padding: 8px;
